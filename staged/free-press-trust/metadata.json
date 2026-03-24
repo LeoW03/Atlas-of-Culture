@@ -1,0 +1,19 @@
+{
+  "slug": "free-press-trust",
+  "title": "Free Press, Mistrusted Press",
+  "pillar": "information",
+  "post_type": "thread",
+  "alt_text": "Data visualization: press freedom scores vs media trust levels by country",
+  "slides": [
+    "Finland ranks 1st in press freedom. 69% of Finns trust the media.\n\nThe US ranks 55th. 32% of Americans do.\n\nThose two things are not the same problem.",
+    "32% media trust in the US is lower than Kenya (61%), Brazil (54%), Indonesia (59%).\n\nCountries with less press freedom. More trust.\n\nFreedom of the press and belief in the press are different variables.",
+    "~1,800 local newspapers closed in the US since 2004. National partisan media filled the gap.\n\n41% of Americans now actively avoid news \u2014 the highest rate in the Reuters survey.\n\nA free press nobody reads."
+  ],
+  "status": "ready",
+  "created_at": "2026-03-24T04:26:07.501949+00:00",
+  "hashtags": "#pressfreedom #journalism",
+  "sources": [
+    "RSF Press Freedom Index 2024 \u00b7 Reuters Institute Digital News Report 2024"
+  ],
+  "interactive_url": "https://leow03.github.io/Atlas-of-Culture/free-press-trust/"
+}

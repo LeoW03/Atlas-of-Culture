@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Where Teachers Are Paid Like Professionals · Atlas of Culture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:    #07070c;
+    --bg2:   #0d0d18;
+    --gold:  #e8c547;
+    --teal:  #4ab8c8;
+    --red:   #c45c3a;
+    --text:  #f0ece0;
+    --muted: rgba(255,255,255,0.5);
+    --dim:   rgba(255,255,255,0.18);
+    --line:  rgba(255,255,255,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 64px 56px; max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(232,197,71,0.55); margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: clamp(36px, 4.5vw, 62px); line-height: 1.06;
+    letter-spacing: -0.01em; margin-bottom: 18px;
+  }
+  h1 .gold { color: var(--gold); font-style: italic; }
+  h1 .teal { color: var(--teal); }
+  .hero-sub {
+    font-size: 17px; font-weight: 300; color: var(--muted);
+    line-height: 1.7; max-width: 680px; margin-bottom: 36px;
+  }
+  .hero-sub strong { color: rgba(255,255,255,0.85); font-weight: 500; }
+
+  .stat-pills { display: flex; gap: 16px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px; padding: 14px 20px;
+  }
+  .pill-num {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: 34px; letter-spacing: -0.02em; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .pill-num.gold { color: var(--gold); }
+  .pill-num.teal { color: var(--teal); }
+  .pill-num.red  { color: var(--red);  }
+  .pill-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim);
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding: 56px 64px; max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 24px; color: rgba(255,255,255,0.8); margin-bottom: 8px;
+  }
+  .section-sub {
+    font-size: 13.5px; color: var(--muted); margin-bottom: 28px; line-height: 1.6;
+  }
+
+  /* ── Map ── */
+  .map-wrap {
+    background: #09091c; border-radius: 6px; overflow: hidden;
+    border: 1px solid var(--line); position: relative;
+  }
+  #world-svg { display: block; width: 100%; height: auto; }
+
+  /* Legend */
+  .map-legend {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-top: 1px solid var(--line);
+    flex-wrap: wrap; gap: 10px;
+  }
+  .legend-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
+  }
+  .legend-bar { flex: 0 0 220px; height: 8px; border-radius: 3px; }
+  .legend-note { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed; background: rgba(10,10,24,0.97);
+    border: 1px solid rgba(232,197,71,0.2); border-radius: 6px;
+    padding: 12px 16px; pointer-events: none; z-index: 1000;
+    display: none; min-width: 190px; backdrop-filter: blur(8px);
+  }
+  #tt-country { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+  #tt-pay { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  #tt-pisa { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  #tt-note { font-size: 11px; color: var(--dim); font-style: italic; }
+
+  /* ── Scatter ── */
+  .scatter-wrap { position: relative; }
+  #scatter-svg { display: block; width: 100%; height: auto; }
+  .scatter-tooltip {
+    position: absolute; background: rgba(10,10,24,0.97);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 5px;
+    padding: 8px 12px; pointer-events: none; display: none; z-index: 10;
+    font-size: 12px;
+  }
+  .scatter-tooltip .st-name { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .scatter-tooltip .st-data { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* ── Table ── */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
+    color: var(--muted); padding: 7px 14px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(232,197,71,0.1); border-color: rgba(232,197,71,0.28); color: var(--gold);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim);
+    text-align: left; padding: 0 12px 12px 0; border-bottom: 1px solid var(--line);
+  }
+  td { padding: 11px 12px 11px 0; border-bottom: 1px solid rgba(255,255,255,0.025); font-size: 13px; color: var(--muted); }
+  tr.highlight td { color: var(--gold); background: rgba(232,197,71,0.03); }
+  tr.highlight td .td-country { color: var(--gold); }
+  .td-country { font-weight: 500; color: rgba(255,255,255,0.75); }
+  .td-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .td-right { text-align: right; padding-right: 20px; }
+  .mini-bar { height: 6px; border-radius: 2px; width: 160px; }
+
+  /* ── Narrative ── */
+  .narrative { padding: 56px 64px 80px; max-width: 760px; margin: 0 auto; }
+  .narrative h2 {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 28px; color: rgba(255,255,255,0.82);
+    margin: 44px 0 14px;
+  }
+  .narrative h2:first-child { margin-top: 0; }
+  .narrative p {
+    font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.48);
+    line-height: 1.8; margin-bottom: 16px;
+  }
+  .narrative p strong { color: rgba(255,255,255,0.78); font-weight: 500; }
+  .narrative p em { color: var(--gold); font-style: italic; }
+  .pull-quote {
+    border-left: 3px solid rgba(232,197,71,0.35);
+    padding: 14px 24px; margin: 28px 0;
+    background: rgba(232,197,71,0.04); border-radius: 0 4px 4px 0;
+  }
+  .pull-quote p {
+    font-family: 'Playfair Display', serif; font-size: 19px;
+    font-style: italic; color: rgba(255,255,255,0.65) !important;
+    line-height: 1.5; margin: 0;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    border-top: 1px solid var(--line); padding: 28px 64px;
+    max-width: 1100px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .site-footer .handle { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 0.1em; }
+  .site-footer .src { font-size: 11px; color: var(--dim); }
+
+</style>
+</head>
+<body>
+
+<div id="tooltip">
+  <div id="tt-country"></div>
+  <div id="tt-pay"></div>
+  <div id="tt-pisa"></div>
+  <div id="tt-note"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Education Economics</div>
+  <h1>
+    Luxembourg pays teachers <span class="gold">198%</span><br/>
+    of the average salary.<br/>
+    The US pays <span class="teal">64%</span>.
+  </h1>
+  <p class="hero-sub">
+    Teacher salary relative to national average is the most direct measure of whether a society
+    treats teaching as a <strong>profession or a sacrifice</strong>. The gap between countries
+    isn't explained by wealth — it's explained by political choices about what to value.
+  </p>
+  <div class="stat-pills">
+    <div class="pill"><div class="pill-num gold">198%</div><div class="pill-label">Luxembourg teacher ratio</div></div>
+    <div class="pill"><div class="pill-num teal">64%</div><div class="pill-label">US teacher ratio</div></div>
+    <div class="pill"><div class="pill-num gold">569</div><div class="pill-label">Singapore PISA score</div></div>
+    <div class="pill"><div class="pill-num teal">10:1</div><div class="pill-label">Finland applicant ratio</div></div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="section">
+  <div class="section-title">Teacher salary as % of national average</div>
+  <p class="section-sub">Hover any country. Red = teaching paid below average wage. Gold = teaching a competitive, well-paid profession.</p>
+  <div class="map-wrap">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Below average</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Well above average</span>
+      <span class="legend-note">Lower secondary teacher salary ÷ national average wage · OECD EAG 2023</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER -->
+<div class="section">
+  <div class="section-title">Does pay predict outcomes?</div>
+  <p class="section-sub">Teacher pay ratio (x) vs PISA 2022 composite score (y). Hover any dot. The trend is real — the outliers are more interesting.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 620" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="620" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="scatter-tooltip" id="stt">
+      <div class="st-name" id="stt-name"></div>
+      <div class="st-data" id="stt-data"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries, ranked</div>
+  <p class="section-sub">Sorted by teacher pay ratio. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+    <button class="filter-btn" onclick="filterTable('oecd',this)">OECD</button>
+    <button class="filter-btn" onclick="filterTable('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterTable('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterTable('africa',this)">Africa &amp; ME</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th class="td-right">Pay ratio</th>
+        <th class="td-right">PISA score</th>
+        <th style="width:180px"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>The measurement</h2>
+  <p>
+    The OECD tracks teacher salaries as a percentage of the average national wage — a measure that strips out cost-of-living differences and tells you directly: <strong>how does this society value its teachers relative to everyone else?</strong>
+  </p>
+  <p>
+    A ratio of 100% means teachers earn exactly the average wage. Luxembourg's 198% means teachers earn nearly twice the average. The US's 64% means teachers earn about two-thirds of what the typical American worker earns.
+  </p>
+
+  <h2>The correlation</h2>
+  <p>
+    Across OECD countries, teacher pay ratio correlates positively with PISA outcomes. Countries that pay teachers well tend to get better results. But the relationship is noisy — and the noise is the interesting part.
+  </p>
+
+  <div class="pull-quote">
+    <p>Luxembourg pays teachers the most in the world. It ranks in the middle of OECD countries on PISA. Money alone isn't the answer.</p>
+  </div>
+
+  <p>
+    The countries that consistently outperform — <strong>Finland, Singapore, Japan, South Korea</strong> — share something beyond pay: <em>teaching is a high-status, selective profession</em>. Finland accepts fewer than 10% of teacher training applicants, from a pool that's already competitive. Singapore recruits from the top third of university graduates. The pay is part of the signal, but the selectivity is what creates the status.
+  </p>
+
+  <h2>The US case</h2>
+  <p>
+    The US sits below the trend line for its wealth level — meaning American students perform worse than you'd predict given US GDP per capita. Teacher pay is one factor. Teacher training program selectivity is another: most US programs accept the majority of applicants. The combination sends a clear signal about professional status.
+  </p>
+  <p>
+    This isn't a funding problem per se. The US spends more per student than most OECD countries. The issue is <strong>where the money goes and what it signals</strong> about the profession.
+  </p>
+
+  <h2>The outliers</h2>
+  <p>
+    <strong>South Korea</strong> pays teachers around 130% of average — above average but not extreme. Yet its PISA scores rank among the world's highest. The explanation is cultural: teaching has historically carried enormous social prestige in Korea, independent of salary.
+  </p>
+  <p>
+    <strong>Poland</strong> pays teachers around 92% of average — below parity — yet scores near the OECD average, consistently above the US. Strong teacher unions and a national curriculum may be doing work that pay alone doesn't.
+  </p>
+  <p>
+    These outliers suggest the real variable isn't pay but <em>professional status</em> — and pay is just one of the levers that creates or destroys it.
+  </p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+et">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Below average</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Well above average</span>
+      <span class="legend-note">Lower secondary teacher salary ÷ national average wage · OECD EAG 2023</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER -->
+<div class="section">
+  <div class="section-title">Does pay predict outcomes?</div>
+  <p class="section-sub">Teacher pay ratio (x) vs PISA 2022 composite score (y). Hover any dot. The trend is real — the outliers are more interesting.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 620" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="620" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="scatter-tooltip" id="stt">
+      <div class="st-name" id="stt-name"></div>
+      <div class="st-data" id="stt-data"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries, ranked</div>
+  <p class="section-sub">Sorted by teacher pay ratio. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+    <button class="filter-btn" onclick="filterTable('oecd',this)">OECD</button>
+    <button class="filter-btn" onclick="filterTable('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterTable('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterTable('africa',this)">Africa &amp; ME</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th class="td-right">Pay ratio</th>
+        <th class="td-right">PISA score</th>
+        <th style="width:180px"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>The measurement</h2>
+  <p>
+    The OECD tracks teacher salaries as a percentage of the average national wage — a measure that strips out cost-of-living differences and tells you directly: <strong>how does this society value its teachers relative to everyone else?</strong>
+  </p>
+  <p>
+    A ratio of 100% means teachers earn exactly the average wage. Luxembourg's 198% means teachers earn nearly twice the average. The US's 64% means teachers earn about two-thirds of what the typical American worker earns.
+  </p>
+
+  <h2>The correlation</h2>
+  <p>
+    Across OECD countries, teacher pay ratio correlates positively with PISA outcomes. Countries that pay teachers well tend to get better results. But the relationship is noisy — and the noise is the interesting part.
+  </p>
+
+  <div class="pull-quote">
+    <p>Luxembourg pays teachers the most in the world. It ranks in the middle of OECD countries on PISA. Money alone isn't the answer.</p>
+  </div>
+
+  <p>
+    The countries that consistently outperform — <strong>Finland, Singapore, Japan, South Korea</strong> — share something beyond pay: <em>teaching is a high-status, selective profession</em>. Finland accepts fewer than 10% of teacher training applicants, from a pool that's already competitive. Singapore recruits from the top third of university graduates. The pay is part of the signal, but the selectivity is what creates the status.
+  </p>
+
+  <h2>The US case</h2>
+  <p>
+    The US sits below the trend line for its wealth level — meaning American students perform worse than you'd predict given US GDP per capita. Teacher pay is one factor. Teacher training program selectivity is another: most US programs accept the majority of applicants. The combination sends a clear signal about professional status.
+  </p>
+  <p>
+    This isn't a funding problem per se. The US spends more per student than most OECD countries. The issue is <strong>where the money goes and what it signals</strong> about the profession.
+  </p>
+
+  <h2>The outliers</h2>
+  <p>
+    <strong>South Korea</strong> pays teachers around 130% of average — above average but not extreme. Yet its PISA scores rank among the world's highest. The explanation is cultural: teaching has historically carried enormous social prestige in Korea, independent of salary.
+  </p>
+  <p>
+    <strong>Poland</strong> pays teachers around 92% of average — below parity — yet scores near the OECD average, consistently above the US. Strong teacher unions and a national curriculum may be doing work that pay alone doesn't.
+  </p>
+  <p>
+    These outliers suggest the real variable isn't pay but <em>professional status</em> — and pay is just one of the levers that creates or destroys it.
+  </p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+
+  <!-- ── SOURCES & CAVEATS ── -->
+  <div class="sources-section">
+    <h2>Data sources</h2>
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/education/education-at-a-glance/" target="_blank" rel="noopener">OECD Education at a Glance 2023</a></div><div class="source-desc">Teacher salary ratios (lower secondary, salary relative to national average wage). Data year: 2021–2022.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+<div class="site-footer">
+  <div class="handle">@atlasofculture</div>
+  <div class="src">OECD Education at a Glance 2023 · PISA 2022 · Darling-Hammond (2010)</div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const ALL = [
+  {c:'Luxembourg',   pay:198, pisa:484, r:'oecd'},
+  {c:'Singapore',    pay:145, pisa:569, r:'asia'},
+  {c:'Germany',      pay:146, pisa:480, r:'oecd'},
+  {c:'South Korea',  pay:130, pisa:519, r:'asia'},
+  {c:'Switzerland',  pay:132, pisa:484, r:'oecd'},
+  {c:'Australia',    pay:122, pisa:496, r:'oecd'},
+  {c:'Austria',      pay:120, pisa:482, r:'oecd'},
+  {c:'Canada',       pay:119, pisa:504, r:'oecd'},
+  {c:'Netherlands',  pay:116, pisa:493, r:'oecd'},
+  {c:'Japan',        pay:114, pisa:523, r:'asia'},
+  {c:'Denmark',      pay:112, pisa:489, r:'oecd'},
+  {c:'Finland',      pay:107, pisa:516, r:'oecd'},
+  {c:'New Zealand',  pay:111, pisa:483, r:'oecd'},
+  {c:'Portugal',     pay:115, pisa:478, r:'oecd'},
+  {c:'Ireland',      pay:106, pisa:487, r:'oecd'},
+  {c:'Spain',        pay:110, pisa:473, r:'oecd'},
+  {c:'Belgium',      pay:108, pisa:479, r:'oecd'},
+  {c:'France',       pay:103, pisa:474, r:'oecd'},
+  {c:'Norway',       pay:100, pisa:474, r:'oecd'},
+  {c:'Malaysia',     pay: 88, pisa:null, r:'asia'},
+  {c:'Italy',        pay: 95, pisa:470, r:'oecd'},
+  {c:'Israel',       pay: 97, pisa:480, r:'oecd'},
+  {c:'Iceland',      pay: 94, pisa:459, r:'oecd'},
+  {c:'Sweden',       pay: 98, pisa:482, r:'oecd'},
+  {c:'Turkey',       pay: 90, pisa:475, r:'oecd'},
+  {c:'China',        pay: 95, pisa:561, r:'asia'},
+  {c:'Saudi Arabia', pay: 95, pisa:386, r:'africa'},
+  {c:'United Kingdom',pay:93, pisa:484, r:'oecd'},
+  {c:'Poland',       pay: 92, pisa:516, r:'oecd'},
+  {c:'Thailand',     pay: 85, pisa:420, r:'asia'},
+  {c:'Chile',        pay: 87, pisa:481, r:'latam'},
+  {c:'Czechia',      pay: 88, pisa:490, r:'oecd'},
+  {c:'South Africa', pay: 88, pisa:288, r:'africa'},
+  {c:'Estonia',      pay: 82, pisa:511, r:'oecd'},
+  {c:'Mexico',       pay: 85, pisa:410, r:'latam'},
+  {c:'Lithuania',    pay: 78, pisa:468, r:'oecd'},
+  {c:'Hungary',      pay: 80, pisa:471, r:'oecd'},
+  {c:'Greece',       pay: 80, pisa:459, r:'oecd'},
+  {c:'Russia',       pay: 78, pisa:479, r:'oecd'},
+  {c:'Argentina',    pay: 68, pisa:378, r:'latam'},
+  {c:'Brazil',       pay: 72, pisa:390, r:'latam'},
+  {c:'Colombia',     pay: 70, pisa:391, r:'latam'},
+  {c:'India',        pay: 70, pisa:null, r:'asia'},
+  {c:'Vietnam',      pay: 72, pisa:469, r:'asia'},
+  {c:'Indonesia',    pay: 68, pisa:366, r:'asia'},
+  {c:'Philippines',  pay: 65, pisa:355, r:'asia'},
+  {c:'United States',pay: 64, pisa:497, r:'oecd', highlight:true},
+  {c:'Ukraine',      pay: 65, pisa:null, r:'oecd'},
+  {c:'Morocco',      pay: 72, pisa:338, r:'africa'},
+  {c:'Egypt',        pay: 58, pisa:null, r:'africa'},
+  {c:'Peru',         pay: 68, pisa:391, r:'latam'},
+  {c:'Venezuela',    pay: 45, pisa:null, r:'latam'},
+  {c:'Nigeria',      pay: 60, pisa:null, r:'africa'},
+  {c:'Kenya',        pay: 62, pisa:null, r:'africa'},
+  {c:'Pakistan',     pay: 55, pisa:null, r:'asia'},
+  {c:'Bangladesh',   pay: 52, pisa:null, r:'asia'},
+];
+
+const PAY_MAP = {};
+ALL.forEach(d => { PAY_MAP[d.c] = d; });
+
+const NAME_MAP = {
+  "United States of America":"United States", "Türkiye":"Turkey",
+  "Czech Republic":"Czechia", "S. Korea":"South Korea",
+  "eSwatini":"Eswatini", "Dominican Rep.":"Dominican Republic",
+  "Bosnia and Herz.":"Bosnia and Herzegovina", "N. Macedonia":"North Macedonia",
+  "Somaliland":"Somalia", "N. Cyprus":"Cyprus",
+  "Dem. Rep. Congo":"Democratic Republic of the Congo",
+};
+
+// ── Color ─────────────────────────────────────────────────────────────────────
+const MIN=45, MAX=200;
+const STOPS=[
+  [0.00,[140,50,40]],[0.20,[170,80,55]],[0.35,[160,110,70]],
+  [0.48,[110,105,85]],[0.58,[60,110,100]],[0.75,[35,130,140]],
+  [0.88,[40,150,160]],[1.00,[232,197,71]],
+];
+function getColor(v) {
+  const t=Math.max(0,Math.min(1,(v-MIN)/(MAX-MIN)));
+  let lo=STOPS[0],hi=STOPS[STOPS.length-1];
+  for(let i=0;i<STOPS.length-1;i++){if(t>=STOPS[i][0]&&t<=STOPS[i+1][0]){lo=STOPS[i];hi=STOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(c=>Math.round(lo[1][c]+s*(hi[1][c]-lo[1][c]))).join(',')})`;
+}
+function lookup(n){return(PAY_MAP[n]||PAY_MAP[NAME_MAP[n]]||null);}
+
+// Legend
+const lgS=Array.from({length:20},(_,i)=>getColor(MIN+(MAX-MIN)/19*i));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){const T=W*0.4,segs=[[]];ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');}
+function g2p(g){if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');return'';}
+
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a40');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+const tt=document.getElementById('tooltip');
+const ttC=document.getElementById('tt-country');
+const ttPay=document.getElementById('tt-pay');
+const ttPisa=document.getElementById('tt-pisa');
+const ttNote=document.getElementById('tt-note');
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(r=>r.json()).then(geo=>{
+  const el=document.getElementById('countries');
+  const sorted=[...geo.features].sort((a,b)=>{
+    const da=lookup(a.properties.name||'');const db=lookup(b.properties.name||'');
+    if(!da&&!db)return 0;if(!da)return-1;if(!db)return 1;return da.pay-db.pay;
+  });
+  sorted.forEach(f=>{
+    const name=f.properties.name||'';const d=lookup(name);const fill=d?getColor(d.pay):'#111128';
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',g2p(f.geometry)||'');path.setAttribute('fill',fill);
+    path.setAttribute('stroke','#07070c');path.setAttribute('stroke-width','0.4');
+    path.style.cursor=d?'pointer':'default';path.style.transition='opacity 0.1s';
+    if(d){
+      path.addEventListener('mouseenter',e=>{
+        ttC.textContent=name;
+        ttPay.textContent=d.pay+'%';
+        ttPisa.textContent=d.pisa?`PISA: ${d.pisa}`:'PISA: no data';
+        const note=d.pay>100?`${d.pay}% — above national average`:`${100-d.pay}pp below national average`;
+        ttNote.textContent=note;
+        tt.style.display='block';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='0.5');
+        path.style.opacity='1';
+      });
+      path.addEventListener('mousemove',e=>{
+        tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-60)+'px';
+      });
+      path.addEventListener('mouseleave',()=>{
+        tt.style.display='none';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='1');
+      });
+    }
+    el.appendChild(path);
+  });
+});
+
+// ── Scatter ───────────────────────────────────────────────────────────────────
+const PAD={l:70,r:40,t:24,b:64};const SW=920,SH=620;
+const CW=SW-PAD.l-PAD.r,CH=SH-PAD.t-PAD.b;
+const PAY_MIN=40,PAY_MAX=210,PISA_MIN=330,PISA_MAX=590;
+const NS='http://www.w3.org/2000/svg';
+function sx(p){return PAD.l+(p-PAY_MIN)/(PAY_MAX-PAY_MIN)*CW;}
+function sy(p){return PAD.t+CH-(p-PISA_MIN)/(PISA_MAX-PISA_MIN)*CH;}
+function elS(tag,attrs){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+const sg=document.getElementById('sg');
+const stt=document.getElementById('stt');
+const sttN=document.getElementById('stt-name');
+const sttD=document.getElementById('stt-data');
+
+// Grid
+[60,80,100,120,140,160,180,200].forEach(p=>{const x=sx(p);sg.appendChild(elS('line',{x1:x,y1:PAD.t,x2:x,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x,y:PAD.t+CH+16,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=p+'%';sg.appendChild(t);});
+[360,400,440,480,520,560].forEach(p=>{const y=sy(p);sg.appendChild(elS('line',{x1:PAD.l,y1:y,x2:PAD.l+CW,y2:y,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x:PAD.l-8,y:y+4,'text-anchor':'end','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=p;sg.appendChild(t);});
+
+// Parity line
+const px=sx(100);sg.appendChild(elS('line',{x1:px,y1:PAD.t,x2:px,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.1)','stroke-width':'1','stroke-dasharray':'4,3'}));
+const plbl=elS('text',{x:px+4,y:PAD.t+14,'font-family':'IBM Plex Mono,monospace','font-size':'9','fill':'rgba(255,255,255,0.22)','letter-spacing':'0.08em'});plbl.textContent='avg salary';sg.appendChild(plbl);
+
+// Axes
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t+CH,x2:PAD.l+CW,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+const xl=elS('text',{x:PAD.l+CW/2,y:PAD.t+CH+42,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)'});xl.textContent='TEACHER SALARY AS % OF NATIONAL AVERAGE';sg.appendChild(xl);
+const yl=elS('text',{x:16,y:PAD.t+CH/2,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)','transform':`rotate(-90,16,${PAD.t+CH/2})`});yl.textContent='PISA 2022 COMPOSITE';sg.appendChild(yl);
+
+// Trend (regression on OECD countries with PISA data)
+const pts=ALL.filter(d=>d.pisa&&d.pay);
+const n=pts.length,sumX=pts.reduce((a,d)=>a+d.pay,0),sumY=pts.reduce((a,d)=>a+d.pisa,0);
+const sumXY=pts.reduce((a,d)=>a+d.pay*d.pisa,0),sumX2=pts.reduce((a,d)=>a+d.pay*d.pay,0);
+const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+const icpt=(sumY-slope*sumX)/n;
+sg.appendChild(elS('line',{x1:sx(PAY_MIN),y1:sy(slope*PAY_MIN+icpt),x2:sx(PAY_MAX),y2:sy(slope*PAY_MAX+icpt),stroke:'rgba(232,197,71,0.15)','stroke-width':'1.5','stroke-dasharray':'5,4'}));
+
+// LABELED dots
+const LABELED=['Luxembourg','Germany','Finland','South Korea','Japan','Singapore','United States','Norway','Poland','China','Estonia'];
+const LABELED_POS={
+  'Luxembourg':{dx:-10,dy:0,anchor:'end'},
+  'Germany':{dx:0,dy:-10,anchor:'middle'},
+  'Finland':{dx:9,dy:0,anchor:'start'},
+  'South Korea':{dx:0,dy:-10,anchor:'middle'},
+  'Japan':{dx:9,dy:0,anchor:'start'},
+  'Singapore':{dx:-9,dy:0,anchor:'end'},
+  'United States':{dx:9,dy:4,anchor:'start'},
+  'Norway':{dx:-9,dy:0,anchor:'end'},
+  'Poland':{dx:-9,dy:0,anchor:'end'},
+  'China':{dx:9,dy:0,anchor:'start'},
+  'Estonia':{dx:9,dy:0,anchor:'start'},
+};
+
+ALL.filter(d=>d.pisa).forEach(d=>{
+  const x=sx(d.pay),y=sy(d.pisa);
+  const labeled=LABELED.includes(d.c);
+  const isUS=d.c==='United States';
+  const isStar=['Singapore','Japan','Finland','South Korea'].includes(d.c);
+  const r=labeled?6:4;
+  const fill=isUS?'rgba(90,184,216,0.9)':isStar?'#e8c547':labeled?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.12)';
+  const stroke=labeled&&!isUS?'rgba(255,255,255,0.2)':'none';
+
+  const dot=elS('circle',{cx:x,cy:y,r,fill,stroke,'stroke-width':'1',style:'cursor:pointer'});
+  dot.addEventListener('mouseenter',e=>{
+    sttN.textContent=d.c;
+    sttD.textContent=`${d.pay}% pay · PISA ${d.pisa}`;
+    stt.style.display='block';
+    stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-40)+'px';
+  });
+  dot.addEventListener('mousemove',e=>{stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-40)+'px';});
+  dot.addEventListener('mouseleave',()=>stt.style.display='none');
+  sg.appendChild(dot);
+
+  if(labeled){
+    const pos=LABELED_POS[d.c]||{dx:9,dy:0,anchor:'start'};
+    const lbl=elS('text',{x:x+pos.dx,y:y+pos.dy,'text-anchor':pos.anchor,'font-family':'IBM Plex Mono,monospace','font-size':'10','fill':isUS?'rgba(90,184,216,0.8)':isStar?'#e8c547':'rgba(255,255,255,0.5)'});
+    lbl.textContent=d.c;sg.appendChild(lbl);
+  }
+});
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function buildTable(filter='all'){
+  const data=filter==='all'?ALL:ALL.filter(d=>d.r===filter);
+  const sorted=[...data].sort((a,b)=>b.pay-a.pay);
+  document.getElementById('table-body').innerHTML=sorted.map(d=>`
+    <tr class="${d.highlight?'highlight':''}">
+      <td class="td-country">${d.c}</td>
+      <td class="td-right td-mono">${d.pay}%</td>
+      <td class="td-right td-mono">${d.pisa||'—'}</td>
+      <td><div class="mini-bar" style="background:${getColor(d.pay)};width:${(d.pay/200*160).toFixed(0)}px"></div></td>
+    </tr>
+  `).join('');
+}
+function filterTable(r,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); buildTable(r);
+}
+buildTable();
+</script>
+</body>
+</html><ul class="caveats-list">
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    </ul>CTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Where Teachers Are Paid Like Professionals · Atlas of Culture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg:    #07070c;
+    --bg2:   #0d0d18;
+    --gold:  #e8c547;
+    --teal:  #4ab8c8;
+    --red:   #c45c3a;
+    --text:  #f0ece0;
+    --muted: rgba(255,255,255,0.5);
+    --dim:   rgba(255,255,255,0.18);
+    --line:  rgba(255,255,255,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 64px 56px; max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(232,197,71,0.55); margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: clamp(36px, 4.5vw, 62px); line-height: 1.06;
+    letter-spacing: -0.01em; margin-bottom: 18px;
+  }
+  h1 .gold { color: var(--gold); font-style: italic; }
+  h1 .teal { color: var(--teal); }
+  .hero-sub {
+    font-size: 17px; font-weight: 300; color: var(--muted);
+    line-height: 1.7; max-width: 680px; margin-bottom: 36px;
+  }
+  .hero-sub strong { color: rgba(255,255,255,0.85); font-weight: 500; }
+
+  .stat-pills { display: flex; gap: 16px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px; padding: 14px 20px;
+  }
+  .pill-num {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: 34px; letter-spacing: -0.02em; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .pill-num.gold { color: var(--gold); }
+  .pill-num.teal { color: var(--teal); }
+  .pill-num.red  { color: var(--red);  }
+  .pill-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim);
+  }
+
+  /* ── Sections ── */
+  .section {
+    padding: 56px 64px; max-width: 1100px; margin: 0 auto;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 24px; color: rgba(255,255,255,0.8); margin-bottom: 8px;
+  }
+  .section-sub {
+    font-size: 13.5px; color: var(--muted); margin-bottom: 28px; line-height: 1.6;
+  }
+
+  /* ── Map ── */
+  .map-wrap {
+    background: #09091c; border-radius: 6px; overflow: hidden;
+    border: 1px solid var(--line); position: relative;
+  }
+  #world-svg { display: block; width: 100%; height: auto; }
+
+  /* Legend */
+  .map-legend {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-top: 1px solid var(--line);
+    flex-wrap: wrap; gap: 10px;
+  }
+  .legend-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim);
+  }
+  .legend-bar { flex: 0 0 220px; height: 8px; border-radius: 3px; }
+  .legend-note { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed; background: rgba(10,10,24,0.97);
+    border: 1px solid rgba(232,197,71,0.2); border-radius: 6px;
+    padding: 12px 16px; pointer-events: none; z-index: 1000;
+    display: none; min-width: 190px; backdrop-filter: blur(8px);
+  }
+  #tt-country { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+  #tt-pay { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  #tt-pisa { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  #tt-note { font-size: 11px; color: var(--dim); font-style: italic; }
+
+  /* ── Scatter ── */
+  .scatter-wrap { position: relative; }
+  #scatter-svg { display: block; width: 100%; height: auto; }
+  .scatter-tooltip {
+    position: absolute; background: rgba(10,10,24,0.97);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 5px;
+    padding: 8px 12px; pointer-events: none; display: none; z-index: 10;
+    font-size: 12px;
+  }
+  .scatter-tooltip .st-name { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .scatter-tooltip .st-data { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* ── Table ── */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.07);
+    color: var(--muted); padding: 7px 14px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(232,197,71,0.1); border-color: rgba(232,197,71,0.28); color: var(--gold);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim);
+    text-align: left; padding: 0 12px 12px 0; border-bottom: 1px solid var(--line);
+  }
+  td { padding: 11px 12px 11px 0; border-bottom: 1px solid rgba(255,255,255,0.025); font-size: 13px; color: var(--muted); }
+  tr.highlight td { color: var(--gold); background: rgba(232,197,71,0.03); }
+  tr.highlight td .td-country { color: var(--gold); }
+  .td-country { font-weight: 500; color: rgba(255,255,255,0.75); }
+  .td-mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .td-right { text-align: right; padding-right: 20px; }
+  .mini-bar { height: 6px; border-radius: 2px; width: 160px; }
+
+  /* ── Narrative ── */
+  .narrative { padding: 56px 64px 80px; max-width: 760px; margin: 0 auto; }
+  .narrative h2 {
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 28px; color: rgba(255,255,255,0.82);
+    margin: 44px 0 14px;
+  }
+  .narrative h2:first-child { margin-top: 0; }
+  .narrative p {
+    font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.48);
+    line-height: 1.8; margin-bottom: 16px;
+  }
+  .narrative p strong { color: rgba(255,255,255,0.78); font-weight: 500; }
+  .narrative p em { color: var(--gold); font-style: italic; }
+  .pull-quote {
+    border-left: 3px solid rgba(232,197,71,0.35);
+    padding: 14px 24px; margin: 28px 0;
+    background: rgba(232,197,71,0.04); border-radius: 0 4px 4px 0;
+  }
+  .pull-quote p {
+    font-family: 'Playfair Display', serif; font-size: 19px;
+    font-style: italic; color: rgba(255,255,255,0.65) !important;
+    line-height: 1.5; margin: 0;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    border-top: 1px solid var(--line); padding: 28px 64px;
+    max-width: 1100px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .site-footer .handle { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 0.1em; }
+  .site-footer .src { font-size: 11px; color: var(--dim); }
+
+</style>
+</head>
+<body>
+
+<div id="tooltip">
+  <div id="tt-country"></div>
+  <div id="tt-pay"></div>
+  <div id="tt-pisa"></div>
+  <div id="tt-note"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Education Economics</div>
+  <h1>
+    Luxembourg pays teachers <span class="gold">198%</span><br/>
+    of the average salary.<br/>
+    The US pays <span class="teal">64%</span>.
+  </h1>
+  <p class="hero-sub">
+    Teacher salary relative to national average is the most direct measure of whether a society
+    treats teaching as a <strong>profession or a sacrifice</strong>. The gap between countries
+    isn't explained by wealth — it's explained by political choices about what to value.
+  </p>
+  <div class="stat-pills">
+    <div class="pill"><div class="pill-num gold">198%</div><div class="pill-label">Luxembourg teacher ratio</div></div>
+    <div class="pill"><div class="pill-num teal">64%</div><div class="pill-label">US teacher ratio</div></div>
+    <div class="pill"><div class="pill-num gold">569</div><div class="pill-label">Singapore PISA score</div></div>
+    <div class="pill"><div class="pill-num teal">10:1</div><div class="pill-label">Finland applicant ratio</div></div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="section">
+  <div class="section-title">Teacher salary as % of national average</div>
+  <p class="section-sub">Hover any country. Red = teaching paid below average wage. Gold = teaching a competitive, well-paid profession.</p>
+  <div class="map-wrap">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Below average</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Well above average</span>
+      <span class="legend-note">Lower secondary teacher salary ÷ national average wage · OECD EAG 2023</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER -->
+<div class="section">
+  <div class="section-title">Does pay predict outcomes?</div>
+  <p class="section-sub">Teacher pay ratio (x) vs PISA 2022 composite score (y). Hover any dot. The trend is real — the outliers are more interesting.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 620" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="620" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="scatter-tooltip" id="stt">
+      <div class="st-name" id="stt-name"></div>
+      <div class="st-data" id="stt-data"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries, ranked</div>
+  <p class="section-sub">Sorted by teacher pay ratio. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+    <button class="filter-btn" onclick="filterTable('oecd',this)">OECD</button>
+    <button class="filter-btn" onclick="filterTable('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterTable('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterTable('africa',this)">Africa &amp; ME</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th class="td-right">Pay ratio</th>
+        <th class="td-right">PISA score</th>
+        <th style="width:180px"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>The measurement</h2>
+  <p>
+    The OECD tracks teacher salaries as a percentage of the average national wage — a measure that strips out cost-of-living differences and tells you directly: <strong>how does this society value its teachers relative to everyone else?</strong>
+  </p>
+  <p>
+    A ratio of 100% means teachers earn exactly the average wage. Luxembourg's 198% means teachers earn nearly twice the average. The US's 64% means teachers earn about two-thirds of what the typical American worker earns.
+  </p>
+
+  <h2>The correlation</h2>
+  <p>
+    Across OECD countries, teacher pay ratio correlates positively with PISA outcomes. Countries that pay teachers well tend to get better results. But the relationship is noisy — and the noise is the interesting part.
+  </p>
+
+  <div class="pull-quote">
+    <p>Luxembourg pays teachers the most in the world. It ranks in the middle of OECD countries on PISA. Money alone isn't the answer.</p>
+  </div>
+
+  <p>
+    The countries that consistently outperform — <strong>Finland, Singapore, Japan, South Korea</strong> — share something beyond pay: <em>teaching is a high-status, selective profession</em>. Finland accepts fewer than 10% of teacher training applicants, from a pool that's already competitive. Singapore recruits from the top third of university graduates. The pay is part of the signal, but the selectivity is what creates the status.
+  </p>
+
+  <h2>The US case</h2>
+  <p>
+    The US sits below the trend line for its wealth level — meaning American students perform worse than you'd predict given US GDP per capita. Teacher pay is one factor. Teacher training program selectivity is another: most US programs accept the majority of applicants. The combination sends a clear signal about professional status.
+  </p>
+  <p>
+    This isn't a funding problem per se. The US spends more per student than most OECD countries. The issue is <strong>where the money goes and what it signals</strong> about the profession.
+  </p>
+
+  <h2>The outliers</h2>
+  <p>
+    <strong>South Korea</strong> pays teachers around 130% of average — above average but not extreme. Yet its PISA scores rank among the world's highest. The explanation is cultural: teaching has historically carried enormous social prestige in Korea, independent of salary.
+  </p>
+  <p>
+    <strong>Poland</strong> pays teachers around 92% of average — below parity — yet scores near the OECD average, consistently above the US. Strong teacher unions and a national curriculum may be doing work that pay alone doesn't.
+  </p>
+  <p>
+    These outliers suggest the real variable isn't pay but <em>professional status</em> — and pay is just one of the levers that creates or destroys it.
+  </p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+et">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Below average</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Well above average</span>
+      <span class="legend-note">Lower secondary teacher salary ÷ national average wage · OECD EAG 2023</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER -->
+<div class="section">
+  <div class="section-title">Does pay predict outcomes?</div>
+  <p class="section-sub">Teacher pay ratio (x) vs PISA 2022 composite score (y). Hover any dot. The trend is real — the outliers are more interesting.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 620" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="620" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="scatter-tooltip" id="stt">
+      <div class="st-name" id="stt-name"></div>
+      <div class="st-data" id="stt-data"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries, ranked</div>
+  <p class="section-sub">Sorted by teacher pay ratio. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+    <button class="filter-btn" onclick="filterTable('oecd',this)">OECD</button>
+    <button class="filter-btn" onclick="filterTable('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterTable('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterTable('africa',this)">Africa &amp; ME</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th class="td-right">Pay ratio</th>
+        <th class="td-right">PISA score</th>
+        <th style="width:180px"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>The measurement</h2>
+  <p>
+    The OECD tracks teacher salaries as a percentage of the average national wage — a measure that strips out cost-of-living differences and tells you directly: <strong>how does this society value its teachers relative to everyone else?</strong>
+  </p>
+  <p>
+    A ratio of 100% means teachers earn exactly the average wage. Luxembourg's 198% means teachers earn nearly twice the average. The US's 64% means teachers earn about two-thirds of what the typical American worker earns.
+  </p>
+
+  <h2>The correlation</h2>
+  <p>
+    Across OECD countries, teacher pay ratio correlates positively with PISA outcomes. Countries that pay teachers well tend to get better results. But the relationship is noisy — and the noise is the interesting part.
+  </p>
+
+  <div class="pull-quote">
+    <p>Luxembourg pays teachers the most in the world. It ranks in the middle of OECD countries on PISA. Money alone isn't the answer.</p>
+  </div>
+
+  <p>
+    The countries that consistently outperform — <strong>Finland, Singapore, Japan, South Korea</strong> — share something beyond pay: <em>teaching is a high-status, selective profession</em>. Finland accepts fewer than 10% of teacher training applicants, from a pool that's already competitive. Singapore recruits from the top third of university graduates. The pay is part of the signal, but the selectivity is what creates the status.
+  </p>
+
+  <h2>The US case</h2>
+  <p>
+    The US sits below the trend line for its wealth level — meaning American students perform worse than you'd predict given US GDP per capita. Teacher pay is one factor. Teacher training program selectivity is another: most US programs accept the majority of applicants. The combination sends a clear signal about professional status.
+  </p>
+  <p>
+    This isn't a funding problem per se. The US spends more per student than most OECD countries. The issue is <strong>where the money goes and what it signals</strong> about the profession.
+  </p>
+
+  <h2>The outliers</h2>
+  <p>
+    <strong>South Korea</strong> pays teachers around 130% of average — above average but not extreme. Yet its PISA scores rank among the world's highest. The explanation is cultural: teaching has historically carried enormous social prestige in Korea, independent of salary.
+  </p>
+  <p>
+    <strong>Poland</strong> pays teachers around 92% of average — below parity — yet scores near the OECD average, consistently above the US. Strong teacher unions and a national curriculum may be doing work that pay alone doesn't.
+  </p>
+  <p>
+    These outliers suggest the real variable isn't pay but <em>professional status</em> — and pay is just one of the levers that creates or destroys it.
+  </p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+
+  <!-- ── SOURCES & CAVEATS ── -->
+  <div class="sources-section">
+    <h2>Data sources</h2>
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/education/education-at-a-glance/" target="_blank" rel="noopener">OECD Education at a Glance 2023</a></div><div class="source-desc">Teacher salary ratios (lower secondary, salary relative to national average wage). Data year: 2021–2022.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://www.oecd.org/pisa/" target="_blank" rel="noopener">PISA 2022 Results</a></div><div class="source-desc">Programme for International Student Assessment composite score (reading + math + science ÷ 3). Conducted every 3 years; 2022 is the most recent.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://tcpress.com/" target="_blank" rel="noopener">Darling-Hammond, L. (2010). The Flat World and Education</a></div><div class="source-desc">Teacher selectivity and professional status research.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The pay ratio measures salary relative to the national average wage — it captures status and competitiveness within a country, but does not reflect absolute purchasing power. A teacher in Luxembourg earning 198% of the average wage may have lower real purchasing power than one in a cheaper country earning 110%.</li>
+      <li>Non-OECD salary figures (Singapore, China, India, etc.) are sourced from national statistical publications rather than direct OECD measurement. Methodology varies across countries; treat these as indicative, not precise.</li>
+      <li>China's PISA data covers only four provinces (Shanghai, Beijing, Jiangsu, Zhejiang) — among the highest-performing regions in the country. It is not nationally representative.</li>
+    
+  </div>
+
+<div class="site-footer">
+  <div class="handle">@atlasofculture</div>
+  <div class="src">OECD Education at a Glance 2023 · PISA 2022 · Darling-Hammond (2010)</div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const ALL = [
+  {c:'Luxembourg',   pay:198, pisa:484, r:'oecd'},
+  {c:'Singapore',    pay:145, pisa:569, r:'asia'},
+  {c:'Germany',      pay:146, pisa:480, r:'oecd'},
+  {c:'South Korea',  pay:130, pisa:519, r:'asia'},
+  {c:'Switzerland',  pay:132, pisa:484, r:'oecd'},
+  {c:'Australia',    pay:122, pisa:496, r:'oecd'},
+  {c:'Austria',      pay:120, pisa:482, r:'oecd'},
+  {c:'Canada',       pay:119, pisa:504, r:'oecd'},
+  {c:'Netherlands',  pay:116, pisa:493, r:'oecd'},
+  {c:'Japan',        pay:114, pisa:523, r:'asia'},
+  {c:'Denmark',      pay:112, pisa:489, r:'oecd'},
+  {c:'Finland',      pay:107, pisa:516, r:'oecd'},
+  {c:'New Zealand',  pay:111, pisa:483, r:'oecd'},
+  {c:'Portugal',     pay:115, pisa:478, r:'oecd'},
+  {c:'Ireland',      pay:106, pisa:487, r:'oecd'},
+  {c:'Spain',        pay:110, pisa:473, r:'oecd'},
+  {c:'Belgium',      pay:108, pisa:479, r:'oecd'},
+  {c:'France',       pay:103, pisa:474, r:'oecd'},
+  {c:'Norway',       pay:100, pisa:474, r:'oecd'},
+  {c:'Malaysia',     pay: 88, pisa:null, r:'asia'},
+  {c:'Italy',        pay: 95, pisa:470, r:'oecd'},
+  {c:'Israel',       pay: 97, pisa:480, r:'oecd'},
+  {c:'Iceland',      pay: 94, pisa:459, r:'oecd'},
+  {c:'Sweden',       pay: 98, pisa:482, r:'oecd'},
+  {c:'Turkey',       pay: 90, pisa:475, r:'oecd'},
+  {c:'China',        pay: 95, pisa:561, r:'asia'},
+  {c:'Saudi Arabia', pay: 95, pisa:386, r:'africa'},
+  {c:'United Kingdom',pay:93, pisa:484, r:'oecd'},
+  {c:'Poland',       pay: 92, pisa:516, r:'oecd'},
+  {c:'Thailand',     pay: 85, pisa:420, r:'asia'},
+  {c:'Chile',        pay: 87, pisa:481, r:'latam'},
+  {c:'Czechia',      pay: 88, pisa:490, r:'oecd'},
+  {c:'South Africa', pay: 88, pisa:288, r:'africa'},
+  {c:'Estonia',      pay: 82, pisa:511, r:'oecd'},
+  {c:'Mexico',       pay: 85, pisa:410, r:'latam'},
+  {c:'Lithuania',    pay: 78, pisa:468, r:'oecd'},
+  {c:'Hungary',      pay: 80, pisa:471, r:'oecd'},
+  {c:'Greece',       pay: 80, pisa:459, r:'oecd'},
+  {c:'Russia',       pay: 78, pisa:479, r:'oecd'},
+  {c:'Argentina',    pay: 68, pisa:378, r:'latam'},
+  {c:'Brazil',       pay: 72, pisa:390, r:'latam'},
+  {c:'Colombia',     pay: 70, pisa:391, r:'latam'},
+  {c:'India',        pay: 70, pisa:null, r:'asia'},
+  {c:'Vietnam',      pay: 72, pisa:469, r:'asia'},
+  {c:'Indonesia',    pay: 68, pisa:366, r:'asia'},
+  {c:'Philippines',  pay: 65, pisa:355, r:'asia'},
+  {c:'United States',pay: 64, pisa:497, r:'oecd', highlight:true},
+  {c:'Ukraine',      pay: 65, pisa:null, r:'oecd'},
+  {c:'Morocco',      pay: 72, pisa:338, r:'africa'},
+  {c:'Egypt',        pay: 58, pisa:null, r:'africa'},
+  {c:'Peru',         pay: 68, pisa:391, r:'latam'},
+  {c:'Venezuela',    pay: 45, pisa:null, r:'latam'},
+  {c:'Nigeria',      pay: 60, pisa:null, r:'africa'},
+  {c:'Kenya',        pay: 62, pisa:null, r:'africa'},
+  {c:'Pakistan',     pay: 55, pisa:null, r:'asia'},
+  {c:'Bangladesh',   pay: 52, pisa:null, r:'asia'},
+];
+
+const PAY_MAP = {};
+ALL.forEach(d => { PAY_MAP[d.c] = d; });
+
+const NAME_MAP = {
+  "United States of America":"United States", "Türkiye":"Turkey",
+  "Czech Republic":"Czechia", "S. Korea":"South Korea",
+  "eSwatini":"Eswatini", "Dominican Rep.":"Dominican Republic",
+  "Bosnia and Herz.":"Bosnia and Herzegovina", "N. Macedonia":"North Macedonia",
+  "Somaliland":"Somalia", "N. Cyprus":"Cyprus",
+  "Dem. Rep. Congo":"Democratic Republic of the Congo",
+};
+
+// ── Color ─────────────────────────────────────────────────────────────────────
+const MIN=45, MAX=200;
+const STOPS=[
+  [0.00,[140,50,40]],[0.20,[170,80,55]],[0.35,[160,110,70]],
+  [0.48,[110,105,85]],[0.58,[60,110,100]],[0.75,[35,130,140]],
+  [0.88,[40,150,160]],[1.00,[232,197,71]],
+];
+function getColor(v) {
+  const t=Math.max(0,Math.min(1,(v-MIN)/(MAX-MIN)));
+  let lo=STOPS[0],hi=STOPS[STOPS.length-1];
+  for(let i=0;i<STOPS.length-1;i++){if(t>=STOPS[i][0]&&t<=STOPS[i+1][0]){lo=STOPS[i];hi=STOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(c=>Math.round(lo[1][c]+s*(hi[1][c]-lo[1][c]))).join(',')})`;
+}
+function lookup(n){return(PAY_MAP[n]||PAY_MAP[NAME_MAP[n]]||null);}
+
+// Legend
+const lgS=Array.from({length:20},(_,i)=>getColor(MIN+(MAX-MIN)/19*i));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){const T=W*0.4,segs=[[]];ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');}
+function g2p(g){if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');return'';}
+
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a40');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+const tt=document.getElementById('tooltip');
+const ttC=document.getElementById('tt-country');
+const ttPay=document.getElementById('tt-pay');
+const ttPisa=document.getElementById('tt-pisa');
+const ttNote=document.getElementById('tt-note');
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(r=>r.json()).then(geo=>{
+  const el=document.getElementById('countries');
+  const sorted=[...geo.features].sort((a,b)=>{
+    const da=lookup(a.properties.name||'');const db=lookup(b.properties.name||'');
+    if(!da&&!db)return 0;if(!da)return-1;if(!db)return 1;return da.pay-db.pay;
+  });
+  sorted.forEach(f=>{
+    const name=f.properties.name||'';const d=lookup(name);const fill=d?getColor(d.pay):'#111128';
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',g2p(f.geometry)||'');path.setAttribute('fill',fill);
+    path.setAttribute('stroke','#07070c');path.setAttribute('stroke-width','0.4');
+    path.style.cursor=d?'pointer':'default';path.style.transition='opacity 0.1s';
+    if(d){
+      path.addEventListener('mouseenter',e=>{
+        ttC.textContent=name;
+        ttPay.textContent=d.pay+'%';
+        ttPisa.textContent=d.pisa?`PISA: ${d.pisa}`:'PISA: no data';
+        const note=d.pay>100?`${d.pay}% — above national average`:`${100-d.pay}pp below national average`;
+        ttNote.textContent=note;
+        tt.style.display='block';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='0.5');
+        path.style.opacity='1';
+      });
+      path.addEventListener('mousemove',e=>{
+        tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-60)+'px';
+      });
+      path.addEventListener('mouseleave',()=>{
+        tt.style.display='none';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='1');
+      });
+    }
+    el.appendChild(path);
+  });
+});
+
+// ── Scatter ───────────────────────────────────────────────────────────────────
+const PAD={l:70,r:40,t:24,b:64};const SW=920,SH=620;
+const CW=SW-PAD.l-PAD.r,CH=SH-PAD.t-PAD.b;
+const PAY_MIN=40,PAY_MAX=210,PISA_MIN=330,PISA_MAX=590;
+const NS='http://www.w3.org/2000/svg';
+function sx(p){return PAD.l+(p-PAY_MIN)/(PAY_MAX-PAY_MIN)*CW;}
+function sy(p){return PAD.t+CH-(p-PISA_MIN)/(PISA_MAX-PISA_MIN)*CH;}
+function elS(tag,attrs){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+const sg=document.getElementById('sg');
+const stt=document.getElementById('stt');
+const sttN=document.getElementById('stt-name');
+const sttD=document.getElementById('stt-data');
+
+// Grid
+[60,80,100,120,140,160,180,200].forEach(p=>{const x=sx(p);sg.appendChild(elS('line',{x1:x,y1:PAD.t,x2:x,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x,y:PAD.t+CH+16,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=p+'%';sg.appendChild(t);});
+[360,400,440,480,520,560].forEach(p=>{const y=sy(p);sg.appendChild(elS('line',{x1:PAD.l,y1:y,x2:PAD.l+CW,y2:y,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x:PAD.l-8,y:y+4,'text-anchor':'end','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=p;sg.appendChild(t);});
+
+// Parity line
+const px=sx(100);sg.appendChild(elS('line',{x1:px,y1:PAD.t,x2:px,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.1)','stroke-width':'1','stroke-dasharray':'4,3'}));
+const plbl=elS('text',{x:px+4,y:PAD.t+14,'font-family':'IBM Plex Mono,monospace','font-size':'9','fill':'rgba(255,255,255,0.22)','letter-spacing':'0.08em'});plbl.textContent='avg salary';sg.appendChild(plbl);
+
+// Axes
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t+CH,x2:PAD.l+CW,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+const xl=elS('text',{x:PAD.l+CW/2,y:PAD.t+CH+42,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)'});xl.textContent='TEACHER SALARY AS % OF NATIONAL AVERAGE';sg.appendChild(xl);
+const yl=elS('text',{x:16,y:PAD.t+CH/2,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)','transform':`rotate(-90,16,${PAD.t+CH/2})`});yl.textContent='PISA 2022 COMPOSITE';sg.appendChild(yl);
+
+// Trend (regression on OECD countries with PISA data)
+const pts=ALL.filter(d=>d.pisa&&d.pay);
+const n=pts.length,sumX=pts.reduce((a,d)=>a+d.pay,0),sumY=pts.reduce((a,d)=>a+d.pisa,0);
+const sumXY=pts.reduce((a,d)=>a+d.pay*d.pisa,0),sumX2=pts.reduce((a,d)=>a+d.pay*d.pay,0);
+const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+const icpt=(sumY-slope*sumX)/n;
+sg.appendChild(elS('line',{x1:sx(PAY_MIN),y1:sy(slope*PAY_MIN+icpt),x2:sx(PAY_MAX),y2:sy(slope*PAY_MAX+icpt),stroke:'rgba(232,197,71,0.15)','stroke-width':'1.5','stroke-dasharray':'5,4'}));
+
+// LABELED dots
+const LABELED=['Luxembourg','Germany','Finland','South Korea','Japan','Singapore','United States','Norway','Poland','China','Estonia'];
+const LABELED_POS={
+  'Luxembourg':{dx:-10,dy:0,anchor:'end'},
+  'Germany':{dx:0,dy:-10,anchor:'middle'},
+  'Finland':{dx:9,dy:0,anchor:'start'},
+  'South Korea':{dx:0,dy:-10,anchor:'middle'},
+  'Japan':{dx:9,dy:0,anchor:'start'},
+  'Singapore':{dx:-9,dy:0,anchor:'end'},
+  'United States':{dx:9,dy:4,anchor:'start'},
+  'Norway':{dx:-9,dy:0,anchor:'end'},
+  'Poland':{dx:-9,dy:0,anchor:'end'},
+  'China':{dx:9,dy:0,anchor:'start'},
+  'Estonia':{dx:9,dy:0,anchor:'start'},
+};
+
+ALL.filter(d=>d.pisa).forEach(d=>{
+  const x=sx(d.pay),y=sy(d.pisa);
+  const labeled=LABELED.includes(d.c);
+  const isUS=d.c==='United States';
+  const isStar=['Singapore','Japan','Finland','South Korea'].includes(d.c);
+  const r=labeled?6:4;
+  const fill=isUS?'rgba(90,184,216,0.9)':isStar?'#e8c547':labeled?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.12)';
+  const stroke=labeled&&!isUS?'rgba(255,255,255,0.2)':'none';
+
+  const dot=elS('circle',{cx:x,cy:y,r,fill,stroke,'stroke-width':'1',style:'cursor:pointer'});
+  dot.addEventListener('mouseenter',e=>{
+    sttN.textContent=d.c;
+    sttD.textContent=`${d.pay}% pay · PISA ${d.pisa}`;
+    stt.style.display='block';
+    stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-40)+'px';
+  });
+  dot.addEventListener('mousemove',e=>{stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-40)+'px';});
+  dot.addEventListener('mouseleave',()=>stt.style.display='none');
+  sg.appendChild(dot);
+
+  if(labeled){
+    const pos=LABELED_POS[d.c]||{dx:9,dy:0,anchor:'start'};
+    const lbl=elS('text',{x:x+pos.dx,y:y+pos.dy,'text-anchor':pos.anchor,'font-family':'IBM Plex Mono,monospace','font-size':'10','fill':isUS?'rgba(90,184,216,0.8)':isStar?'#e8c547':'rgba(255,255,255,0.5)'});
+    lbl.textContent=d.c;sg.appendChild(lbl);
+  }
+});
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function buildTable(filter='all'){
+  const data=filter==='all'?ALL:ALL.filter(d=>d.r===filter);
+  const sorted=[...data].sort((a,b)=>b.pay-a.pay);
+  document.getElementById('table-body').innerHTML=sorted.map(d=>`
+    <tr class="${d.highlight?'highlight':''}">
+      <td class="td-country">${d.c}</td>
+      <td class="td-right td-mono">${d.pay}%</td>
+      <td class="td-right td-mono">${d.pisa||'—'}</td>
+      <td><div class="mini-bar" style="background:${getColor(d.pay)};width:${(d.pay/200*160).toFixed(0)}px"></div></td>
+    </tr>
+  `).join('');
+}
+function filterTable(r,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); buildTable(r);
+}
+buildTable();
+</script>
+</body>
+</html>

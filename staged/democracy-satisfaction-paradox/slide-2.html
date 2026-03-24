@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Democracy Satisfaction Paradox — Slide 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1080px; height: 1080px; overflow: hidden;
+    background: #07070c;
+    color: #f5f0e4;
+    font-family: 'Inter', sans-serif;
+    display: flex; flex-direction: column;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 100;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  }
+  .slide {
+    width: 1080px; height: 1080px;
+    display: flex; flex-direction: column;
+    padding: 52px 56px 40px;
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: rgba(232,197,71,0.65);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 34px;
+    color: #f5f0e4;
+    line-height: 1.22;
+    margin-bottom: 10px;
+  }
+  .headline .gold-italic {
+    font-style: italic;
+    color: #e8c547;
+  }
+  .subhead {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .chart-zone {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .chart-zone svg {
+    width: 100%;
+    height: 100%;
+  }
+  .slide-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-nav {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.05em;
+  }
+  .handle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: rgba(232,197,71,0.5);
+    letter-spacing: 0.05em;
+  }
+  .credit {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">2 of 3 · Turnout vs satisfaction</div>
+  <div class="headline">
+    Voting more doesn't mean<br>
+    <span class="gold-italic">feeling heard more.</span>
+  </div>
+  <div class="subhead">Voter turnout (x) vs democratic satisfaction (y). Switzerland breaks the model entirely.</div>
+  <div class="chart-zone">
+    <svg id="scatter" viewBox="0 0 920 700" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <!-- Background -->
+      <rect width="920" height="700" fill="transparent"/>
+      
+      <!-- Grid lines -->
+      <!-- Will be drawn by JS -->
+      <g id="grid"></g>
+      <g id="regression"></g>
+      <g id="dots"></g>
+      <g id="labels"></g>
+      <g id="axes"></g>
+      <g id="annotations"></g>
+    </svg>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-nav">← The map · The reason →</div>
+    <div class="handle">@atlasofculture</div>
+    <div class="credit">World Values Survey 2022 · IDEA</div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {name:'Switzerland', x:45, y:83, type:'special'},
+  {name:'Denmark', x:84, y:79, type:'labeled'},
+  {name:'Sweden', x:87, y:74, type:'labeled'},
+  {name:'Finland', x:72, y:72, type:'dim'},
+  {name:'Norway', x:77, y:70, type:'dim'},
+  {name:'Netherlands', x:78, y:60, type:'dim'},
+  {name:'Germany', x:76, y:55, type:'dim'},
+  {name:'Austria', x:75, y:60, type:'dim'},
+  {name:'Ireland', x:62, y:57, type:'dim'},
+  {name:'Canada', x:63, y:52, type:'dim'},
+  {name:'New Zealand', x:78, y:55, type:'dim'},
+  {name:'Australia★', x:90, y:55, type:'compulsory'},
+  {name:'Belgium★', x:89, y:50, type:'compulsory'},
+  {name:'United Kingdom', x:67, y:38, type:'dim'},
+  {name:'France', x:48, y:35, type:'labeled'},
+  {name:'Italy', x:64, y:38, type:'dim'},
+  {name:'Greece', x:57, y:42, type:'dim'},
+  {name:'Poland', x:74, y:48, type:'dim'},
+  {name:'Czech Republic', x:65, y:42, type:'dim'},
+  {name:'Hungary', x:70, y:40, type:'dim'},
+  {name:'United States', x:55, y:30, type:'us'},
+  {name:'Japan', x:53, y:42, type:'dim'},
+  {name:'South Korea', x:77, y:48, type:'dim'},
+  {name:'India', x:67, y:72, type:'labeled'},
+  {name:'Indonesia', x:82, y:68, type:'dim'},
+  {name:'Brazil★', x:79, y:41, type:'compulsory'},
+  {name:'Uruguay★', x:90, y:55, type:'compulsory'},
+  {name:'Chile', x:55, y:32, type:'dim'},
+  {name:'Mexico', x:53, y:38, type:'dim'},
+  {name:'South Africa', x:66, y:42, type:'dim'},
+  {name:'Kenya', x:65, y:52, type:'dim'},
+  {name:'Nigeria', x:27, y:45, type:'labeled'},
+  {name:'Ghana', x:79, y:58, type:'dim'},
+];
+
+const LABELED_NAMES = new Set(['Switzerland','Denmark','Sweden','United States','Belgium★','Australia★','France','Brazil★','Nigeria','India']);
+
+const PAD = {left: 72, right: 44, top: 32, bottom: 72};
+const W = 920, H = 700;
+const CW = W - PAD.left - PAD.right;
+const CH = H - PAD.top - PAD.bottom;
+const XMIN=25, XMAX=95, YMIN=28, YMAX=88;
+
+function sx(x) { return PAD.left + ((x - XMIN) / (XMAX - XMIN)) * CW; }
+function sy(y) { return PAD.top + ((YMAX - y) / (YMAX - YMIN)) * CH; }
+
+const svg = document.getElementById('scatter');
+const ns = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(ns, tag);
+  for (const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function text(content, attrs, parent) {
+  const e = el('text', attrs, parent);
+  e.textContent = content;
+  return e;
+}
+
+const grid = document.getElementById('grid');
+const regG = document.getElementById('regression');
+const dotsG = document.getElementById('dots');
+const labelsG = document.getElementById('labels');
+const axesG = document.getElementById('axes');
+const annoG = document.getElementById('annotations');
+
+// Grid lines
+for (let x = 30; x <= 90; x+=10) {
+  el('line', {x1:sx(x),y1:PAD.top,x2:sx(x),y2:PAD.top+CH,stroke:'rgba(255,255,255,0.06)',
+    'stroke-width':'1','stroke-dasharray':'3,4'}, grid);
+}
+for (let y = 30; y <= 85; y+=10) {
+  el('line', {x1:PAD.left,y1:sy(y),x2:PAD.left+CW,y2:sy(y),stroke:'rgba(255,255,255,0.06)',
+    'stroke-width':'1','stroke-dasharray':'3,4'}, grid);
+}
+
+// Regression line (linear regression)
+const n = DATA.length;
+const xm = DATA.reduce((s,d)=>s+d.x,0)/n;
+const ym = DATA.reduce((s,d)=>s+d.y,0)/n;
+const num = DATA.reduce((s,d)=>s+(d.x-xm)*(d.y-ym),0);
+const den = DATA.reduce((s,d)=>s+(d.x-xm)**2,0);
+const slope = num/den;
+const intercept = ym - slope*xm;
+const x1r = XMIN, y1r = slope*x1r+intercept;
+const x2r = XMAX, y2r = slope*x2r+intercept;
+el('line', {x1:sx(x1r),y1:sy(y1r),x2:sx(x2r),y2:sy(y2r),
+  stroke:'rgba(232,197,71,0.15)','stroke-width':'1.5','stroke-dasharray':'6,5'}, regG);
+
+// Dots
+for (const d of DATA) {
+  const cx = sx(d.x), cy = sy(d.y);
+  let fill, r, opacity;
+  if (d.type === 'special') { fill='#e8c547'; r=9; opacity=1; }
+  else if (d.type === 'us') { fill='#4ab8c8'; r=8; opacity=1; }
+  else if (d.type === 'compulsory') { fill='rgba(232,155,40,0.9)'; r=7; opacity=0.9; }
+  else { fill='rgba(255,255,255,0.3)'; r=5; opacity=0.6; }
+  
+  el('circle', {cx, cy, r, fill, opacity}, dotsG);
+  // glow for special dots
+  if (d.type === 'special' || d.type === 'us') {
+    el('circle', {cx, cy, r:r+5, fill:'none', stroke: d.type==='special'?'rgba(232,197,71,0.2)':'rgba(74,184,200,0.2)', 'stroke-width':'2'}, dotsG);
+  }
+}
+
+// Labels
+for (const d of DATA) {
+  const shortName = d.name;
+  if (!LABELED_NAMES.has(shortName)) continue;
+  const cx = sx(d.x), cy = sy(d.y);
+  
+  let dx = 10, dy = -10, anchor = 'start';
+  if (shortName === 'Switzerland') { dx = 12; dy = -8; anchor = 'start'; }
+  else if (shortName === 'Denmark') { dx = 10; dy = -10; anchor = 'start'; }
+  else if (shortName === 'Sweden') { dx = -10; dy = -12; anchor = 'end'; }
+  else if (shortName === 'Australia★') { dx = 10; dy = 12; anchor = 'start'; }
+  else if (shortName === 'Belgium★') { dx = -10; dy = -10; anchor = 'end'; }
+  else if (shortName === 'Brazil★') { dx = 10; dy = 14; anchor = 'start'; }
+  else if (shortName === 'France') { dx = -10; dy = -10; anchor = 'end'; }
+  else if (shortName === 'United States') { dx = 10; dy = 12; anchor = 'start'; }
+  else if (shortName === 'Nigeria') { dx = -10; dy = -10; anchor = 'end'; }
+  else if (shortName === 'India') { dx = 12; dy = -8; anchor = 'start'; }
+  
+  const isSpecial = shortName === 'Switzerland';
+  const isUS = shortName === 'United States';
+  const isCompulsory = ['Australia★','Belgium★','Brazil★'].includes(shortName);
+  
+  const lc = isSpecial ? '#e8c547' : isUS ? '#4ab8c8' : isCompulsory ? 'rgba(232,155,40,0.9)' : 'rgba(255,255,255,0.6)';
+  
+  text(shortName, {
+    x: cx+dx, y: cy+dy,
+    fill: lc,
+    'font-size': isSpecial ? '11' : '10',
+    'font-family': "Inter, sans-serif",
+    'font-weight': isSpecial ? '600' : '400',
+    'text-anchor': anchor
+  }, labelsG);
+}
+
+// Axes
+// X axis
+el('line', {x1:PAD.left, y1:PAD.top+CH, x2:PAD.left+CW, y2:PAD.top+CH,
+  stroke:'rgba(255,255,255,0.2)', 'stroke-width':'1'}, axesG);
+// Y axis
+el('line', {x1:PAD.left, y1:PAD.top, x2:PAD.left, y2:PAD.top+CH,
+  stroke:'rgba(255,255,255,0.2)', 'stroke-width':'1'}, axesG);
+
+// X tick labels
+for (let x = 30; x <= 90; x+=10) {
+  text(x+'%', {x:sx(x), y:PAD.top+CH+18, fill:'rgba(255,255,255,0.35)',
+    'font-size':'9', 'text-anchor':'middle', 'font-family':"'IBM Plex Mono', monospace"}, axesG);
+}
+// Y tick labels
+for (let y = 30; y <= 85; y+=10) {
+  text(y+'%', {x:PAD.left-10, y:sy(y)+3, fill:'rgba(255,255,255,0.35)',
+    'font-size':'9', 'text-anchor':'end', 'font-family':"'IBM Plex Mono', monospace"}, axesG);
+}
+
+// Axis labels
+text('VOTER TURNOUT % (MOST RECENT ELECTION)', {
+  x: PAD.left + CW/2, y: H - 8,
+  fill:'rgba(255,255,255,0.35)', 'font-size':'9',
+  'text-anchor':'middle', 'font-family':"'IBM Plex Mono', monospace",
+  'letter-spacing':'0.06em'
+}, axesG);
+
+// Y axis label (rotated)
+const ytextEl = el('text', {
+  x:0, y:0,
+  fill:'rgba(255,255,255,0.35)', 'font-size':'9',
+  'text-anchor':'middle', 'font-family':"'IBM Plex Mono', monospace",
+  'letter-spacing':'0.06em',
+  transform:`rotate(-90) translate(${-(PAD.top + CH/2)}, 14)`
+}, axesG);
+ytextEl.textContent = '% SATISFIED WITH DEMOCRACY';
+
+// Switzerland annotation
+const chX = sx(45), chY = sy(83);
+text('direct democracy —', {
+  x: chX + 14, y: chY + 24,
+  fill:'rgba(232,197,71,0.7)', 'font-size':'10',
+  'font-style':'italic', 'font-family':"'Playfair Display', serif",
+  'font-weight':'400'
+}, annoG);
+text('4–6 referendums/year', {
+  x: chX + 14, y: chY + 37,
+  fill:'rgba(232,197,71,0.7)', 'font-size':'10',
+  'font-style':'italic', 'font-family':"'Playfair Display', serif",
+  'font-weight':'400'
+}, annoG);
+
+// Compulsory voting annotation (top right)
+text('★ = compulsory voting', {
+  x: PAD.left + CW - 4, y: PAD.top + 16,
+  fill:'rgba(232,155,40,0.7)', 'font-size':'9',
+  'text-anchor':'end', 'font-family':"'IBM Plex Mono', monospace",
+  'letter-spacing':'0.04em'
+}, annoG);
+</script>
+</body>
+</html>

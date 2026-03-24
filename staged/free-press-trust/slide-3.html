@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<title>Free Press, Mistrusted Press — Slide 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    background: #07070c;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .slide {
+    width: 1080px;
+    height: 1080px;
+    display: flex;
+    flex-direction: column;
+    padding: 44px 52px 0;
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.38);
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+
+  .facts-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 0;
+  }
+
+  .fact {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 22px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .fact:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .fact-accent-col {
+    width: 152px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 2px;
+  }
+
+  .fact-accent {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 52px;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+  }
+
+  .fact-accent.teal { color: rgba(74,184,216,0.75); }
+  .fact-accent.gold { color: #e8c547; }
+  .fact-accent.dim  { color: rgba(255,255,255,0.18); }
+
+  .fact-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.32);
+    text-align: right;
+    line-height: 1.4;
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+    max-width: 148px;
+  }
+
+  .fact-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.1);
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+
+  .fact-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fact-headline {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.95);
+  }
+
+  .fact-body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.55);
+  }
+
+  .slide-footer {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .slide-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.08em;
+  }
+
+  .slide-credit {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.28);
+    text-align: right;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="eyebrow">3 of 3 · Why the US diverged</div>
+
+  <div class="facts-zone">
+
+    <!-- Fact 1 -->
+    <div class="fact">
+      <div class="fact-accent-col">
+        <div class="fact-accent teal">55th</div>
+        <div class="fact-label">US press freedom rank · RSF 2024</div>
+      </div>
+      <div class="fact-divider"></div>
+      <div class="fact-content">
+        <div class="fact-headline">More free than 130 countries. Less trusted than most of them.</div>
+        <div class="fact-body">The US has more structural press freedom than Lithuania, Namibia, or Timor-Leste. What it lacks is public belief in the institution.</div>
+      </div>
+    </div>
+
+    <!-- Fact 2 -->
+    <div class="fact">
+      <div class="fact-accent-col">
+        <div class="fact-accent gold">~1,800</div>
+        <div class="fact-label">Local newspapers closed since 2004</div>
+      </div>
+      <div class="fact-divider"></div>
+      <div class="fact-content">
+        <div class="fact-headline">Local news collapsed. Trust followed.</div>
+        <div class="fact-body">The US lost roughly 1,800 local newspapers since 2004. What replaced them was national partisan media — and partisan media is precisely what people distrust most.</div>
+      </div>
+    </div>
+
+    <!-- Fact 3 -->
+    <div class="fact">
+      <div class="fact-accent-col">
+        <div class="fact-accent dim">41%</div>
+        <div class="fact-label">Americans who actively avoid news</div>
+      </div>
+      <div class="fact-divider"></div>
+      <div class="fact-content">
+        <div class="fact-headline">The paradox: a free press nobody reads.</div>
+        <div class="fact-body">The Reuters Institute finds 41% of Americans now actively avoid news — the highest rate in the study. The problem isn't censorship. It's collapse of trust in the institution itself.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-footer">
+    <span class="slide-tag">← Freedom vs trust</span>
+    <div class="slide-credit">@atlasofculture<br>RSF 2024 · Reuters Institute 2024</div>
+  </div>
+</div>
+</body>
+</html>

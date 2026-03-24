@@ -1,0 +1,19 @@
+{
+  "slug": "less-school-better-scores",
+  "title": "Less School, Better Scores",
+  "pillar": "education",
+  "post_type": "thread",
+  "alt_text": "Data visualization: instructional hours vs PISA scores \u2014 Finland low hours, top outcomes; US high hours, middling outcomes",
+  "slides": [
+    "Finland: 593 hours of school per year.\nThe US: 1,016 hours.\n\nFinland scores near the top on PISA. The US scores below average for its wealth level.",
+    "Poland: 635 hours, PISA 516.\nUS: 1,016 hours, PISA 497.\n\nMore hours. Worse outcomes. Hours are not the constraint.",
+    "Finland accepts fewer than 10% of teacher training applicants. Teaching is harder to get into than medicine there.\n\nThe curriculum was redesigned around depth, not coverage. Hours were cut.\n\nThe US did the opposite."
+  ],
+  "status": "ready",
+  "created_at": "2026-03-24T04:26:07.502731+00:00",
+  "hashtags": "#education #teachertraining",
+  "sources": [
+    "OECD Education at a Glance 2023 \u00b7 PISA 2022"
+  ],
+  "interactive_url": "https://leow03.github.io/Atlas-of-Culture/less-school-better-scores/"
+}

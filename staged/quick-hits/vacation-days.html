@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1080px;height:1080px;overflow:hidden;background:#07070c;font-family:'Inter',sans-serif;position:relative;}
+  body::before{content:'';position:absolute;inset:0;z-index:200;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;}
+
+  .canvas{position:absolute;inset:0;padding:54px 68px 46px;display:flex;flex-direction:column;}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,197,71,.6);margin-bottom:14px;flex-shrink:0;}
+
+  .headline{font-family:'Playfair Display',serif;font-weight:900;font-size:52px;line-height:1.06;color:#f5f0e4;margin-bottom:10px;flex-shrink:0;}
+  .headline em{font-style:italic;color:#e8c547;}
+
+  .subhead{font-family:'Inter',sans-serif;font-weight:400;font-size:15px;color:rgba(255,255,255,.58);line-height:1.5;margin-bottom:32px;flex-shrink:0;}
+  .subhead strong{color:rgba(255,255,255,.82);font-weight:500;}
+
+  /* Chart */
+  .chart{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .chart-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:14px;flex-shrink:0;}
+  .rows{flex:1;display:flex;flex-direction:column;}
+  .row{flex:1;display:flex;align-items:center;}
+  .c-lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.03em;width:110px;flex-shrink:0;text-align:right;padding-right:14px;color:rgba(255,255,255,.38);}
+  .row.us .c-lbl{color:rgba(100,190,220,.85);}
+  .track{flex:1;height:24px;background:rgba(255,255,255,.03);border-radius:2px;overflow:hidden;position:relative;}
+  .fill{height:100%;border-radius:2px;}
+  .row.us .fill{background:linear-gradient(90deg,rgba(100,190,220,.15),rgba(100,190,220,.3));}
+  .row:not(.us) .fill{background:linear-gradient(90deg,#122030 0%,#1e4460 50%,#2e6888 100%);}
+  .row.top .fill{background:linear-gradient(90deg,#9a7012 0%,#c89820 35%,#e8c547 78%,#f0d560 100%);box-shadow:0 0 20px rgba(232,197,71,.15);}
+  .val{font-family:'IBM Plex Mono',monospace;font-size:11px;padding-left:10px;width:48px;flex-shrink:0;color:rgba(255,255,255,.28);}
+  .row.us .val{color:rgba(100,190,220,.6);}
+  .row.top .val{color:rgba(232,197,71,.7);}
+  /* US zero bar special treatment */
+  .row.us .track::after{content:'← 0 by law';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.08em;color:rgba(100,190,220,.5);}
+
+  .footer{flex-shrink:0;border-top:1px solid rgba(255,255,255,.05);padding-top:14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;}
+  .handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:.1em;}
+  .source{font-family:'Inter',sans-serif;font-size:9px;color:rgba(255,255,255,.12);}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="eyebrow">Labor rights · OECD statutory minimum paid leave</div>
+  <div class="headline">France: 36 days.<br/>The US: <em>zero</em>.</div>
+  <div class="subhead">Statutory minimum paid vacation days per year.<br/><strong>The US is the only OECD country with no legal minimum.</strong></div>
+
+  <div class="chart">
+    <div class="chart-label">Statutory minimum paid vacation days · lower secondary</div>
+    <div class="rows" id="rows"></div>
+  </div>
+
+  <div class="footer">
+    <div class="handle">@atlasofculture</div>
+    <div class="source">OECD Employment Database 2023 · statutory minimums only, excludes public holidays</div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {c:'France',    d:30, top:true},
+  {c:'Finland',   d:25},
+  {c:'Denmark',   d:25},
+  {c:'Norway',    d:25},
+  {c:'Austria',   d:25},
+  {c:'Sweden',    d:25},
+  {c:'Germany',   d:24},
+  {c:'Spain',     d:22},
+  {c:'Portugal',  d:22},
+  {c:'UK',        d:20},
+  {c:'Australia', d:20},
+  {c:'Canada',    d:10},
+  {c:'Japan',     d:10},
+  {c:'Mexico',    d:6},
+  {c:'USA',       d:0, us:true},
+];
+const MAX=30;
+const rows=document.getElementById('rows');
+DATA.forEach(d=>{
+  const row=document.createElement('div');
+  row.className='row'+(d.top?' top':d.us?' us':'');
+  row.innerHTML=`
+    <div class="c-lbl">${d.c}</div>
+    <div class="track">${d.d>0?`<div class="fill" style="width:${(d.d/MAX*100).toFixed(0)}%"></div>`:''}</div>
+    <div class="val">${d.d>0?d.d+' days':''}</div>
+  `;
+  rows.appendChild(row);
+});
+</script>
+</body>
+</html>

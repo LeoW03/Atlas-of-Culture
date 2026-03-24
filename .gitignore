@@ -1,0 +1,26 @@
+# Secrets & credentials
+CONFIG.json
+auth-profiles.json
+
+# Python
+*.pyc
+__pycache__/
+
+# macOS
+.DS_Store
+
+# Runtime logs (not needed in git)
+analytics_log.json
+posted_log.json
+
+# Scratch / proof of concept
+poc/
+
+# Large binary files — PNGs not needed, HTMLs are tracked
+staged/**/*.png
+queue/**/*.png
+content/**/*.png
+profile/**/*.png
+reports/**/*.png
+
+# Keep: staged/**/*.html, staged/**/metadata.json, staged/**/captions.txt, staged/**/REVIEW.md

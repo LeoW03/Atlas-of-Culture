@@ -1,22 +1,4 @@
-# Only interactive HTML files are tracked in git (for gh-pages reference)
-# Everything else is local-only
-
-CONFIG.json
-auth-profiles.json
-*.pyc
-__pycache__/
-.DS_Store
-analytics_log.json
-posted_log.json
-
-# Exclude everything by default, then whitelist interactives
 *
-!staged/
-!staged/*/
-!staged/*/*-interactive.html
-!staged/quick-hits/
-!staged/quick-hits/*.html
-!queue/
-!queue/*/
-!queue/*/*-interactive.html
+!pages/
+!pages/*.html
 !.gitignore

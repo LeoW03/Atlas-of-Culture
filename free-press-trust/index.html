@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Free Press, Mistrusted Press · Atlas of Culture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  :root { --bg:#07070c; --gold:#e8c547; --teal:#4ab8c8; --red:#c45c3a; --text:#f0ece0; --muted:rgba(255,255,255,0.5); --dim:rgba(255,255,255,0.18); --line:rgba(255,255,255,0.06); }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  .hero{padding:72px 64px 52px;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,197,71,.55);margin-bottom:18px;}
+  h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(34px,4.5vw,60px);line-height:1.06;margin-bottom:18px;}
+  h1 .gold{color:var(--gold);font-style:italic;}
+  h1 .teal{color:var(--teal);}
+  .hero-sub{font-size:17px;font-weight:300;color:var(--muted);line-height:1.7;max-width:700px;margin-bottom:32px;}
+  .hero-sub strong{color:rgba(255,255,255,.85);font-weight:500;}
+  .pills{display:flex;gap:16px;flex-wrap:wrap;}
+  .pill{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px 20px;}
+  .pill-num{font-family:'Playfair Display',serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1;margin-bottom:4px;}
+  .pill-num.gold{color:var(--gold);} .pill-num.teal{color:var(--teal);} .pill-num.red{color:var(--red);}
+  .pill-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);}
+
+  .section{padding:52px 64px;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--line);}
+  .section-title{font-family:'Playfair Display',serif;font-weight:700;font-size:24px;color:rgba(255,255,255,.8);margin-bottom:8px;}
+  .section-sub{font-size:13.5px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+
+  /* Map */
+  .map-wrap{background:#09091c;border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
+  #world-svg{display:block;width:100%;height:auto;}
+  .map-legend{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--line);}
+  .legend-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+  .legend-bar{flex:0 0 220px;height:7px;border-radius:3px;}
+  .legend-note{font-size:11px;color:var(--dim);margin-left:auto;}
+
+  /* Scatter */
+  .scatter-wrap{position:relative;}
+  #scatter-svg{display:block;width:100%;height:auto;}
+  .stt{position:absolute;background:rgba(10,10,24,.97);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:8px 12px;pointer-events:none;display:none;z-index:10;}
+  .stt-name{font-family:'Playfair Display',serif;font-weight:700;color:var(--text);margin-bottom:3px;font-size:13px;}
+  .stt-data{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+
+  /* Tooltip */
+  #tooltip{position:fixed;background:rgba(10,10,24,.97);border:1px solid rgba(232,197,71,.2);border-radius:6px;padding:12px 16px;pointer-events:none;z-index:1000;display:none;min-width:180px;backdrop-filter:blur(8px);}
+  #tt-c{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+  #tt-p{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);margin-bottom:2px;}
+  #tt-t{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);margin-bottom:4px;}
+  #tt-n{font-size:11px;color:var(--dim);font-style:italic;}
+
+  /* Table */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .filter-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);color:var(--muted);padding:7px 14px;border-radius:4px;cursor:pointer;transition:all .15s;}
+  .filter-btn:hover,.filter-btn.active{background:rgba(232,197,71,.1);border-color:rgba(232,197,71,.28);color:var(--gold);}
+  table{width:100%;border-collapse:collapse;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 12px 12px 0;border-bottom:1px solid var(--line);}
+  td{padding:10px 12px 10px 0;border-bottom:1px solid rgba(255,255,255,.025);font-size:13px;color:var(--muted);}
+  tr.hl td{color:var(--gold);background:rgba(232,197,71,.03);}
+  .td-c{font-weight:500;color:rgba(255,255,255,.75);}
+  tr.hl .td-c{color:var(--gold);}
+  .td-m{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .td-r{text-align:right;padding-right:20px;}
+  .mini{height:5px;border-radius:2px;}
+
+  /* Narrative */
+  .narrative{padding:52px 64px 80px;max-width:760px;margin:0 auto;}
+  .narrative h2{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;color:rgba(255,255,255,.82);margin:40px 0 12px;}
+  .narrative h2:first-child{margin-top:0;}
+  .narrative p{font-size:16px;font-weight:300;color:rgba(255,255,255,.48);line-height:1.8;margin-bottom:14px;}
+  .narrative p strong{color:rgba(255,255,255,.78);font-weight:500;}
+  .narrative p em{color:var(--gold);font-style:italic;}
+  .pq{border-left:3px solid rgba(232,197,71,.35);padding:14px 24px;margin:24px 0;background:rgba(232,197,71,.04);border-radius:0 4px 4px 0;}
+  .pq p{font-family:'Playfair Display',serif;font-size:19px;font-style:italic;color:rgba(255,255,255,.65)!important;line-height:1.5;margin:0;}
+
+  .site-footer{border-top:1px solid var(--line);padding:26px 64px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-footer .handle{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;}
+  .site-footer .src{font-size:11px;color:var(--dim);}
+
+</style>
+</head>
+<body>
+<div id="tooltip"><div id="tt-c"></div><div id="tt-p"></div><div id="tt-t"></div><div id="tt-n"></div></div>
+
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Information & Power</div>
+  <h1>The US ranks <span class="gold">55th</span> in press freedom.<br/>Only <span class="teal">32%</span> of Americans trust the news.</h1>
+  <p class="hero-sub">Finland ranks <strong>1st in press freedom</strong> and <strong>69% of Finns trust the media</strong>. The US has more press freedom than most of the world — and less trust than most of its peers. Freedom and trust are different things.</p>
+  <div class="pills">
+    <div class="pill"><div class="pill-num gold">55th</div><div class="pill-label">US press freedom rank</div></div>
+    <div class="pill"><div class="pill-num teal">32%</div><div class="pill-label">Americans trust media</div></div>
+    <div class="pill"><div class="pill-num gold">1st</div><div class="pill-label">Finland press freedom rank</div></div>
+    <div class="pill"><div class="pill-num teal">69%</div><div class="pill-label">Finns trust media</div></div>
+  </div>
+</div>
+
+<!-- MAP: Press Freedom -->
+<div class="section">
+  <div class="section-title">Press freedom by country</div>
+  <p class="section-sub">RSF Press Freedom Index 2024 (0–100, higher = freer). Hover any country. Gold = most free. Red = least free.</p>
+  <div class="map-wrap">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g><g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Less free</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">More free</span>
+      <span class="legend-note">RSF Press Freedom Index 2024 · score 0–100</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER: Freedom vs Trust -->
+<div class="section">
+  <div class="section-title">Press freedom vs. public trust in media</div>
+  <p class="section-sub">Higher press freedom doesn't automatically mean higher trust. The US is the major outlier — hover any dot.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 680" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="680" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="stt" id="stt"><div class="stt-name" id="stt-n"></div><div class="stt-data" id="stt-d"></div></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries: press freedom & trust</div>
+  <p class="section-sub">Sort by press freedom score or trust level. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="ft('all',this)">All</button>
+    <button class="filter-btn" onclick="ft('western',this)">Western</button>
+    <button class="filter-btn" onclick="ft('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="ft('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="ft('africa',this)">Africa & ME</button>
+  </div>
+  <table><thead><tr>
+    <th>Country</th>
+    <th class="td-r">Freedom score</th>
+    <th class="td-r">Media trust %</th>
+    <th style="width:140px"></th>
+  </tr></thead><tbody id="tb"></tbody></table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>Two different things</h2>
+  <p>Press freedom measures the legal and structural environment for journalism — whether reporters can work without government interference, imprisonment, or violence. Media trust measures something else entirely: whether ordinary people believe what they read.</p>
+  <p>These two things <strong>should correlate</strong>. A free press, in theory, produces more reliable journalism. And to a degree, they do — the countries at the bottom of press freedom rankings (North Korea, Eritrea, Russia) also have very low trust. But among wealthy democracies, the relationship breaks down dramatically.</p>
+  <div class="pq"><p>The US has more press freedom than 130 countries. It has less public trust in media than most of them.</p></div>
+
+  <h2>The American anomaly</h2>
+  <p>The US ranks 55th globally on press freedom — below Lithuania, Timor-Leste, and Namibia — but that score (66/100) still places it well above the global median. What's anomalous isn't the freedom score. It's the trust gap.</p>
+  <p>Only 32% of Americans say they trust the media, according to the Reuters Institute Digital News Report 2024. That's lower than Kenya (61%), Brazil (54%), and Germany (50%). <strong>Countries with significantly less press freedom report significantly more trust in their media.</strong></p>
+  <p>The reasons are structural: extreme media polarization, collapse of local news, social media amplifying distrust, and decades of political attacks on journalism as an institution. A free press that no one believes is a different kind of problem than a censored press.</p>
+
+  <h2>The Nordic contrast</h2>
+  <p>Finland, Norway, and Denmark consistently rank at the top of both metrics — high freedom and high trust. The common factor isn't just lack of government interference. It's <em>public broadcasting funded at arm's length from government</em>, strong local news ecosystems, and a cultural norm of treating journalism as a public good rather than a partisan product.</p>
+  <p>The UK is an interesting middle case: ranked 23rd on press freedom, 43% trust — higher than the US despite tabloid culture, because the BBC anchor holds.</p>
+
+  <h2>What trust actually predicts</h2>
+  <p>Low media trust doesn't mean people consume less media — they consume more, but from more partisan sources. The Reuters Institute finds that <strong>low-trust audiences are more likely to actively avoid news</strong> (41% of Americans report news avoidance, the highest in the study), even as they spend more time on social media consuming news-adjacent content.</p>
+  <p>The paradox: the country with one of the world's freest presses has produced a population that's simultaneously drowning in information and retreating from news entirely.</p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+es"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Less free</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">More free</span>
+      <span class="legend-note">RSF Press Freedom Index 2024 · score 0–100</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER: Freedom vs Trust -->
+<div class="section">
+  <div class="section-title">Press freedom vs. public trust in media</div>
+  <p class="section-sub">Higher press freedom doesn't automatically mean higher trust. The US is the major outlier — hover any dot.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 680" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="680" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="stt" id="stt"><div class="stt-name" id="stt-n"></div><div class="stt-data" id="stt-d"></div></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries: press freedom & trust</div>
+  <p class="section-sub">Sort by press freedom score or trust level. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="ft('all',this)">All</button>
+    <button class="filter-btn" onclick="ft('western',this)">Western</button>
+    <button class="filter-btn" onclick="ft('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="ft('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="ft('africa',this)">Africa & ME</button>
+  </div>
+  <table><thead><tr>
+    <th>Country</th>
+    <th class="td-r">Freedom score</th>
+    <th class="td-r">Media trust %</th>
+    <th style="width:140px"></th>
+  </tr></thead><tbody id="tb"></tbody></table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>Two different things</h2>
+  <p>Press freedom measures the legal and structural environment for journalism — whether reporters can work without government interference, imprisonment, or violence. Media trust measures something else entirely: whether ordinary people believe what they read.</p>
+  <p>These two things <strong>should correlate</strong>. A free press, in theory, produces more reliable journalism. And to a degree, they do — the countries at the bottom of press freedom rankings (North Korea, Eritrea, Russia) also have very low trust. But among wealthy democracies, the relationship breaks down dramatically.</p>
+  <div class="pq"><p>The US has more press freedom than 130 countries. It has less public trust in media than most of them.</p></div>
+
+  <h2>The American anomaly</h2>
+  <p>The US ranks 55th globally on press freedom — below Lithuania, Timor-Leste, and Namibia — but that score (66/100) still places it well above the global median. What's anomalous isn't the freedom score. It's the trust gap.</p>
+  <p>Only 32% of Americans say they trust the media, according to the Reuters Institute Digital News Report 2024. That's lower than Kenya (61%), Brazil (54%), and Germany (50%). <strong>Countries with significantly less press freedom report significantly more trust in their media.</strong></p>
+  <p>The reasons are structural: extreme media polarization, collapse of local news, social media amplifying distrust, and decades of political attacks on journalism as an institution. A free press that no one believes is a different kind of problem than a censored press.</p>
+
+  <h2>The Nordic contrast</h2>
+  <p>Finland, Norway, and Denmark consistently rank at the top of both metrics — high freedom and high trust. The common factor isn't just lack of government interference. It's <em>public broadcasting funded at arm's length from government</em>, strong local news ecosystems, and a cultural norm of treating journalism as a public good rather than a partisan product.</p>
+  <p>The UK is an interesting middle case: ranked 23rd on press freedom, 43% trust — higher than the US despite tabloid culture, because the BBC anchor holds.</p>
+
+  <h2>What trust actually predicts</h2>
+  <p>Low media trust doesn't mean people consume less media — they consume more, but from more partisan sources. The Reuters Institute finds that <strong>low-trust audiences are more likely to actively avoid news</strong> (41% of Americans report news avoidance, the highest in the study), even as they spend more time on social media consuming news-adjacent content.</p>
+  <p>The paradox: the country with one of the world's freest presses has produced a population that's simultaneously drowning in information and retreating from news entirely.</p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+
+  <!-- ── SOURCES & CAVEATS ── -->
+  <div class="sources-section">
+    <h2>Data sources</h2>
+    <div class="source-item"><div class="source-name"><a href="https://rsf.org/en/index" target="_blank" rel="noopener">RSF World Press Freedom Index 2024</a></div><div class="source-desc">Annual ranking of 180 countries on press freedom. Score 0–100 (higher = freer). Methodology covers pluralism, independence, environment, self-censorship, legislative framework, transparency, and infrastructure.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+<div class="site-footer">
+  <div class="handle">@atlasofculture</div>
+  <div class="src">RSF Press Freedom Index 2024 · Reuters Institute Digital News Report 2024</div>
+</div>
+
+<script>
+// Data: [country, freedom_score, trust_pct, region, highlight]
+const DATA = [
+  // Western/OECD
+  {c:'Finland',      f:87.9, t:69, r:'western'},
+  {c:'Norway',       f:84.0, t:57, r:'western'},
+  {c:'Denmark',      f:82.5, t:55, r:'western'},
+  {c:'Sweden',       f:82.4, t:56, r:'western'},
+  {c:'Netherlands',  f:81.0, t:44, r:'western'},
+  {c:'Estonia',      f:78.3, t:52, r:'western'},
+  {c:'Portugal',     f:76.9, t:54, r:'western'},
+  {c:'Switzerland',  f:76.6, t:53, r:'western'},
+  {c:'Ireland',      f:76.2, t:51, r:'western'},
+  {c:'Belgium',      f:75.8, t:40, r:'western'},
+  {c:'Germany',      f:75.5, t:50, r:'western'},
+  {c:'Austria',      f:72.1, t:40, r:'western'},
+  {c:'New Zealand',  f:79.5, t:52, r:'western'},
+  {c:'Canada',       f:78.1, t:40, r:'western'},
+  {c:'Australia',    f:75.2, t:43, r:'western'},
+  {c:'United Kingdom',f:72.0,t:43, r:'western'},
+  {c:'Lithuania',    f:71.3, t:42, r:'western'},
+  {c:'France',       f:68.5, t:44, r:'western'},
+  {c:'Spain',        f:67.9, t:43, r:'western'},
+  {c:'Czech Republic',f:67.0,t:36, r:'western'},
+  {c:'Italy',        f:65.8, t:40, r:'western'},
+  {c:'United States',f:66.6, t:32, r:'western', hl:true},
+  {c:'Japan',        f:68.4, t:49, r:'asia'},
+  {c:'South Korea',  f:62.6, t:30, r:'asia'},
+  {c:'Poland',       f:62.3, t:42, r:'western'},
+  {c:'Slovakia',     f:60.8, t:38, r:'western'},
+  {c:'Hungary',      f:49.6, t:35, r:'western'},
+  {c:'Greece',       f:58.3, t:31, r:'western'},
+  // Asia
+  {c:'Taiwan',       f:71.0, t:40, r:'asia'},
+  {c:'Malaysia',     f:52.3, t:47, r:'asia'},
+  {c:'Indonesia',    f:54.8, t:59, r:'asia'},
+  {c:'India',        f:41.8, t:38, r:'asia'},
+  {c:'Thailand',     f:37.5, t:52, r:'asia'},
+  {c:'Philippines',  f:45.0, t:47, r:'asia'},
+  {c:'Singapore',    f:59.7, t:53, r:'asia'},
+  {c:'China',        f:22.1, t:80, r:'asia'},
+  {c:'Vietnam',      f:25.3, t:69, r:'asia'},
+  {c:'Russia',       f:22.2, t:33, r:'western'},
+  // LatAm
+  {c:'Argentina',    f:66.5, t:36, r:'latam'},
+  {c:'Brazil',       f:62.5, t:54, r:'latam'},
+  {c:'Colombia',     f:51.2, t:46, r:'latam'},
+  {c:'Chile',        f:68.3, t:46, r:'latam'},
+  {c:'Mexico',       f:47.0, t:46, r:'latam'},
+  {c:'Peru',         f:54.8, t:42, r:'latam'},
+  // Africa/ME
+  {c:'South Africa', f:64.3, t:49, r:'africa'},
+  {c:'Ghana',        f:61.8, t:57, r:'africa'},
+  {c:'Kenya',        f:52.8, t:61, r:'africa'},
+  {c:'Nigeria',      f:46.8, t:49, r:'africa'},
+  {c:'Ethiopia',     f:28.3, t:45, r:'africa'},
+  {c:'Egypt',        f:24.1, t:54, r:'africa'},
+  {c:'Saudi Arabia', f:24.2, t:51, r:'africa'},
+  {c:'Turkey',       f:27.0, t:37, r:'africa'},
+  {c:'Israel',       f:62.3, t:38, r:'africa'},
+];
+
+// Press freedom color: red (low) → muted → gold (high)
+const FSTOPS = [
+  [0.00,[160,40,30]],[0.25,[170,80,50]],[0.45,[120,100,70]],
+  [0.58,[80,100,90]],[0.72,[45,130,140]],[0.88,[42,158,168]],[1.00,[232,197,71]]
+];
+function fColor(v) {
+  const t=Math.max(0,Math.min(1,(v-20)/70));
+  let lo=FSTOPS[0],hi=FSTOPS[FSTOPS.length-1];
+  for(let i=0;i<FSTOPS.length-1;i++){if(t>=FSTOPS[i][0]&&t<=FSTOPS[i+1][0]){lo=FSTOPS[i];hi=FSTOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(c=>Math.round(lo[1][c]+s*(hi[1][c]-lo[1][c]))).join(',')})`;
+}
+
+// GeoJSON lookup
+const FSCORE={};DATA.forEach(d=>FSCORE[d.c]=d);
+const NM={"United States of America":"United States","Türkiye":"Turkey","Czech Republic":"Czech Republic","S. Korea":"South Korea","eSwatini":"Eswatini","Dominican Rep.":"Dominican Republic","Bosnia and Herz.":"Bosnia and Herzegovina","N. Macedonia":"North Macedonia","Somaliland":"Somalia","N. Cyprus":"Cyprus","Dem. Rep. Congo":"Democratic Republic of the Congo"};
+function lu(n){return FSCORE[n]||FSCORE[NM[n]]||null;}
+
+// Legend
+const lgS=Array.from({length:20},(_,i)=>fColor(20+70/19*i));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+// Map
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){const T=W*0.4,segs=[[]];ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');}
+function g2p(g){if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');return'';}
+
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a40');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+const tt=document.getElementById('tooltip'),ttC=document.getElementById('tt-c'),ttP=document.getElementById('tt-p'),ttT=document.getElementById('tt-t'),ttN=document.getElementById('tt-n');
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(r=>r.json()).then(geo=>{
+  const el=document.getElementById('countries');
+  const sorted=[...geo.features].sort((a,b)=>{const da=lu(a.properties.name||'');const db=lu(b.properties.name||'');if(!da&&!db)return 0;if(!da)return-1;if(!db)return 1;return da.f-db.f;});
+  sorted.forEach(f=>{
+    const name=f.properties.name||'';const d=lu(name);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',g2p(f.geometry)||'');path.setAttribute('fill',d?fColor(d.f):'#111128');
+    path.setAttribute('stroke','#07070c');path.setAttribute('stroke-width','0.4');
+    path.style.cursor=d?'pointer':'default';path.style.transition='opacity 0.1s';
+    if(d){
+      path.addEventListener('mouseenter',e=>{
+        ttC.textContent=name;ttP.textContent=`Freedom: ${d.f}/100`;
+        ttT.textContent=d.t?`Trust: ${d.t}%`:'Trust: no data';
+        ttN.textContent=d.f>75?'High freedom':d.f>55?'Moderate freedom':'Low freedom';
+        tt.style.display='block';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='0.45');
+        path.style.opacity='1';
+      });
+      path.addEventListener('mousemove',e=>{tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-60)+'px';});
+      path.addEventListener('mouseleave',()=>{tt.style.display='none';document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='1');});
+    }
+    el.appendChild(path);
+  });
+});
+
+// Scatter
+const NS='http://www.w3.org/2000/svg';
+const PAD={l:72,r:36,t:24,b:68};const SW=920,SH=680;const CW=SW-PAD.l-PAD.r,CH=SH-PAD.t-PAD.b;
+const FMN=20,FMX=92,TMN=25,TMX=82;
+function sx(f){return PAD.l+(f-FMN)/(FMX-FMN)*CW;}
+function sy(t){return PAD.t+CH-(t-TMN)/(TMX-TMN)*CH;}
+function elS(tag,a){const e=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+const sg=document.getElementById('sg');
+const stt=document.getElementById('stt'),sttN=document.getElementById('stt-n'),sttD=document.getElementById('stt-d');
+
+// Grid
+[30,40,50,60,70,80,90].forEach(f=>{const x=sx(f);sg.appendChild(elS('line',{x1:x,y1:PAD.t,x2:x,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x,y:PAD.t+CH+16,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=f;sg.appendChild(t);});
+[30,40,50,60,70,80].forEach(t=>{const y=sy(t);sg.appendChild(elS('line',{x1:PAD.l,y1:y,x2:PAD.l+CW,y2:y,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const lb=elS('text',{x:PAD.l-8,y:y+4,'text-anchor':'end','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});lb.textContent=t+'%';sg.appendChild(lb);});
+
+// Axes
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t+CH,x2:PAD.l+CW,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+const xl=elS('text',{x:PAD.l+CW/2,y:PAD.t+CH+44,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)'});xl.textContent='RSF PRESS FREEDOM SCORE (2024)';sg.appendChild(xl);
+const yl=elS('text',{x:16,y:PAD.t+CH/2,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)','transform':`rotate(-90,16,${PAD.t+CH/2})`});yl.textContent='% WHO TRUST THE MEDIA (REUTERS 2024)';sg.appendChild(yl);
+
+// Trend
+const pts=DATA.filter(d=>d.t);
+const n=pts.length,sumX=pts.reduce((a,d)=>a+d.f,0),sumY=pts.reduce((a,d)=>a+d.t,0),sumXY=pts.reduce((a,d)=>a+d.f*d.t,0),sumX2=pts.reduce((a,d)=>a+d.f*d.f,0);
+const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX),icpt=(sumY-slope*sumX)/n;
+sg.appendChild(elS('line',{x1:sx(FMN),y1:sy(slope*FMN+icpt),x2:sx(FMX),y2:sy(slope*FMX+icpt),stroke:'rgba(232,197,71,0.15)','stroke-width':'1.5','stroke-dasharray':'5,4'}));
+
+// Labeled countries
+const LABELED=['Finland','Norway','United States','South Korea','China','Kenya','Indonesia','Germany','India','Brazil'];
+const LP={
+  'Finland':{dx:-9,dy:0,anchor:'end'},
+  'Norway':{dx:-9,dy:0,anchor:'end'},
+  'United States':{dx:9,dy:4,anchor:'start'},
+  'South Korea':{dx:9,dy:0,anchor:'start'},
+  'China':{dx:-9,dy:0,anchor:'end'},
+  'Kenya':{dx:9,dy:0,anchor:'start'},
+  'Indonesia':{dx:9,dy:0,anchor:'start'},
+  'Germany':{dx:0,dy:-10,anchor:'middle'},
+  'India':{dx:9,dy:0,anchor:'start'},
+  'Brazil':{dx:9,dy:0,anchor:'start'},
+};
+
+DATA.filter(d=>d.t).forEach(d=>{
+  const x=sx(d.f),y=sy(d.t);
+  const labeled=LABELED.includes(d.c);
+  const isUS=d.c==='United States';
+  const isTop=['Finland','Norway','Denmark','Sweden'].includes(d.c);
+  const r=labeled?6:4;
+  const fill=isUS?'rgba(100,190,220,0.9)':isTop?'#e8c547':labeled?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.12)';
+  const dot=elS('circle',{cx:x,cy:y,r,fill,stroke:labeled&&!isUS?'rgba(255,255,255,0.2)':'none','stroke-width':'1',style:'cursor:pointer'});
+  dot.addEventListener('mouseenter',e=>{sttN.textContent=d.c;sttD.textContent=`Freedom: ${d.f} · Trust: ${d.t}%`;stt.style.display='block';stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-44)+'px';});
+  dot.addEventListener('mousemove',e=>{stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-44)+'px';});
+  dot.addEventListener('mouseleave',()=>stt.style.display='none');
+  sg.appendChild(dot);
+  if(labeled){
+    const pos=LP[d.c]||{dx:9,dy:0,anchor:'start'};
+    const lbl=elS('text',{x:x+pos.dx,y:y+pos.dy,'text-anchor':pos.anchor,'font-family':'IBM Plex Mono,monospace','font-size':'10','fill':isUS?'rgba(100,190,220,0.8)':isTop?'#e8c547':'rgba(255,255,255,0.45)'});
+    lbl.textContent=d.c;sg.appendChild(lbl);
+  }
+});
+
+// US annotation
+const usX=sx(66.6),usY=sy(32);
+const ann=elS('text',{x:usX+9,y:usY+22,'font-family':'Inter,sans-serif','font-size':'10','fill':'rgba(100,190,220,0.45)','font-style':'italic'});
+ann.textContent='below trend for its freedom level';sg.appendChild(ann);
+
+// Table
+function buildTable(filter='all'){
+  const data=filter==='all'?DATA:DATA.filter(d=>d.r===filter);
+  const sorted=[...data].filter(d=>d.t).sort((a,b)=>b.f-a.f);
+  document.getElementById('tb').innerHTML=sorted.map(d=>`
+    <tr class="${d.hl?'hl':''}">
+      <td class="td-c">${d.c}</td>
+      <td class="td-r td-m">${d.f}</td>
+      <td class="td-r td-m">${d.t}%</td>
+      <td><div class="mini" style="background:${fColor(d.f)};width:${((d.f-20)/70*130).toFixed(0)}px"></div></td>
+    </tr>`).join('');
+}
+function ft(r,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildTable(r);}
+buildTable();
+</script>
+</body>
+</html><ul class="caveats-list">
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    </ul>CTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Free Press, Mistrusted Press · Atlas of Culture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  :root { --bg:#07070c; --gold:#e8c547; --teal:#4ab8c8; --red:#c45c3a; --text:#f0ece0; --muted:rgba(255,255,255,0.5); --dim:rgba(255,255,255,0.18); --line:rgba(255,255,255,0.06); }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  .hero{padding:72px 64px 52px;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,197,71,.55);margin-bottom:18px;}
+  h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(34px,4.5vw,60px);line-height:1.06;margin-bottom:18px;}
+  h1 .gold{color:var(--gold);font-style:italic;}
+  h1 .teal{color:var(--teal);}
+  .hero-sub{font-size:17px;font-weight:300;color:var(--muted);line-height:1.7;max-width:700px;margin-bottom:32px;}
+  .hero-sub strong{color:rgba(255,255,255,.85);font-weight:500;}
+  .pills{display:flex;gap:16px;flex-wrap:wrap;}
+  .pill{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px 20px;}
+  .pill-num{font-family:'Playfair Display',serif;font-weight:900;font-size:34px;letter-spacing:-.02em;line-height:1;margin-bottom:4px;}
+  .pill-num.gold{color:var(--gold);} .pill-num.teal{color:var(--teal);} .pill-num.red{color:var(--red);}
+  .pill-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);}
+
+  .section{padding:52px 64px;max-width:1100px;margin:0 auto;border-bottom:1px solid var(--line);}
+  .section-title{font-family:'Playfair Display',serif;font-weight:700;font-size:24px;color:rgba(255,255,255,.8);margin-bottom:8px;}
+  .section-sub{font-size:13.5px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+
+  /* Map */
+  .map-wrap{background:#09091c;border-radius:6px;overflow:hidden;border:1px solid var(--line);position:relative;}
+  #world-svg{display:block;width:100%;height:auto;}
+  .map-legend{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--line);}
+  .legend-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+  .legend-bar{flex:0 0 220px;height:7px;border-radius:3px;}
+  .legend-note{font-size:11px;color:var(--dim);margin-left:auto;}
+
+  /* Scatter */
+  .scatter-wrap{position:relative;}
+  #scatter-svg{display:block;width:100%;height:auto;}
+  .stt{position:absolute;background:rgba(10,10,24,.97);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:8px 12px;pointer-events:none;display:none;z-index:10;}
+  .stt-name{font-family:'Playfair Display',serif;font-weight:700;color:var(--text);margin-bottom:3px;font-size:13px;}
+  .stt-data{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+
+  /* Tooltip */
+  #tooltip{position:fixed;background:rgba(10,10,24,.97);border:1px solid rgba(232,197,71,.2);border-radius:6px;padding:12px 16px;pointer-events:none;z-index:1000;display:none;min-width:180px;backdrop-filter:blur(8px);}
+  #tt-c{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--gold);margin-bottom:6px;}
+  #tt-p{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);margin-bottom:2px;}
+  #tt-t{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--teal);margin-bottom:4px;}
+  #tt-n{font-size:11px;color:var(--dim);font-style:italic;}
+
+  /* Table */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .filter-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);color:var(--muted);padding:7px 14px;border-radius:4px;cursor:pointer;transition:all .15s;}
+  .filter-btn:hover,.filter-btn.active{background:rgba(232,197,71,.1);border-color:rgba(232,197,71,.28);color:var(--gold);}
+  table{width:100%;border-collapse:collapse;}
+  th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 12px 12px 0;border-bottom:1px solid var(--line);}
+  td{padding:10px 12px 10px 0;border-bottom:1px solid rgba(255,255,255,.025);font-size:13px;color:var(--muted);}
+  tr.hl td{color:var(--gold);background:rgba(232,197,71,.03);}
+  .td-c{font-weight:500;color:rgba(255,255,255,.75);}
+  tr.hl .td-c{color:var(--gold);}
+  .td-m{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .td-r{text-align:right;padding-right:20px;}
+  .mini{height:5px;border-radius:2px;}
+
+  /* Narrative */
+  .narrative{padding:52px 64px 80px;max-width:760px;margin:0 auto;}
+  .narrative h2{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;color:rgba(255,255,255,.82);margin:40px 0 12px;}
+  .narrative h2:first-child{margin-top:0;}
+  .narrative p{font-size:16px;font-weight:300;color:rgba(255,255,255,.48);line-height:1.8;margin-bottom:14px;}
+  .narrative p strong{color:rgba(255,255,255,.78);font-weight:500;}
+  .narrative p em{color:var(--gold);font-style:italic;}
+  .pq{border-left:3px solid rgba(232,197,71,.35);padding:14px 24px;margin:24px 0;background:rgba(232,197,71,.04);border-radius:0 4px 4px 0;}
+  .pq p{font-family:'Playfair Display',serif;font-size:19px;font-style:italic;color:rgba(255,255,255,.65)!important;line-height:1.5;margin:0;}
+
+  .site-footer{border-top:1px solid var(--line);padding:26px 64px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .site-footer .handle{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.1em;}
+  .site-footer .src{font-size:11px;color:var(--dim);}
+
+</style>
+</head>
+<body>
+<div id="tooltip"><div id="tt-c"></div><div id="tt-p"></div><div id="tt-t"></div><div id="tt-n"></div></div>
+
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Information & Power</div>
+  <h1>The US ranks <span class="gold">55th</span> in press freedom.<br/>Only <span class="teal">32%</span> of Americans trust the news.</h1>
+  <p class="hero-sub">Finland ranks <strong>1st in press freedom</strong> and <strong>69% of Finns trust the media</strong>. The US has more press freedom than most of the world — and less trust than most of its peers. Freedom and trust are different things.</p>
+  <div class="pills">
+    <div class="pill"><div class="pill-num gold">55th</div><div class="pill-label">US press freedom rank</div></div>
+    <div class="pill"><div class="pill-num teal">32%</div><div class="pill-label">Americans trust media</div></div>
+    <div class="pill"><div class="pill-num gold">1st</div><div class="pill-label">Finland press freedom rank</div></div>
+    <div class="pill"><div class="pill-num teal">69%</div><div class="pill-label">Finns trust media</div></div>
+  </div>
+</div>
+
+<!-- MAP: Press Freedom -->
+<div class="section">
+  <div class="section-title">Press freedom by country</div>
+  <p class="section-sub">RSF Press Freedom Index 2024 (0–100, higher = freer). Hover any country. Gold = most free. Red = least free.</p>
+  <div class="map-wrap">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#09091c"/>
+      <g id="grat"></g><g id="countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Less free</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">More free</span>
+      <span class="legend-note">RSF Press Freedom Index 2024 · score 0–100</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER: Freedom vs Trust -->
+<div class="section">
+  <div class="section-title">Press freedom vs. public trust in media</div>
+  <p class="section-sub">Higher press freedom doesn't automatically mean higher trust. The US is the major outlier — hover any dot.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 680" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="680" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="stt" id="stt"><div class="stt-name" id="stt-n"></div><div class="stt-data" id="stt-d"></div></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries: press freedom & trust</div>
+  <p class="section-sub">Sort by press freedom score or trust level. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="ft('all',this)">All</button>
+    <button class="filter-btn" onclick="ft('western',this)">Western</button>
+    <button class="filter-btn" onclick="ft('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="ft('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="ft('africa',this)">Africa & ME</button>
+  </div>
+  <table><thead><tr>
+    <th>Country</th>
+    <th class="td-r">Freedom score</th>
+    <th class="td-r">Media trust %</th>
+    <th style="width:140px"></th>
+  </tr></thead><tbody id="tb"></tbody></table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>Two different things</h2>
+  <p>Press freedom measures the legal and structural environment for journalism — whether reporters can work without government interference, imprisonment, or violence. Media trust measures something else entirely: whether ordinary people believe what they read.</p>
+  <p>These two things <strong>should correlate</strong>. A free press, in theory, produces more reliable journalism. And to a degree, they do — the countries at the bottom of press freedom rankings (North Korea, Eritrea, Russia) also have very low trust. But among wealthy democracies, the relationship breaks down dramatically.</p>
+  <div class="pq"><p>The US has more press freedom than 130 countries. It has less public trust in media than most of them.</p></div>
+
+  <h2>The American anomaly</h2>
+  <p>The US ranks 55th globally on press freedom — below Lithuania, Timor-Leste, and Namibia — but that score (66/100) still places it well above the global median. What's anomalous isn't the freedom score. It's the trust gap.</p>
+  <p>Only 32% of Americans say they trust the media, according to the Reuters Institute Digital News Report 2024. That's lower than Kenya (61%), Brazil (54%), and Germany (50%). <strong>Countries with significantly less press freedom report significantly more trust in their media.</strong></p>
+  <p>The reasons are structural: extreme media polarization, collapse of local news, social media amplifying distrust, and decades of political attacks on journalism as an institution. A free press that no one believes is a different kind of problem than a censored press.</p>
+
+  <h2>The Nordic contrast</h2>
+  <p>Finland, Norway, and Denmark consistently rank at the top of both metrics — high freedom and high trust. The common factor isn't just lack of government interference. It's <em>public broadcasting funded at arm's length from government</em>, strong local news ecosystems, and a cultural norm of treating journalism as a public good rather than a partisan product.</p>
+  <p>The UK is an interesting middle case: ranked 23rd on press freedom, 43% trust — higher than the US despite tabloid culture, because the BBC anchor holds.</p>
+
+  <h2>What trust actually predicts</h2>
+  <p>Low media trust doesn't mean people consume less media — they consume more, but from more partisan sources. The Reuters Institute finds that <strong>low-trust audiences are more likely to actively avoid news</strong> (41% of Americans report news avoidance, the highest in the study), even as they spend more time on social media consuming news-adjacent content.</p>
+  <p>The paradox: the country with one of the world's freest presses has produced a population that's simultaneously drowning in information and retreating from news entirely.</p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+es"></g>
+    </svg>
+    <div class="map-legend">
+      <span class="legend-label">Less free</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">More free</span>
+      <span class="legend-note">RSF Press Freedom Index 2024 · score 0–100</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCATTER: Freedom vs Trust -->
+<div class="section">
+  <div class="section-title">Press freedom vs. public trust in media</div>
+  <p class="section-sub">Higher press freedom doesn't automatically mean higher trust. The US is the major outlier — hover any dot.</p>
+  <div class="scatter-wrap">
+    <svg id="scatter-svg" viewBox="0 0 920 680" preserveAspectRatio="xMidYMid meet">
+      <rect width="920" height="680" fill="transparent"/>
+      <g id="sg"></g>
+    </svg>
+    <div class="stt" id="stt"><div class="stt-name" id="stt-n"></div><div class="stt-data" id="stt-d"></div></div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="section">
+  <div class="section-title">All countries: press freedom & trust</div>
+  <p class="section-sub">Sort by press freedom score or trust level. Filter by region.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="ft('all',this)">All</button>
+    <button class="filter-btn" onclick="ft('western',this)">Western</button>
+    <button class="filter-btn" onclick="ft('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="ft('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="ft('africa',this)">Africa & ME</button>
+  </div>
+  <table><thead><tr>
+    <th>Country</th>
+    <th class="td-r">Freedom score</th>
+    <th class="td-r">Media trust %</th>
+    <th style="width:140px"></th>
+  </tr></thead><tbody id="tb"></tbody></table>
+</div>
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <h2>Two different things</h2>
+  <p>Press freedom measures the legal and structural environment for journalism — whether reporters can work without government interference, imprisonment, or violence. Media trust measures something else entirely: whether ordinary people believe what they read.</p>
+  <p>These two things <strong>should correlate</strong>. A free press, in theory, produces more reliable journalism. And to a degree, they do — the countries at the bottom of press freedom rankings (North Korea, Eritrea, Russia) also have very low trust. But among wealthy democracies, the relationship breaks down dramatically.</p>
+  <div class="pq"><p>The US has more press freedom than 130 countries. It has less public trust in media than most of them.</p></div>
+
+  <h2>The American anomaly</h2>
+  <p>The US ranks 55th globally on press freedom — below Lithuania, Timor-Leste, and Namibia — but that score (66/100) still places it well above the global median. What's anomalous isn't the freedom score. It's the trust gap.</p>
+  <p>Only 32% of Americans say they trust the media, according to the Reuters Institute Digital News Report 2024. That's lower than Kenya (61%), Brazil (54%), and Germany (50%). <strong>Countries with significantly less press freedom report significantly more trust in their media.</strong></p>
+  <p>The reasons are structural: extreme media polarization, collapse of local news, social media amplifying distrust, and decades of political attacks on journalism as an institution. A free press that no one believes is a different kind of problem than a censored press.</p>
+
+  <h2>The Nordic contrast</h2>
+  <p>Finland, Norway, and Denmark consistently rank at the top of both metrics — high freedom and high trust. The common factor isn't just lack of government interference. It's <em>public broadcasting funded at arm's length from government</em>, strong local news ecosystems, and a cultural norm of treating journalism as a public good rather than a partisan product.</p>
+  <p>The UK is an interesting middle case: ranked 23rd on press freedom, 43% trust — higher than the US despite tabloid culture, because the BBC anchor holds.</p>
+
+  <h2>What trust actually predicts</h2>
+  <p>Low media trust doesn't mean people consume less media — they consume more, but from more partisan sources. The Reuters Institute finds that <strong>low-trust audiences are more likely to actively avoid news</strong> (41% of Americans report news avoidance, the highest in the study), even as they spend more time on social media consuming news-adjacent content.</p>
+  <p>The paradox: the country with one of the world's freest presses has produced a population that's simultaneously drowning in information and retreating from news entirely.</p>
+</div>
+
+
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+
+  <!-- ── SOURCES & CAVEATS ── -->
+  <div class="sources-section">
+    <h2>Data sources</h2>
+    <div class="source-item"><div class="source-name"><a href="https://rsf.org/en/index" target="_blank" rel="noopener">RSF World Press Freedom Index 2024</a></div><div class="source-desc">Annual ranking of 180 countries on press freedom. Score 0–100 (higher = freer). Methodology covers pluralism, independence, environment, self-censorship, legislative framework, transparency, and infrastructure.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://reutersinstitute.politics.ox.ac.uk/digital-news-report/2024" target="_blank" rel="noopener">Reuters Institute Digital News Report 2024</a></div><div class="source-desc">Annual survey on news consumption and trust across 47 countries. Trust question: 'I think you can trust most news most of the time.'</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>These two datasets measure structurally different things. RSF scores the legal and physical environment for journalists — government interference, violence, legal harassment. Reuters measures what ordinary people say when asked if they trust the news. The scatter plot shows correlation, not causation; a country can have a free press that its citizens distrust for reasons entirely unrelated to press freedom.</li>
+      <li>China's reported trust figure (~80%) should be interpreted cautiously. Surveying in an authoritarian context may not capture genuine sentiment, and critical media consumption carries social and legal risk.</li>
+    
+  </div>
+
+<div class="site-footer">
+  <div class="handle">@atlasofculture</div>
+  <div class="src">RSF Press Freedom Index 2024 · Reuters Institute Digital News Report 2024</div>
+</div>
+
+<script>
+// Data: [country, freedom_score, trust_pct, region, highlight]
+const DATA = [
+  // Western/OECD
+  {c:'Finland',      f:87.9, t:69, r:'western'},
+  {c:'Norway',       f:84.0, t:57, r:'western'},
+  {c:'Denmark',      f:82.5, t:55, r:'western'},
+  {c:'Sweden',       f:82.4, t:56, r:'western'},
+  {c:'Netherlands',  f:81.0, t:44, r:'western'},
+  {c:'Estonia',      f:78.3, t:52, r:'western'},
+  {c:'Portugal',     f:76.9, t:54, r:'western'},
+  {c:'Switzerland',  f:76.6, t:53, r:'western'},
+  {c:'Ireland',      f:76.2, t:51, r:'western'},
+  {c:'Belgium',      f:75.8, t:40, r:'western'},
+  {c:'Germany',      f:75.5, t:50, r:'western'},
+  {c:'Austria',      f:72.1, t:40, r:'western'},
+  {c:'New Zealand',  f:79.5, t:52, r:'western'},
+  {c:'Canada',       f:78.1, t:40, r:'western'},
+  {c:'Australia',    f:75.2, t:43, r:'western'},
+  {c:'United Kingdom',f:72.0,t:43, r:'western'},
+  {c:'Lithuania',    f:71.3, t:42, r:'western'},
+  {c:'France',       f:68.5, t:44, r:'western'},
+  {c:'Spain',        f:67.9, t:43, r:'western'},
+  {c:'Czech Republic',f:67.0,t:36, r:'western'},
+  {c:'Italy',        f:65.8, t:40, r:'western'},
+  {c:'United States',f:66.6, t:32, r:'western', hl:true},
+  {c:'Japan',        f:68.4, t:49, r:'asia'},
+  {c:'South Korea',  f:62.6, t:30, r:'asia'},
+  {c:'Poland',       f:62.3, t:42, r:'western'},
+  {c:'Slovakia',     f:60.8, t:38, r:'western'},
+  {c:'Hungary',      f:49.6, t:35, r:'western'},
+  {c:'Greece',       f:58.3, t:31, r:'western'},
+  // Asia
+  {c:'Taiwan',       f:71.0, t:40, r:'asia'},
+  {c:'Malaysia',     f:52.3, t:47, r:'asia'},
+  {c:'Indonesia',    f:54.8, t:59, r:'asia'},
+  {c:'India',        f:41.8, t:38, r:'asia'},
+  {c:'Thailand',     f:37.5, t:52, r:'asia'},
+  {c:'Philippines',  f:45.0, t:47, r:'asia'},
+  {c:'Singapore',    f:59.7, t:53, r:'asia'},
+  {c:'China',        f:22.1, t:80, r:'asia'},
+  {c:'Vietnam',      f:25.3, t:69, r:'asia'},
+  {c:'Russia',       f:22.2, t:33, r:'western'},
+  // LatAm
+  {c:'Argentina',    f:66.5, t:36, r:'latam'},
+  {c:'Brazil',       f:62.5, t:54, r:'latam'},
+  {c:'Colombia',     f:51.2, t:46, r:'latam'},
+  {c:'Chile',        f:68.3, t:46, r:'latam'},
+  {c:'Mexico',       f:47.0, t:46, r:'latam'},
+  {c:'Peru',         f:54.8, t:42, r:'latam'},
+  // Africa/ME
+  {c:'South Africa', f:64.3, t:49, r:'africa'},
+  {c:'Ghana',        f:61.8, t:57, r:'africa'},
+  {c:'Kenya',        f:52.8, t:61, r:'africa'},
+  {c:'Nigeria',      f:46.8, t:49, r:'africa'},
+  {c:'Ethiopia',     f:28.3, t:45, r:'africa'},
+  {c:'Egypt',        f:24.1, t:54, r:'africa'},
+  {c:'Saudi Arabia', f:24.2, t:51, r:'africa'},
+  {c:'Turkey',       f:27.0, t:37, r:'africa'},
+  {c:'Israel',       f:62.3, t:38, r:'africa'},
+];
+
+// Press freedom color: red (low) → muted → gold (high)
+const FSTOPS = [
+  [0.00,[160,40,30]],[0.25,[170,80,50]],[0.45,[120,100,70]],
+  [0.58,[80,100,90]],[0.72,[45,130,140]],[0.88,[42,158,168]],[1.00,[232,197,71]]
+];
+function fColor(v) {
+  const t=Math.max(0,Math.min(1,(v-20)/70));
+  let lo=FSTOPS[0],hi=FSTOPS[FSTOPS.length-1];
+  for(let i=0;i<FSTOPS.length-1;i++){if(t>=FSTOPS[i][0]&&t<=FSTOPS[i+1][0]){lo=FSTOPS[i];hi=FSTOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(c=>Math.round(lo[1][c]+s*(hi[1][c]-lo[1][c]))).join(',')})`;
+}
+
+// GeoJSON lookup
+const FSCORE={};DATA.forEach(d=>FSCORE[d.c]=d);
+const NM={"United States of America":"United States","Türkiye":"Turkey","Czech Republic":"Czech Republic","S. Korea":"South Korea","eSwatini":"Eswatini","Dominican Rep.":"Dominican Republic","Bosnia and Herz.":"Bosnia and Herzegovina","N. Macedonia":"North Macedonia","Somaliland":"Somalia","N. Cyprus":"Cyprus","Dem. Rep. Congo":"Democratic Republic of the Congo"};
+function lu(n){return FSCORE[n]||FSCORE[NM[n]]||null;}
+
+// Legend
+const lgS=Array.from({length:20},(_,i)=>fColor(20+70/19*i));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+// Map
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){const T=W*0.4,segs=[[]];ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');}
+function g2p(g){if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');return'';}
+
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a40');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+const tt=document.getElementById('tooltip'),ttC=document.getElementById('tt-c'),ttP=document.getElementById('tt-p'),ttT=document.getElementById('tt-t'),ttN=document.getElementById('tt-n');
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(r=>r.json()).then(geo=>{
+  const el=document.getElementById('countries');
+  const sorted=[...geo.features].sort((a,b)=>{const da=lu(a.properties.name||'');const db=lu(b.properties.name||'');if(!da&&!db)return 0;if(!da)return-1;if(!db)return 1;return da.f-db.f;});
+  sorted.forEach(f=>{
+    const name=f.properties.name||'';const d=lu(name);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',g2p(f.geometry)||'');path.setAttribute('fill',d?fColor(d.f):'#111128');
+    path.setAttribute('stroke','#07070c');path.setAttribute('stroke-width','0.4');
+    path.style.cursor=d?'pointer':'default';path.style.transition='opacity 0.1s';
+    if(d){
+      path.addEventListener('mouseenter',e=>{
+        ttC.textContent=name;ttP.textContent=`Freedom: ${d.f}/100`;
+        ttT.textContent=d.t?`Trust: ${d.t}%`:'Trust: no data';
+        ttN.textContent=d.f>75?'High freedom':d.f>55?'Moderate freedom':'Low freedom';
+        tt.style.display='block';
+        document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='0.45');
+        path.style.opacity='1';
+      });
+      path.addEventListener('mousemove',e=>{tt.style.left=(e.clientX+16)+'px';tt.style.top=(e.clientY-60)+'px';});
+      path.addEventListener('mouseleave',()=>{tt.style.display='none';document.querySelectorAll('#countries path').forEach(p=>p.style.opacity='1');});
+    }
+    el.appendChild(path);
+  });
+});
+
+// Scatter
+const NS='http://www.w3.org/2000/svg';
+const PAD={l:72,r:36,t:24,b:68};const SW=920,SH=680;const CW=SW-PAD.l-PAD.r,CH=SH-PAD.t-PAD.b;
+const FMN=20,FMX=92,TMN=25,TMX=82;
+function sx(f){return PAD.l+(f-FMN)/(FMX-FMN)*CW;}
+function sy(t){return PAD.t+CH-(t-TMN)/(TMX-TMN)*CH;}
+function elS(tag,a){const e=document.createElementNS(NS,tag);Object.entries(a).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+
+const sg=document.getElementById('sg');
+const stt=document.getElementById('stt'),sttN=document.getElementById('stt-n'),sttD=document.getElementById('stt-d');
+
+// Grid
+[30,40,50,60,70,80,90].forEach(f=>{const x=sx(f);sg.appendChild(elS('line',{x1:x,y1:PAD.t,x2:x,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const t=elS('text',{x,y:PAD.t+CH+16,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});t.textContent=f;sg.appendChild(t);});
+[30,40,50,60,70,80].forEach(t=>{const y=sy(t);sg.appendChild(elS('line',{x1:PAD.l,y1:y,x2:PAD.l+CW,y2:y,stroke:'rgba(255,255,255,0.04)','stroke-width':'1'}));const lb=elS('text',{x:PAD.l-8,y:y+4,'text-anchor':'end','font-family':'IBM Plex Mono,monospace','font-size':'10','fill':'rgba(255,255,255,0.28)'});lb.textContent=t+'%';sg.appendChild(lb);});
+
+// Axes
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t+CH,x2:PAD.l+CW,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+sg.appendChild(elS('line',{x1:PAD.l,y1:PAD.t,x2:PAD.l,y2:PAD.t+CH,stroke:'rgba(255,255,255,0.12)','stroke-width':'1'}));
+const xl=elS('text',{x:PAD.l+CW/2,y:PAD.t+CH+44,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)'});xl.textContent='RSF PRESS FREEDOM SCORE (2024)';sg.appendChild(xl);
+const yl=elS('text',{x:16,y:PAD.t+CH/2,'text-anchor':'middle','font-family':'IBM Plex Mono,monospace','font-size':'10','letter-spacing':'0.14em','fill':'rgba(255,255,255,0.22)','transform':`rotate(-90,16,${PAD.t+CH/2})`});yl.textContent='% WHO TRUST THE MEDIA (REUTERS 2024)';sg.appendChild(yl);
+
+// Trend
+const pts=DATA.filter(d=>d.t);
+const n=pts.length,sumX=pts.reduce((a,d)=>a+d.f,0),sumY=pts.reduce((a,d)=>a+d.t,0),sumXY=pts.reduce((a,d)=>a+d.f*d.t,0),sumX2=pts.reduce((a,d)=>a+d.f*d.f,0);
+const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX),icpt=(sumY-slope*sumX)/n;
+sg.appendChild(elS('line',{x1:sx(FMN),y1:sy(slope*FMN+icpt),x2:sx(FMX),y2:sy(slope*FMX+icpt),stroke:'rgba(232,197,71,0.15)','stroke-width':'1.5','stroke-dasharray':'5,4'}));
+
+// Labeled countries
+const LABELED=['Finland','Norway','United States','South Korea','China','Kenya','Indonesia','Germany','India','Brazil'];
+const LP={
+  'Finland':{dx:-9,dy:0,anchor:'end'},
+  'Norway':{dx:-9,dy:0,anchor:'end'},
+  'United States':{dx:9,dy:4,anchor:'start'},
+  'South Korea':{dx:9,dy:0,anchor:'start'},
+  'China':{dx:-9,dy:0,anchor:'end'},
+  'Kenya':{dx:9,dy:0,anchor:'start'},
+  'Indonesia':{dx:9,dy:0,anchor:'start'},
+  'Germany':{dx:0,dy:-10,anchor:'middle'},
+  'India':{dx:9,dy:0,anchor:'start'},
+  'Brazil':{dx:9,dy:0,anchor:'start'},
+};
+
+DATA.filter(d=>d.t).forEach(d=>{
+  const x=sx(d.f),y=sy(d.t);
+  const labeled=LABELED.includes(d.c);
+  const isUS=d.c==='United States';
+  const isTop=['Finland','Norway','Denmark','Sweden'].includes(d.c);
+  const r=labeled?6:4;
+  const fill=isUS?'rgba(100,190,220,0.9)':isTop?'#e8c547':labeled?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.12)';
+  const dot=elS('circle',{cx:x,cy:y,r,fill,stroke:labeled&&!isUS?'rgba(255,255,255,0.2)':'none','stroke-width':'1',style:'cursor:pointer'});
+  dot.addEventListener('mouseenter',e=>{sttN.textContent=d.c;sttD.textContent=`Freedom: ${d.f} · Trust: ${d.t}%`;stt.style.display='block';stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-44)+'px';});
+  dot.addEventListener('mousemove',e=>{stt.style.left=(e.offsetX+12)+'px';stt.style.top=(e.offsetY-44)+'px';});
+  dot.addEventListener('mouseleave',()=>stt.style.display='none');
+  sg.appendChild(dot);
+  if(labeled){
+    const pos=LP[d.c]||{dx:9,dy:0,anchor:'start'};
+    const lbl=elS('text',{x:x+pos.dx,y:y+pos.dy,'text-anchor':pos.anchor,'font-family':'IBM Plex Mono,monospace','font-size':'10','fill':isUS?'rgba(100,190,220,0.8)':isTop?'#e8c547':'rgba(255,255,255,0.45)'});
+    lbl.textContent=d.c;sg.appendChild(lbl);
+  }
+});
+
+// US annotation
+const usX=sx(66.6),usY=sy(32);
+const ann=elS('text',{x:usX+9,y:usY+22,'font-family':'Inter,sans-serif','font-size':'10','fill':'rgba(100,190,220,0.45)','font-style':'italic'});
+ann.textContent='below trend for its freedom level';sg.appendChild(ann);
+
+// Table
+function buildTable(filter='all'){
+  const data=filter==='all'?DATA:DATA.filter(d=>d.r===filter);
+  const sorted=[...data].filter(d=>d.t).sort((a,b)=>b.f-a.f);
+  document.getElementById('tb').innerHTML=sorted.map(d=>`
+    <tr class="${d.hl?'hl':''}">
+      <td class="td-c">${d.c}</td>
+      <td class="td-r td-m">${d.f}</td>
+      <td class="td-r td-m">${d.t}%</td>
+      <td><div class="mini" style="background:${fColor(d.f)};width:${((d.f-20)/70*130).toFixed(0)}px"></div></td>
+    </tr>`).join('');
+}
+function ft(r,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildTable(r);}
+buildTable();
+</script>
+</body>
+</html>

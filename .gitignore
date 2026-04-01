@@ -1,6 +1,7 @@
 *
 !*.html
-!pages/
-!pages/*.html
 !.gitignore
 !.nojekyll
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who Owns the Night — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #05050a;
+    --bg2: #0a0a14;
+    --bg3: #0f0f1e;
+    --text: #e8e8f0;
+    --text-dim: #6a6a88;
+    --accent: #4af0ff;
+    --gold: #ffd060;
+    --red: #ff4060;
+    --border: rgba(74, 240, 255, 0.12);
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'Inter', sans-serif;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .site-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .site-label span { color: var(--text-dim); }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 80px 48px 48px;
+  }
+  .pillar-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: block;
+  }
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+    background: linear-gradient(135deg, #fff 0%, #c8d8ff 50%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hook {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 20px;
+    line-height: 1.6;
+    color: #a8b8d8;
+    max-width: 680px;
+    margin-bottom: 40px;
+    border-left: 2px solid var(--accent);
+    padding-left: 20px;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* ── MAP SECTION ── */
+  .map-section {
+    padding: 40px 48px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .map-title {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .map-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    margin-bottom: 24px;
+  }
+
+  .map-container {
+    position: relative;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  #world-map {
+    width: 100%;
+    display: block;
+  }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position: fixed;
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 1000;
+    max-width: 240px;
+    backdrop-filter: blur(8px);
+  }
+  #tooltip.visible { opacity: 1; }
+  .tt-country {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .tt-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .tt-note {
+    font-size: 12px;
+    color: #8898b8;
+    line-height: 1.5;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .legend-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .legend-bar {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #050514, #0a1a40, #0a4a80, #00aacc, #40e0ff, #a0f0ff, #ffffff, #ffd060);
+  }
+
+  /* ── KOREA PANEL ── */
+  .korea-section {
+    padding: 60px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .korea-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+  @media (max-width: 700px) { .korea-grid { grid-template-columns: 1fr; } }
+
+  .korea-viz {
+    background: var(--bg2);
+    border-radius: 4px;
+    padding: 32px;
+    border: 1px solid var(--border);
+  }
+  .bar-row {
+    margin-bottom: 24px;
+  }
+  .bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .bar-name {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .bar-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .bar-track {
+    height: 24px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bar-sk { background: linear-gradient(90deg, #0080ff, #00d4ff, #80ffff); }
+  .bar-nk { background: rgba(255, 60, 60, 0.3); width: 0.5%; }
+
+  .ratio-callout {
+    margin-top: 24px;
+    padding: 16px;
+    background: rgba(74, 240, 255, 0.04);
+    border: 1px solid rgba(74, 240, 255, 0.15);
+    border-radius: 4px;
+    text-align: center;
+  }
+  .ratio-number {
+    font-family: var(--font-mono);
+    font-size: 42px;
+    font-weight: 500;
+    color: var(--accent);
+    display: block;
+    line-height: 1;
+  }
+  .ratio-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+  }
+
+  .korea-text h2 {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+  .korea-text p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #a8b8cc;
+    margin-bottom: 16px;
+  }
+  .korea-text p strong { color: var(--text); }
+
+  /* ── DATA TABLE ── */
+  .table-section {
+    padding: 60px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .table-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .table-controls button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .table-controls button:hover,
+  .table-controls button.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(74, 240, 255, 0.06);
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .data-table th:hover { color: var(--accent); }
+  .data-table th.sorted { color: var(--accent); }
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    vertical-align: middle;
+  }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-country { font-weight: 500; }
+  .td-radiance {
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+  .td-bar {
+    width: 160px;
+  }
+  .td-bar-inner {
+    height: 6px;
+    border-radius: 3px;
+    min-width: 2px;
+  }
+  .td-note { color: var(--text-dim); font-size: 11px; }
+
+  /* ── INSIGHT SECTION ── */
+  .insight-section {
+    padding: 60px 48px 100px;
+    max-width: 760px;
+    margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .insight-section h2 {
+    font-family: var(--font-serif);
+    font-size: 38px;
+    margin-bottom: 8px;
+    line-height: 1.15;
+  }
+  .insight-section .sub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    margin-bottom: 40px;
+    display: block;
+    text-transform: uppercase;
+  }
+  .insight-block {
+    margin-bottom: 48px;
+  }
+  .insight-block h3 {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: #d8e8ff;
+  }
+  .insight-block p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #8898b8;
+  }
+  .insight-block p strong { color: var(--text); }
+  .dark-list {
+    list-style: none;
+    padding: 20px;
+    background: var(--bg2);
+    border-left: 2px solid var(--red);
+    border-radius: 0 4px 4px 0;
+    margin: 20px 0;
+  }
+  .dark-list li {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #a8a8c8;
+    padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .dark-list li:last-child { border-bottom: none; }
+  .dark-list .val { color: #ff6080; }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    padding: 32px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .site-footer p {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* ── SCROLL ANIMATION ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: none;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="site-label">Atlas of Culture <span>/ Environment</span></span>
+</header>
+
+<div id="tooltip">
+  <div class="tt-country" id="tt-country"></div>
+  <div class="tt-value" id="tt-value"></div>
+  <div class="tt-note" id="tt-note"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero fade-in">
+  <span class="pillar-tag">&#9679; Environment</span>
+  <h1>Who Owns<br>the Night</h1>
+  <p class="hook">"North Korea at night: a void. South Korea next door: blazing. Central Africa: dark. The UAE: burning gold. Light pollution is a map of power."</p>
+</section>
+
+<!-- WORLD MAP -->
+<section class="map-section fade-in">
+  <div class="section-label">01 — World Radiance</div>
+  <h2 class="map-title">Earth After Dark</h2>
+  <p class="map-subtitle">Nighttime light emissions (nanowatts/cm²/sr) · NASA Black Marble / VIIRS · Hover for details</p>
+  <div class="map-container">
+    <svg id="world-map" viewBox="-40 33 984 340" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div class="legend">
+    <span class="legend-label">0</span>
+    <div class="legend-bar"></div>
+    <span class="legend-label">220 nW/cm²/sr</span>
+  </div>
+</section>
+
+<!-- KOREA PANEL -->
+<section class="korea-section fade-in">
+  <div class="section-label">02 — The Peninsula Paradox</div>
+  <div class="korea-grid">
+    <div class="korea-text">
+      <h2>195 to 1.<br>Same peninsula.<br>Different worlds.</h2>
+      <p>The Korean Peninsula is the starkest natural experiment in human history. <strong>Same climate. Same geography. Same culture.</strong> Split 70 years ago.</p>
+      <p>South Korea blazes at ~195 nW/cm²/sr — among the brightest countries on Earth. North Korea registers ~1. The border is visible from space as a hard line of darkness.</p>
+      <p>This isn't a map of light. It's a map of <strong>what happens when human freedom and economic systems diverge</strong>, written in photons.</p>
+    </div>
+    <div class="korea-viz">
+      <div class="bar-row">
+        <div class="bar-meta">
+          <span class="bar-name">🇰🇷 South Korea</span>
+          <span class="bar-val">195 nW</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill bar-sk" style="width:0%" id="sk-bar"></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-meta">
+          <span class="bar-name">🇰🇵 North Korea</span>
+          <span class="bar-val">1 nW</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill bar-nk" style="width:0.5%" id="nk-bar"></div>
+        </div>
+      </div>
+      <div class="ratio-callout">
+        <span class="ratio-number" id="ratio-counter">195×</span>
+        <div class="ratio-label">South Korea is 195× brighter than North Korea</div>
+      </div>
+      <div style="margin-top:20px; font-size:12px; color: var(--text-dim); font-family: var(--font-mono); line-height: 1.6;">
+        For context: the UK is ~165. Belgium ~190. The US ~150.<br>
+        North Korea sits beside Chad and the Central African Republic at the very bottom of the global scale.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA TABLE -->
+<section class="table-section fade-in">
+  <div class="section-label">03 — Full Dataset</div>
+  <h2 class="map-title" style="margin-bottom:8px">Countries by Night Radiance</h2>
+  <p class="map-subtitle" style="margin-bottom:24px">Approximate values from NASA Black Marble / VIIRS satellite data</p>
+  <div class="table-controls">
+    <button class="active" onclick="sortTable('radiance')">Sort by Brightness</button>
+    <button onclick="sortTable('name')">Sort by Name</button>
+    <button onclick="filterTable('all')">All Countries</button>
+    <button onclick="filterTable('dark')">Darkest</button>
+    <button onclick="filterTable('bright')">Brightest</button>
+  </div>
+  <table class="data-table" id="data-table">
+    <thead>
+      <tr>
+        <th onclick="sortTable('rank')">#</th>
+        <th onclick="sortTable('name')">Country</th>
+        <th onclick="sortTable('radiance')">Radiance (nW)</th>
+        <th>Relative Glow</th>
+        <th>Context</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</section>
+
+<!-- INSIGHT -->
+<section class="insight-section fade-in">
+  <div class="section-label">04 — What the Light Tells Us</div>
+  <h2>Reading the Dark</h2>
+  <span class="sub">Light as economic signal · Energy access · Power and absence</span>
+
+  <div class="insight-block">
+    <h3>Light correlates with almost everything we care about</h3>
+    <p>Nighttime radiance tracks GDP per capita with remarkable fidelity. When economists need a proxy for economic activity in places with poor data, they use satellite lights. The relationship isn't perfect — it misses subsistence agriculture, informal economies — but it's close enough to matter.</p>
+  </div>
+
+  <div class="insight-block">
+    <h3>The Gulf paradox: wealth without breadth</h3>
+    <p>Kuwait, Qatar, and the UAE top the global rankings — not because they have large populations, but because energy is cheap and cities are dense. <strong>High radiance, low population density, oil wealth.</strong> These aren't the most complex economies; they're the most energy-profligate ones.</p>
+  </div>
+
+  <div class="insight-block">
+    <h3>The darkness of conflict and control</h3>
+    <p>The places with lowest light tell the most urgent stories:</p>
+    <ul class="dark-list">
+      <li><span>North Korea</span><span class="val">~1 nW — political darkness</span></li>
+      <li><span>Central African Republic</span><span class="val">~2 nW — conflict/fragility</span></li>
+      <li><span>South Sudan</span><span class="val">~2 nW — youngest nation, ongoing crisis</span></li>
+      <li><span>Chad</span><span class="val">~3 nW — poverty + landlocked isolation</span></li>
+      <li><span>Afghanistan</span><span class="val">~4 nW — war, then Taliban darkness</span></li>
+    </ul>
+    <p>North Korea is the anomaly. Chad is poor. <strong>North Korea is dark by design.</strong> The regime controls electricity as a mechanism of control — cities get power, rural areas almost nothing, the capital city (Pyongyang) gets occasional flickers to signal regime favor.</p>
+  </div>
+
+  <div class="insight-block">
+    <h3>India: the brightness gap</h3>
+    <p>India (~45 nW) represents the world's largest story of uneven electrification. Urban centers blaze; rural areas remain dim. As electrification expands, India's satellite signature is literally <strong>brightening year by year</strong> — one of the few countries where you can watch development happen in real time from orbit.</p>
+  </div>
+
+  <div class="insight-block">
+    <h3>The moral weight of light</h3>
+    <p>Access to electricity — and thus light — is correlated with virtually every dimension of human flourishing: <strong>literacy, child mortality, women's economic participation, life expectancy.</strong> The dark places on this map are not just dark. They're places where children do homework by candlelight, where hospitals run on generators, where the night itself is dangerous.</p>
+    <p>Light pollution may be a problem for astronomers in wealthy countries. For most of the world, the problem is the opposite.</p>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>Atlas of Culture · Who Owns the Night · 2024</p>
+  <p>Data: NASA Black Marble / VIIRS · Approximate national averages</p>
+</footer>
+
+<script>
+// ── DATA ──
+const COUNTRIES = [
+  { name: "Kuwait", radiance: 220, note: "World's highest per-capita energy use. Dense urban grid, subsidized electricity." },
+  { name: "Qatar", radiance: 210, note: "Fossil fuel wealth, rapid urban development, near-constant outdoor lighting." },
+  { name: "United Arab Emirates", radiance: 205, note: "Desert cities blazing in the dark. Dubai visible from deep space." },
+  { name: "South Korea", radiance: 195, note: "Advanced economy, dense population. 195× brighter than its northern neighbor." },
+  { name: "Belgium", radiance: 190, note: "One of the brightest countries in Europe; famous for its motorway lighting." },
+  { name: "Netherlands", radiance: 185, note: "High density, advanced infrastructure. Greenhouse agriculture adds significant glow." },
+  { name: "Israel", radiance: 180, note: "Small, dense, highly developed. One of the brightest spots in the Middle East." },
+  { name: "Germany", radiance: 170, note: "Largest EU economy. Industrial zones visible from orbit." },
+  { name: "United Kingdom", radiance: 165, note: "London's glow dominates the British Isles from orbit." },
+  { name: "Italy", radiance: 160, note: "Po Valley in the north is one of Europe's brightest industrial corridors." },
+  { name: "Japan", radiance: 155, note: "Tokyo-Osaka megalopolis is one of the most luminous regions on Earth." },
+  { name: "United States of America", radiance: 150, note: "Eastern seaboard lit continuously; vast dark interior of the Great Plains." },
+  { name: "Saudi Arabia", radiance: 120, note: "Oil wealth funds urban lighting; Riyadh and coastal cities dominate." },
+  { name: "China", radiance: 100, note: "Enormous geographic variation — coastal cities bright, interior provinces dark." },
+  { name: "Brazil", radiance: 85, note: "São Paulo and Rio blaze, but the Amazon basin registers almost nothing." },
+  { name: "Mexico", radiance: 80, note: "Mexico City is one of the hemisphere's largest light sources." },
+  { name: "Indonesia", radiance: 30, note: "Java island is bright; most of the archipelago remains dim." },
+  { name: "India", radiance: 45, note: "World's fastest-growing light signature. Urban-rural divide stark from orbit." },
+  { name: "Nigeria", radiance: 18, note: "Lagos glows, but most of Nigeria — Africa's most populous nation — is dark." },
+  { name: "Kenya", radiance: 12, note: "Nairobi visible from space; rural electrification still expanding." },
+  { name: "Ethiopia", radiance: 8, note: "97% rural electrification gap as of recent years. Addis Ababa is a lone bright point." },
+  { name: "Congo, Dem. Rep.", radiance: 5, note: "World's largest tropical country by area. Almost entirely dark from orbit." },
+  { name: "Mali", radiance: 6, note: "Sahel poverty and conflict. Bamako is a pinprick of light in a dark landscape." },
+  { name: "Niger", radiance: 4, note: "One of the world's poorest nations by HDI. Barely registers from space." },
+  { name: "Afghanistan", radiance: 4, note: "Decades of conflict, then Taliban rule. Darkness deepened after 2021." },
+  { name: "Chad", radiance: 3, note: "Landlocked, chronically impoverished, affected by Sahel conflicts." },
+  { name: "Central African Republic", radiance: 2, note: "Ongoing civil war. Capital Bangui barely visible from orbit." },
+  { name: "South Sudan", radiance: 2, note: "World's youngest country. Independence in 2011, then near-immediate civil war." },
+  { name: "North Korea", radiance: 1, note: "Dark by design. Regime controls electricity as a mechanism of political control. Pyongyang gets occasional power; rural areas almost nothing." },
+  { name: "Somalia", radiance: 5, note: "State collapse since 1991. Mogadishu slowly rebuilding, but most of country dark." },
+  { name: "Mozambique", radiance: 7, note: "Coastal cities modestly lit; rural interior largely without electricity." },
+  { name: "Tanzania", radiance: 9, note: "Dar es Salaam glows; electrification expanding but uneven." },
+  { name: "Ghana", radiance: 15, note: "Accra is one of West Africa's brighter cities; rural gap persists." },
+  { name: "Myanmar", radiance: 14, note: "Military coup 2021 disrupted electricity supply further. Yangon dominant." },
+  { name: "Pakistan", radiance: 35, note: "Karachi and Lahore bright; frequent load-shedding dims the picture." },
+  { name: "Bangladesh", radiance: 40, note: "Rapid rural electrification — one of the development sector's success stories." },
+  { name: "Vietnam", radiance: 50, note: "Economic growth lighting up the coastline. Ho Chi Minh City blazes." },
+  { name: "Thailand", radiance: 55, note: "Bangkok is one of Southeast Asia's brightest urban nodes." },
+  { name: "Philippines", radiance: 38, note: "Metro Manila is bright; island geography fragments the national light signature." },
+  { name: "Argentina", radiance: 65, note: "Buenos Aires dominates; vast Patagonia is nearly empty." },
+  { name: "France", radiance: 145, note: "Paris glows intensely; rest of France lit by a dense network of smaller cities." },
+  { name: "Spain", radiance: 140, note: "Madrid and Barcelona anchor a well-lit European nation." },
+  { name: "South Africa", radiance: 60, note: "Johannesburg-Pretoria corridor is Africa's brightest zone. Inequality visible in light patterns." },
+  { name: "Egypt", radiance: 75, note: "Nile valley is lit; the rest of Egypt is desert darkness." },
+  { name: "Turkey", radiance: 90, note: "Istanbul is among the Middle East's largest light sources." },
+  { name: "Iran", radiance: 70, note: "Tehran and major cities lit; sanctions limit some infrastructure investment." },
+  { name: "Ukraine", radiance: 80, note: "Pre-war. Russian invasion since 2022 has caused massive light reduction in conflict zones." },
+  { name: "Poland", radiance: 120, note: "One of Europe's fastest-brightening economies over the past 30 years." },
+  { name: "Sweden", radiance: 100, note: "Cities concentrated in south; vast dark north above the Arctic Circle." },
+  { name: "Norway", radiance: 95, note: "Oil wealth, high living standards, but sparse northern population keeps averages modest." },
+  { name: "Australia", radiance: 55, note: "Coastal cities blaze; interior Australia is one of the darkest places on Earth." },
+  { name: "Canada", radiance: 60, note: "Southern corridor from Toronto to Vancouver lit; 90% of land mass nearly dark." },
+  { name: "Russia", radiance: 55, note: "Western cities bright; Siberia is an ocean of darkness larger than most continents." },
+];
+
+// Tooltip notes for specific countries
+const COUNTRY_NOTES = {};
+COUNTRIES.forEach(c => { COUNTRY_NOTES[c.name] = c; });
+
+// ── COLOR SCALE ──
+function radToColor(v) {
+  if (v === undefined || v === null) return '#0a0a18';
+  const max = 220;
+  const t = Math.pow(Math.min(v / max, 1), 0.55); // gamma compress for visibility
+  // 0 → near black, 0.1 → dark blue, 0.3 → blue, 0.5 → cyan, 0.7 → white-blue, 0.9 → white, 1 → gold
+  const stops = [
+    [0,    [5,  5,  20]],
+    [0.06, [8,  15, 55]],
+    [0.18, [10, 60, 140]],
+    [0.32, [0,  160, 210]],
+    [0.52, [80, 230, 255]],
+    [0.70, [170,245,255]],
+    [0.85, [230,245,255]],
+    [1.00, [255,210,80]],
+  ];
+  let lo = stops[0], hi = stops[stops.length-1];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t >= stops[i][0] && t <= stops[i+1][0]) { lo = stops[i]; hi = stops[i+1]; break; }
+  }
+  const range = hi[0] - lo[0];
+  const f = range === 0 ? 0 : (t - lo[0]) / range;
+  const r = Math.round(lo[1][0] + f * (hi[1][0] - lo[1][0]));
+  const g = Math.round(lo[1][1] + f * (hi[1][1] - lo[1][1]));
+  const b = Math.round(lo[1][2] + f * (hi[1][2] - lo[1][2]));
+  return `rgb(${r},${g},${b})`;
+}
+
+// ── BUILD TABLE ──
+let sortKey = 'radiance';
+let sortDir = -1;
+let filterMode = 'all';
+const ALL_SORTED = [...COUNTRIES].sort((a,b) => b.radiance - a.radiance).map((c,i) => ({...c, rank: i+1}));
+
+function renderTable() {
+  let data = [...ALL_SORTED];
+  if (filterMode === 'dark') data = data.filter(c => c.radiance <= 10);
+  if (filterMode === 'bright') data = data.filter(c => c.radiance >= 140);
+  data.sort((a,b) => {
+    if (sortKey === 'name') return sortDir * a.name.localeCompare(b.name);
+    if (sortKey === 'radiance') return sortDir * (a.radiance - b.radiance);
+    if (sortKey === 'rank') return sortDir * (a.rank - b.rank);
+    return 0;
+  });
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = data.map(c => {
+    const pct = (c.radiance / 220 * 100).toFixed(1);
+    const color = radToColor(c.radiance);
+    return `<tr>
+      <td style="color:var(--text-dim);font-family:var(--font-mono);font-size:11px">${c.rank}</td>
+      <td class="td-country">${c.name}</td>
+      <td class="td-radiance">${c.radiance}</td>
+      <td class="td-bar"><div style="background:rgba(255,255,255,0.05);height:6px;border-radius:3px"><div class="td-bar-inner" style="width:${pct}%;background:${color}"></div></div></td>
+      <td class="td-note">${c.note.substring(0,60)}…</td>
+    </tr>`;
+  }).join('');
+}
+
+function sortTable(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = key === 'name' ? 1 : -1; }
+  document.querySelectorAll('.table-controls button').forEach(b => b.classList.remove('active'));
+  renderTable();
+}
+
+function filterTable(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.table-controls button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+renderTable();
+
+// ── LOAD MAP ──
+async function loadMap() {
+  const svg = document.getElementById('world-map');
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    const geo = await res.json();
+    renderMap(geo);
+  } catch(e) {
+    svg.innerHTML = `<text x="492" y="170" text-anchor="middle" fill="#4af0ff" font-family="IBM Plex Mono" font-size="13">Map requires network connection</text>`;
+  }
+}
+
+function renderMap(geo) {
+  const svg = document.getElementById('world-map');
+  const VB = { x: -40, y: 33, w: 984, h: 340 };
+  
+  // Simple equirectangular projection
+  function lonLatToSVG(lon, lat) {
+    const x = VB.x + ((lon + 180) / 360) * VB.w;
+    const y = VB.y + ((90 - lat) / 180) * VB.h;
+    return [x, y];
+  }
+
+  function coordsToPath(coords) {
+    return coords.map((ring, ri) =>
+      ring.map(([lon, lat], i) => {
+        const [x, y] = lonLatToSVG(lon, lat);
+        return (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2);
+      }).join(' ') + 'Z'
+    ).join(' ');
+  }
+
+  function featuresToPath(feature) {
+    const geom = feature.geometry;
+    if (!geom) return '';
+    if (geom.type === 'Polygon') return coordsToPath(geom.coordinates);
+    if (geom.type === 'MultiPolygon') return geom.coordinates.map(p => coordsToPath(p)).join(' ');
+    return '';
+  }
+
+  const tooltip = document.getElementById('tooltip');
+  const ttCountry = document.getElementById('tt-country');
+  const ttValue = document.getElementById('tt-value');
+  const ttNote = document.getElementById('tt-note');
+
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  // Glow filter for bright countries
+  defs.innerHTML = `
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>`;
+  svg.appendChild(defs);
+
+  // Ocean background
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('x', VB.x); bg.setAttribute('y', VB.y);
+  bg.setAttribute('width', VB.w); bg.setAttribute('height', VB.h);
+  bg.setAttribute('fill', '#02020a');
+  svg.appendChild(bg);
+
+  geo.features.forEach(feature => {
+    const name = feature.properties?.name || feature.properties?.ADMIN || '';
+    const data = COUNTRY_NOTES[name];
+    const radiance = data?.radiance;
+    const color = radToColor(radiance);
+    const pathData = featuresToPath(feature);
+    if (!pathData) return;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathData);
+    path.setAttribute('fill', color);
+    path.setAttribute('stroke', radiance > 100 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)');
+    path.setAttribute('stroke-width', '0.3');
+    if (radiance >= 180) path.setAttribute('filter', 'url(#glow-strong)');
+    else if (radiance >= 100) path.setAttribute('filter', 'url(#glow)');
+
+    path.style.cursor = 'pointer';
+    path.addEventListener('mouseenter', (e) => {
+      path.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+      path.setAttribute('stroke-width', '0.8');
+      ttCountry.textContent = name || 'Unknown';
+      if (radiance !== undefined) {
+        ttValue.textContent = `${radiance} nW/cm²/sr`;
+      } else {
+        ttValue.textContent = 'No data';
+      }
+      ttNote.textContent = data?.note || '';
+      tooltip.classList.add('visible');
+    });
+    path.addEventListener('mousemove', (e) => {
+      tooltip.style.left = (e.clientX + 14) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+    });
+    path.addEventListener('mouseleave', () => {
+      path.setAttribute('stroke', radiance > 100 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)');
+      path.setAttribute('stroke-width', '0.3');
+      tooltip.classList.remove('visible');
+    });
+
+    svg.appendChild(path);
+  });
+}
+
+loadMap();
+
+// ── KOREA BAR ANIMATION ──
+function animateKorea() {
+  setTimeout(() => {
+    document.getElementById('sk-bar').style.width = '88%';
+  }, 300);
+}
+
+// ── SCROLL ANIMATIONS ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.target.classList.contains('korea-section')) animateKorea();
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+// Korea section needs separate handling
+const koreaSection = document.querySelector('.korea-section');
+if (koreaSection) observer.observe(koreaSection);
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://blackmarble.gsfc.nasa.gov/" style="color:#4A9EBF;text-decoration:none">NASA Black Marble (VNP46 VIIRS Product)</a> — <span style="color:rgba(255,255,255,0.6)">NASA's annual nighttime lights composites derived from the VIIRS Day/Night Band aboard the Suomi NPP and NOAA-20 satellites, corrected for stray light, lunar illumination, and cloud cover; primary satellite dataset used in most recent country/city comparisons (2012–present).</span></li>
+<li style="margin-bottom:.75rem"><a href="https://advances.sciencemag.org/content/2/6/e1600377" style="color:#4A9EBF;text-decoration:none">Falchi et al. (2016) — 'The New World Atlas of Artificial Night Sky Brightness', Science Advances</a> — <span style="color:rgba(255,255,255,0.6)">Peer-reviewed atlas modeling ground-level skyglow from VIIRS radiance data; estimates that 83% of the world's population lives under light-polluted skies and underpins most national/regional rankings cited in the scientific literature.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://eogdata.mines.edu/products/vnl/" style="color:#4A9EBF;text-decoration:none">Earth Observation Group — VIIRS Nighttime Lights (Colorado School of Mines)</a> — <span style="color:rgba(255,255,255,0.6)">Processes raw VIIRS DNB satellite passes into monthly and annual composites with outlier filtering (fires, aurora); the standard research-grade nighttime radiance dataset used to compare countries and cities globally.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.darksky.org/light-pollution/" style="color:#4A9EBF;text-decoration:none">International Dark-Sky Association — Light Pollution Research Hub</a> — <span style="color:rgba(255,255,255,0.6)">Synthesizes satellite and ground-based measurements to characterize ecological and human-health impacts of artificial light at night (ALAN), with country- and region-level summaries.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Satellite sensors measure upward radiance at ~1:30 AM local time — a single nightly snapshot, not an average across all hours. Early-evening lighting (which matters most for human exposure) is not captured.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">The VIIRS Day/Night Band is most sensitive to blue-green wavelengths, so the LED conversion underway in most cities since ~2015 causes measured radiance to rise even when total lumens stay constant, complicating before/after comparisons.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Country-level rankings conflate population density with lighting intensity: small, densely built nations (e.g. Singapore, Kuwait) rank near the top partly because there is little dark rural land to dilute the average, not necessarily because individual light fixtures are brighter.</li>
+  </ul>
+</div>
+</body>
+</html>

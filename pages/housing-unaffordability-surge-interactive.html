@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Housing Unaffordability Surge — Atlas of Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --gold: #e8c547;
+    --gold-dim: rgba(232,197,71,0.3);
+    --text: rgba(255,255,255,0.85);
+    --text-dim: rgba(255,255,255,0.55);
+    --text-muted: rgba(255,255,255,0.3);
+    --border: rgba(255,255,255,0.1);
+    --card: rgba(255,255,255,0.04);
+    --card-hover: rgba(255,255,255,0.07);
+    --crisis: #c0392b;
+    --crisis-mid: #e67e22;
+    --crisis-low: #f39c12;
+    --safe: #2c7a4b;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 32px 0;
+  }
+
+  .pillar-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    display: inline-block;
+    padding: 4px 12px;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+
+  .hook {
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 680px;
+    margin-bottom: 48px;
+    border-left: 3px solid var(--gold);
+    padding-left: 20px;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 32px;
+  }
+
+  /* ── MAP ── */
+  #map-container {
+    width: 100%;
+    aspect-ratio: 2/1;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    min-height: 400px;
+  }
+
+  #map-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-tooltip {
+    position: absolute;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--gold-dim);
+    padding: 10px 14px;
+    border-radius: 3px;
+    pointer-events: none;
+    font-size: 13px;
+    color: var(--text);
+    display: none;
+    z-index: 100;
+  }
+
+  .map-tooltip strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .legend-gradient {
+    width: 200px;
+    height: 10px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #2c7a4b, #f39c12, #e67e22, #c0392b);
+  }
+
+  /* ── CHART ── */
+  #chart-container {
+    width: 100%;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+  }
+
+  .chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .city-toggle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 3px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    letter-spacing: 0.05em;
+  }
+
+  .city-toggle.active {
+    color: #0a0a0f;
+  }
+
+  .city-toggle.inactive {
+    opacity: 0.4;
+  }
+
+  #line-chart-svg {
+    width: 100%;
+    height: 360px;
+    overflow: visible;
+  }
+
+  /* ── BAR CHART ── */
+  #rankings-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    #rankings-section { grid-template-columns: 1fr; }
+  }
+
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bar-city {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    width: 80px;
+    flex-shrink: 0;
+    color: var(--text-dim);
+    text-align: right;
+  }
+
+  .bar-city.highlight {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+    justify-content: flex-end;
+  }
+
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0,0,0,0.8);
+  }
+
+  .bar-value.light {
+    color: var(--text-dim);
+    padding-left: 8px;
+    position: absolute;
+    left: 100%;
+    white-space: nowrap;
+  }
+
+  /* Tokyo explainer */
+  .tokyo-explainer {
+    background: rgba(232,197,71,0.06);
+    border: 1px solid rgba(232,197,71,0.3);
+    border-radius: 4px;
+    padding: 28px;
+  }
+
+  .tokyo-explainer h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .tokyo-explainer .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+
+  .fact-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+
+  .fact-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 40px;
+  }
+
+  .fact-text strong {
+    display: block;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .fact-text p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-dim);
+  }
+
+  .data-table tr.highlight td {
+    color: var(--gold);
+    background: rgba(232,197,71,0.04);
+  }
+
+  .data-table tr.highlight td:first-child {
+    border-left: 2px solid var(--gold);
+  }
+
+  .change-up { color: #c0392b !important; }
+  .change-down { color: #2ecc71 !important; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0 32px 60px;
+    max-width: 1100px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="pillar-tag">Economics · Atlas of Culture</div>
+  <h1>The Housing<br>Unaffordability Surge</h1>
+  <p class="hook">In 1990, a Vancouver home cost 5× the median income. Today: 13×. Sydney: 14×. Auckland: 11×. Tokyo: still 8×. One of these cities built its way out.</p>
+</header>
+
+<!-- SECTION 1: MAP -->
+<section id="section-map">
+  <div class="section-label">01 / World Map</div>
+  <div class="section-title">Where housing costs the most</div>
+  <div class="section-sub">Price-to-income ratio, 2024. Hover for city data.</div>
+
+  <div id="map-container">
+    <svg id="map-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="map-tooltip" id="map-tooltip"></div>
+  </div>
+
+  <div class="map-legend">
+    <span>Affordable</span>
+    <div class="legend-gradient"></div>
+    <span>Crisis</span>
+    <span style="margin-left:16px; font-size:11px; color:var(--text-muted)">— city-level data overlaid on countries</span>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- SECTION 2: LINE CHART -->
+<section id="section-trends">
+  <div class="section-label">02 / Trend Lines</div>
+  <div class="section-title">Price-to-income ratios, 1990–2024</div>
+  <div class="section-sub">Tokyo crashed from its bubble peak and stabilised. Everyone else kept climbing.</div>
+
+  <div id="chart-container">
+    <div class="chart-controls" id="city-toggles"></div>
+    <svg id="line-chart-svg"></svg>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- SECTION 3: RANKINGS + EXPLAINER -->
+<section id="section-rankings">
+  <div class="section-label">03 / Rankings &amp; The Tokyo Exception</div>
+  <div class="section-title">Current price-to-income ratios</div>
+  <div class="section-sub">2024 data. Tokyo is the outlier that proves the rule.</div>
+
+  <div id="rankings-section">
+    <div class="bar-chart" id="bar-chart"></div>
+    <div class="tokyo-explainer">
+      <h3>Why Tokyo worked</h3>
+      <p class="subtitle">A city of 37 million people that kept housing (relatively) affordable.</p>
+
+      <div class="fact-item">
+        <div class="fact-number">1</div>
+        <div class="fact-text">
+          <strong>Zoning reform, 1992</strong>
+          <p>Japan adopted national zoning standards that override local opposition to density. Any neighbourhood can receive mixed-use, mid-rise development — no city council veto.</p>
+        </div>
+      </div>
+
+      <div class="fact-item">
+        <div class="fact-number">2</div>
+        <div class="fact-text">
+          <strong>Build more, actually</strong>
+          <p>Japan constructs ~800,000 homes per year. The UK — with a comparable population — builds ~200,000. Tokyo alone permitted more housing in 2022 than the entire state of California.</p>
+        </div>
+      </div>
+
+      <div class="fact-item">
+        <div class="fact-number">3</div>
+        <div class="fact-text">
+          <strong>No NIMBYism, structurally</strong>
+          <p>Japan's Building Standards Law sets construction rights nationally. Local governments cannot block by-right development. Neighbours can object but rarely prevail. The default is: build.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- TABLE -->
+<section id="section-table">
+  <div class="section-label">04 / Data Table</div>
+  <div class="section-title">Full dataset</div>
+  <div class="section-sub">Price-to-income ratio by city, 1990 vs 2024.</div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>City</th>
+        <th>Country</th>
+        <th>Ratio 1990</th>
+        <th>Ratio 2024</th>
+        <th>Change</th>
+        <th>Trend</th>
+      </tr>
+    </thead>
+    <tbody id="data-table-body"></tbody>
+  </table>
+</section>
+
+<footer>
+  <span>Atlas of Culture · Economics</span>
+  <span>Sources: Demographia International Housing Affordability Survey; OECD Housing Data; Japan Statistics Bureau; urban economics research</span>
+  <span>housing-unaffordability-surge</span>
+</footer>
+
+<script>
+// ──────────────────────────────────────────────
+// DATA
+// ──────────────────────────────────────────────
+const CITIES = [
+  { id: 'sydney',    name: 'Sydney',    country: 'Australia',      ratio1990: 4,  ratio2024: 14, color: '#e74c3c' },
+  { id: 'vancouver', name: 'Vancouver', country: 'Canada',         ratio1990: 5,  ratio2024: 13, color: '#8e44ad' },
+  { id: 'london',   name: 'London',    country: 'United Kingdom',  ratio1990: 5,  ratio2024: 12, color: '#3498db' },
+  { id: 'auckland', name: 'Auckland',  country: 'New Zealand',     ratio1990: 3,  ratio2024: 11, color: '#e67e22' },
+  { id: 'newyork',  name: 'New York',  country: 'United States of America', ratio1990: 5, ratio2024: 8, color: '#1abc9c' },
+  { id: 'tokyo',    name: 'Tokyo',     country: 'Japan',           ratio1990: 18, ratio2024: 8,  color: '#e8c547' },
+  { id: 'berlin',   name: 'Berlin',    country: 'Germany',         ratio1990: 3,  ratio2024: 7,  color: '#95a5a6' },
+];
+
+// Approximate time series data (1990-2024)
+const TIME_SERIES = {
+  sydney:    [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 11, 11.5, 12, 12.5, 12, 11.5, 12, 12.5, 13, 13.5, 13, 13.5, 14, 13.5, 13, 13.5, 14, 14, 14, 14],
+  vancouver: [5, 5, 5.5, 5.5, 6, 6, 6.5, 6.5, 7, 7.5, 8, 8.5, 9, 9, 9.5, 9, 9.5, 10, 10.5, 11, 10.5, 11, 11.5, 12, 12.5, 11.5, 12, 12.5, 12.5, 12, 12.5, 13, 13, 13, 13],
+  london:    [5, 4.5, 4.5, 5, 5, 5.5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9, 8.5, 8.5, 9, 9.5, 10, 10, 9.5, 10, 10.5, 11, 11, 11.5, 12, 11.5, 11, 11.5, 12, 12, 12, 12],
+  auckland:  [3, 3, 3.5, 3.5, 4, 4, 4.5, 4.5, 5, 5.5, 5.5, 6, 6, 6.5, 6.5, 5.5, 6, 6.5, 7, 7.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 10, 9, 9.5, 11, 11, 11, 11],
+  newyork:   [5, 5, 5.5, 5.5, 6, 6, 6.5, 6.5, 7, 7.5, 7.5, 8, 8, 8.5, 8.5, 7.5, 7.5, 7.5, 7.5, 8, 7.5, 7, 7, 7, 7.5, 7.5, 7.5, 8, 8, 7.5, 7.5, 8, 8, 8, 8],
+  tokyo:     [18, 16, 14, 12, 11, 10, 9.5, 9, 8.5, 8, 7.5, 7.5, 8, 8, 8, 7.5, 7.5, 7.5, 8, 8, 7.5, 7.5, 7.5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+  berlin:    [3, 3, 3, 3, 3, 3.5, 3.5, 3.5, 4, 4, 4, 4, 4, 4, 3.5, 3.5, 3.5, 3.5, 4, 4, 4, 4, 4.5, 5, 5.5, 6, 6.5, 7, 6.5, 6, 6.5, 7, 7, 7, 7],
+};
+
+const YEARS = Array.from({length: 35}, (_, i) => 1990 + i);
+
+// Country-level ratios for map
+const COUNTRY_DATA = {
+  'Australia': 10,
+  'Canada': 10,
+  'United Kingdom': 9,
+  'New Zealand': 9,
+  'United States of America': 7,
+  'Japan': 7,
+  'Germany': 6,
+  'Sweden': 8,
+  'Netherlands': 8,
+  'Ireland': 8,
+  'Denmark': 7,
+  'Norway': 7,
+  'Switzerland': 8,
+  'France': 7,
+  'Spain': 6,
+  'Portugal': 6,
+  'Italy': 5,
+  'China': 15,
+  'South Korea': 11,
+  'Hong Kong': 20,
+  'Singapore': 14,
+  'Brazil': 5,
+  'Mexico': 5,
+  'India': 6,
+  'Indonesia': 5,
+  'South Africa': 5,
+  'Russia': 5,
+  'Poland': 7,
+  'Czech Republic': 7,
+  'Hungary': 6,
+  'Romania': 5,
+  'Turkey': 8,
+  'Israel': 14,
+  'United Arab Emirates': 9,
+  'Argentina': 4,
+  'Chile': 7,
+  'Colombia': 5,
+  'Egypt': 4,
+  'Nigeria': 3,
+  'Kenya': 4,
+  'Morocco': 5,
+  'Ethiopia': 3,
+  'Tanzania': 3,
+  'Ghana': 4,
+};
+
+// ──────────────────────────────────────────────
+// COLOUR SCALE
+// ──────────────────────────────────────────────
+function ratioToColor(ratio) {
+  if (!ratio) return '#1a1a2e';
+  const stops = [
+    [3,  [44, 122, 75]],
+    [6,  [243, 156, 18]],
+    [9,  [230, 126, 34]],
+    [14, [192, 57, 43]],
+    [20, [120, 20, 20]],
+  ];
+  if (ratio <= stops[0][0]) return rgbStr(stops[0][1]);
+  if (ratio >= stops[stops.length-1][0]) return rgbStr(stops[stops.length-1][1]);
+  for (let i = 0; i < stops.length - 1; i++) {
+    const [lo, cLo] = stops[i];
+    const [hi, cHi] = stops[i+1];
+    if (ratio >= lo && ratio <= hi) {
+      const t = (ratio - lo) / (hi - lo);
+      return rgbStr(cLo.map((v,j) => Math.round(v + t * (cHi[j] - v))));
+    }
+  }
+}
+
+function rgbStr(arr) {
+  return `rgb(${arr[0]},${arr[1]},${arr[2]})`;
+}
+
+// ──────────────────────────────────────────────
+// MAP
+// ──────────────────────────────────────────────
+async function buildMap() {
+  const svg = document.getElementById('map-svg');
+  const tooltip = document.getElementById('map-tooltip');
+
+  let geoData;
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    geoData = await res.json();
+  } catch(e) {
+    svg.innerHTML = '<text x="50%" y="50%" fill="rgba(255,255,255,0.3)" text-anchor="middle" font-size="14" font-family="Inter">Map data unavailable — check connection</text>';
+    return;
+  }
+
+  // Simple equirectangular projection
+  function project(lon, lat) {
+    const x = (lon + 180) / 360 * 960;
+    const y = (90 - lat) / 180 * 500;
+    return [x, y];
+  }
+
+  function coordsToPath(geometry) {
+    function ringToPath(ring) {
+      return ring.map((pt, i) => {
+        const [x, y] = project(pt[0], pt[1]);
+        return (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2);
+      }).join(' ') + ' Z';
+    }
+    if (geometry.type === 'Polygon') {
+      return geometry.coordinates.map(ringToPath).join(' ');
+    } else if (geometry.type === 'MultiPolygon') {
+      return geometry.coordinates.map(poly => poly.map(ringToPath).join(' ')).join(' ');
+    }
+    return '';
+  }
+
+  geoData.features.forEach(feature => {
+    const name = feature.properties.ADMIN || feature.properties.name;
+    const ratio = COUNTRY_DATA[name];
+    const color = ratioToColor(ratio);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', coordsToPath(feature.geometry));
+    path.setAttribute('fill', color);
+    path.setAttribute('stroke', 'rgba(0,0,0,0.4)');
+    path.setAttribute('stroke-width', '0.3');
+    path.style.cursor = 'pointer';
+    path.style.transition = 'opacity 0.2s';
+
+    path.addEventListener('mouseenter', (e) => {
+      path.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+      path.setAttribute('stroke-width', '0.8');
+      const city = CITIES.find(c => c.country === name);
+      let html = `<strong>${name}</strong>`;
+      if (ratio) html += `<span>Affordability index: ${ratio}×</span>`;
+      if (city) html += `<span style="color:${city.color}; display:block; margin-top:4px">${city.name}: ${city.ratio2024}× (city)</span>`;
+      tooltip.innerHTML = html;
+      tooltip.style.display = 'block';
+    });
+
+    path.addEventListener('mousemove', (e) => {
+      const rect = document.getElementById('map-container').getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    });
+
+    path.addEventListener('mouseleave', () => {
+      path.setAttribute('stroke', 'rgba(0,0,0,0.4)');
+      path.setAttribute('stroke-width', '0.3');
+      tooltip.style.display = 'none';
+    });
+
+    svg.appendChild(path);
+  });
+
+  // City dots
+  const cityCoords = {
+    sydney:    [151.2, -33.87],
+    vancouver: [-123.1, 49.28],
+    london:    [-0.12, 51.5],
+    auckland:  [174.76, -36.85],
+    newyork:   [-74, 40.71],
+    tokyo:     [139.69, 35.68],
+    berlin:    [13.4, 52.52],
+  };
+
+  CITIES.forEach(city => {
+    const coords = cityCoords[city.id];
+    if (!coords) return;
+    const [x, y] = project(coords[0], coords[1]);
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', x);
+    circle.setAttribute('cy', y);
+    circle.setAttribute('r', 5);
+    circle.setAttribute('fill', city.color);
+    circle.setAttribute('stroke', '#0a0a0f');
+    circle.setAttribute('stroke-width', 1.5);
+    circle.style.cursor = 'pointer';
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', x + 8);
+    label.setAttribute('y', y + 4);
+    label.setAttribute('fill', city.color);
+    label.setAttribute('font-size', '9');
+    label.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    label.textContent = city.name + ' ' + city.ratio2024 + '×';
+
+    circle.addEventListener('mouseenter', (e) => {
+      const rect = document.getElementById('map-container').getBoundingClientRect();
+      tooltip.innerHTML = `<strong>${city.name}</strong><span>Price-to-income: ${city.ratio2024}×</span><span style="color:var(--text-muted)">1990: ${city.ratio1990}×</span>`;
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    });
+
+    circle.addEventListener('mousemove', (e) => {
+      const rect = document.getElementById('map-container').getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    });
+
+    circle.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+
+    svg.appendChild(circle);
+    svg.appendChild(label);
+  });
+}
+
+// ──────────────────────────────────────────────
+// LINE CHART
+// ──────────────────────────────────────────────
+const activeLines = new Set(CITIES.map(c => c.id));
+
+function buildLineChart() {
+  const container = document.getElementById('chart-container');
+  const svg = document.getElementById('line-chart-svg');
+  const toggleContainer = document.getElementById('city-toggles');
+
+  // Toggles
+  CITIES.forEach(city => {
+    const btn = document.createElement('button');
+    btn.className = 'city-toggle active';
+    btn.dataset.city = city.id;
+    btn.textContent = city.name;
+    btn.style.borderColor = city.color;
+    btn.style.color = city.color;
+    btn.style.background = 'rgba(0,0,0,0)';
+    btn.addEventListener('click', () => {
+      if (activeLines.has(city.id)) {
+        activeLines.delete(city.id);
+        btn.classList.remove('active');
+        btn.classList.add('inactive');
+        btn.style.color = city.color;
+        btn.style.background = 'transparent';
+      } else {
+        activeLines.add(city.id);
+        btn.classList.add('active');
+        btn.classList.remove('inactive');
+        btn.style.background = 'transparent';
+        btn.style.color = city.color;
+      }
+      renderLines();
+    });
+    toggleContainer.appendChild(btn);
+  });
+
+  renderLines();
+}
+
+function renderLines() {
+  const svg = document.getElementById('line-chart-svg');
+  const W = svg.clientWidth || 900;
+  const H = 360;
+  const pad = { top: 20, right: 120, bottom: 40, left: 48 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const minY = 0, maxY = 20;
+  const minX = 0, maxX = YEARS.length - 1;
+
+  function sx(i) { return pad.left + (i / maxX) * chartW; }
+  function sy(v) { return pad.top + chartH - ((v - minY) / (maxY - minY)) * chartH; }
+
+  // Grid lines
+  [0, 5, 10, 15, 20].forEach(v => {
+    const y = sy(v);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', pad.left); line.setAttribute('x2', pad.left + chartW);
+    line.setAttribute('y1', y); line.setAttribute('y2', y);
+    line.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+    line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', pad.left - 8);
+    label.setAttribute('y', y + 4);
+    label.setAttribute('text-anchor', 'end');
+    label.setAttribute('fill', 'rgba(255,255,255,0.3)');
+    label.setAttribute('font-size', '10');
+    label.setAttribute('font-family', 'IBM Plex Mono');
+    label.textContent = v + '×';
+    svg.appendChild(label);
+  });
+
+  // X axis labels
+  [1990, 1995, 2000, 2005, 2010, 2015, 2020, 2024].forEach(yr => {
+    const i = yr - 1990;
+    const x = sx(i);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', x);
+    label.setAttribute('y', H - pad.bottom + 18);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('fill', 'rgba(255,255,255,0.3)');
+    label.setAttribute('font-size', '10');
+    label.setAttribute('font-family', 'IBM Plex Mono');
+    label.textContent = yr;
+    svg.appendChild(label);
+  });
+
+  // Annotation: bubble peak
+  const bubblePeakX = sx(0);
+  const bubblePeakY = sy(18);
+  const ann = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  ann.setAttribute('x', bubblePeakX + 4);
+  ann.setAttribute('y', bubblePeakY - 6);
+  ann.setAttribute('fill', 'rgba(232,197,71,0.5)');
+  ann.setAttribute('font-size', '9');
+  ann.setAttribute('font-family', 'IBM Plex Mono');
+  ann.textContent = 'Tokyo bubble';
+  svg.appendChild(ann);
+
+  // Lines
+  CITIES.forEach(city => {
+    const data = TIME_SERIES[city.id];
+    const isActive = activeLines.has(city.id);
+    const pts = data.map((v, i) => `${sx(i).toFixed(2)},${sy(v).toFixed(2)}`).join(' ');
+
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('points', pts);
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', city.color);
+    polyline.setAttribute('stroke-width', city.id === 'tokyo' ? '2.5' : '1.5');
+    polyline.setAttribute('stroke-linejoin', 'round');
+    polyline.setAttribute('opacity', isActive ? (city.id === 'tokyo' ? '1' : '0.7') : '0.05');
+    svg.appendChild(polyline);
+
+    if (isActive) {
+      // End-of-line label
+      const lastI = data.length - 1;
+      const lx = sx(lastI) + 6;
+      const ly = sy(data[lastI]);
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', lx);
+      lbl.setAttribute('y', ly + 4);
+      lbl.setAttribute('fill', city.color);
+      lbl.setAttribute('font-size', '10');
+      lbl.setAttribute('font-family', 'IBM Plex Mono');
+      lbl.textContent = city.name;
+      svg.appendChild(lbl);
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+// BAR CHART
+// ──────────────────────────────────────────────
+function buildBarChart() {
+  const container = document.getElementById('bar-chart');
+  const sorted = [...CITIES].sort((a, b) => b.ratio2024 - a.ratio2024);
+  const max = sorted[0].ratio2024;
+
+  sorted.forEach(city => {
+    const pct = (city.ratio2024 / max) * 100;
+    const isHero = city.id === 'tokyo';
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-city ${isHero ? 'highlight' : ''}">${city.name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%; background:${isHero ? '#e8c547' : city.color}">
+          ${pct > 20 ? `<span class="bar-value">${city.ratio2024}×</span>` : ''}
+        </div>
+        ${pct <= 20 ? `<span class="bar-value light" style="color:${isHero ? '#e8c547' : 'var(--text-dim)'}; position:absolute; left:calc(${pct}% + 8px); top:50%; transform:translateY(-50%)">${city.ratio2024}×</span>` : ''}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ──────────────────────────────────────────────
+// TABLE
+// ──────────────────────────────────────────────
+function buildTable() {
+  const tbody = document.getElementById('data-table-body');
+  const sorted = [...CITIES].sort((a, b) => b.ratio2024 - a.ratio2024);
+
+  sorted.forEach(city => {
+    const change = city.ratio2024 - city.ratio1990;
+    const pct = ((change / city.ratio1990) * 100).toFixed(0);
+    const isHero = city.id === 'tokyo';
+    const tr = document.createElement('tr');
+    if (isHero) tr.className = 'highlight';
+    tr.innerHTML = `
+      <td>${city.name}</td>
+      <td>${city.country}</td>
+      <td>${city.ratio1990}×</td>
+      <td>${city.ratio2024}×</td>
+      <td class="${change > 0 ? 'change-up' : 'change-down'}">${change > 0 ? '+' : ''}${change}×</td>
+      <td class="${change > 0 ? 'change-up' : 'change-down'}">${change > 0 ? '↑' : '↓'} ${Math.abs(pct)}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+buildMap();
+buildLineChart();
+buildBarChart();
+buildTable();
+
+window.addEventListener('resize', renderLines);
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="http://www.demographia.com/dhi.pdf" style="color:#4A9EBF;text-decoration:none">Demographia International Housing Affordability</a> — <span style="color:rgba(255,255,255,0.6)">Annual report measuring median multiple (median house price ÷ median household income) across major urban markets in Australia, Canada, China, Ireland, New Zealand, Singapore, UK, and USA; 2024 edition covers ~100 cities.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://data.oecd.org/price/housing-prices.htm" style="color:#4A9EBF;text-decoration:none">OECD Housing Prices Database</a> — <span style="color:rgba(255,255,255,0.6)">Tracks real and nominal house price indices and price-to-income ratios for OECD member countries from the 1970s through 2023, enabling long-run affordability trend analysis.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.imf.org/en/Publications/global-housing-watch" style="color:#4A9EBF;text-decoration:none">IMF Global Housing Watch</a> — <span style="color:rgba(255,255,255,0.6)">Quarterly tracker of house prices and price-to-income ratios for ~60 countries, updated through 2024, with historical series used to assess valuation gaps.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.numbeo.com/property-investment/" style="color:#4A9EBF;text-decoration:none">Numbeo Property Investment Index</a> — <span style="color:rgba(255,255,255,0.6)">Crowd-sourced database providing city-level price-to-income ratios and mortgage-as-percentage-of-income metrics for several hundred cities worldwide, updated continuously.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Price-to-income ratios are highly sensitive to which income measure is used — median vs. mean household income, and whether the denominator is one earner or two, can shift a city's ratio by 30–50%, making cross-source comparisons unreliable without standardization.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">The ratio captures sticker price but not financing cost: a city can show a worsening ratio even as monthly mortgage payments stay flat (if rates fall), or appear stable while actual debt-service burdens spike (if rates rise) — both situations occurred between 2020 and 2023.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Urban boundary definitions vary widely across countries; a 'city' ratio for Paris (commune) vs. Île-de-France vs. Greater Paris reflects entirely different housing markets, so city-to-city comparisons require careful attention to the geographic unit used.</li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep Deprivation Index — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --gold: #e8c547;
+    --gold-dim: #c9a830;
+    --red-deep: #c0392b;
+    --red-mid: #e74c3c;
+    --text: #f0ede4;
+    --text-dim: #9a9490;
+    --border: #2a2a3a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+
+  .nav-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 2rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(192,57,43,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 40%, rgba(232,197,71,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    max-width: 900px;
+    margin: 0 auto 2rem;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-hook {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--text-dim);
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+  }
+
+  .hero-hook strong { color: var(--text); }
+
+  .scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.1em;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-cue svg { width: 20px; height: 20px; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-intro {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 680px;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+  }
+
+  /* MAP SECTION */
+  #map-section {
+    max-width: 100%;
+    padding: 5rem 2rem;
+  }
+
+  .map-header {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+  }
+
+  .map-container {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  #world-map {
+    width: 100%;
+    height: 560px;
+    display: block;
+  }
+
+  .map-legend {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    background: rgba(10,10,15,0.9);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+
+  .legend-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .legend-bar {
+    width: 180px;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #c0392b, #e74c3c, #e8b547, #e8c547);
+    margin-bottom: 0.4rem;
+  }
+
+  .legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  .map-tooltip {
+    position: absolute;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-size: 0.85rem;
+    min-width: 160px;
+    z-index: 10;
+  }
+
+  .map-tooltip.visible { opacity: 1; }
+
+  .tooltip-country {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .tooltip-hours {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--gold);
+    font-size: 0.9rem;
+  }
+
+  .tooltip-cost {
+    color: var(--red-mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+  }
+
+  /* LOOKUP */
+  .lookup-box {
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .lookup-box label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .lookup-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    min-width: 200px;
+  }
+
+  .lookup-select:focus { outline: 1px solid var(--gold); }
+
+  .lookup-result {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 1rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .lookup-result.hidden { display: none; }
+
+  .result-hours {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .result-detail { flex: 1; }
+  .result-country { font-weight: 600; font-size: 1.1rem; }
+  .result-note { color: var(--text-dim); font-size: 0.9rem; margin-top: 0.25rem; }
+
+  /* BAR CHART */
+  .chart-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    overflow-x: auto;
+  }
+
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 500px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .bar-label {
+    font-size: 0.85rem;
+    text-align: right;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .bar-label.highlight { color: var(--text); font-weight: 600; }
+
+  .bar-track {
+    height: 28px;
+    background: var(--surface2);
+    border-radius: 4px;
+    position: relative;
+    overflow: visible;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+  }
+
+  .bar-annotation {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(192,57,43,0.15);
+    border: 1px solid var(--red-mid);
+    color: var(--red-mid);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    z-index: 1;
+  }
+
+  .bar-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .bar-value.highlight { color: var(--gold); }
+
+  .mortality-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(232,197,71,0.4);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .mortality-label {
+    position: absolute;
+    top: -22px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  /* CULTURE CARDS */
+  .culture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .culture-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .culture-card:hover {
+    border-color: var(--gold-dim);
+    transform: translateY(-2px);
+  }
+
+  .culture-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .culture-card.japan::before { background: linear-gradient(to right, #c0392b, #e74c3c); }
+  .culture-card.korea::before { background: linear-gradient(to right, #e74c3c, #e8a047); }
+  .culture-card.spain::before { background: linear-gradient(to right, #27ae60, #e8c547); }
+
+  .card-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-concept {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .card-body {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  /* SCIENCE BOX */
+  .science-box {
+    background: linear-gradient(135deg, rgba(192,57,43,0.1), rgba(10,10,15,0));
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2rem;
+  }
+
+  .science-box-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .science-box-title span {
+    font-size: 1.8rem;
+  }
+
+  .science-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .science-stat {
+    text-align: center;
+  }
+
+  .science-stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--red-mid);
+    display: block;
+  }
+
+  .science-stat-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-top: 0.25rem;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    line-height: 1.8;
+  }
+
+  footer strong { color: var(--text); }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* FULL-WIDTH section wrapper */
+  .full-width { max-width: 100%; }
+
+  /* SVG path styles */
+  .country-path {
+    stroke: #1e1e2e;
+    stroke-width: 0.5;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .country-path:hover { opacity: 0.85; stroke-width: 1; stroke: var(--gold); }
+  .country-path.no-data { fill: #1e1e2e; cursor: default; }
+  .country-path.no-data:hover { opacity: 1; stroke-width: 0.5; stroke: #1e1e2e; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Atlas of Culture</div>
+  <ul class="nav-links">
+    <li><a href="#map-section">Map</a></li>
+    <li><a href="#chart-section">Rankings</a></li>
+    <li><a href="#culture-section">Culture</a></li>
+    <li><a href="#science-section">Science</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div>
+    <div class="hero-eyebrow">Atlas of Culture · Health Series</div>
+    <h1>The <em>Sleep Deprivation</em> Index</h1>
+    <p class="hero-hook">
+      <strong>Japan averages 7 hours 22 minutes of sleep per night</strong> — the least of any measured country.
+      South Korea: 7h 51min. The US: 8h 48min.
+      Sleep debt has a geography.
+    </p>
+    <div class="scroll-cue">
+      <span>Explore the data</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M7 10l5 5 5-5"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- MAP SECTION -->
+<div id="map-section" class="full-width" style="padding: 5rem 2rem;">
+  <div class="map-header">
+    <div class="section-label">Slide 01 — World Map</div>
+    <h2 class="section-title">Sleep Has a Geography</h2>
+    <p class="section-intro">
+      Average nightly sleep per adult. East Asia sleeps the least; northern Europe and Oceania sleep the most.
+      The gradient is stark — and it's not random.
+    </p>
+  </div>
+
+  <div class="map-container">
+    <svg id="world-map" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
+      <g id="countries-group"></g>
+    </svg>
+    <div id="map-tooltip" class="map-tooltip">
+      <div class="tooltip-country" id="tt-country"></div>
+      <div class="tooltip-hours" id="tt-hours"></div>
+      <div class="tooltip-cost" id="tt-cost"></div>
+    </div>
+    <div class="map-legend">
+      <div class="legend-title">Avg Sleep / Night</div>
+      <div class="legend-bar"></div>
+      <div class="legend-labels">
+        <span>7h 00m</span>
+        <span>8h 00m</span>
+        <span>9h 00m</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lookup -->
+  <div class="lookup-box">
+    <label for="country-select">↳ Look up a country:</label>
+    <select id="country-select" class="lookup-select">
+      <option value="">Select a country…</option>
+    </select>
+  </div>
+  <div id="lookup-result" class="lookup-result hidden">
+    <div class="result-hours" id="res-hours">—</div>
+    <div class="result-detail">
+      <div class="result-country" id="res-country"></div>
+      <div class="result-note" id="res-note"></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- BAR CHART SECTION -->
+<section id="chart-section">
+  <div class="section-label">Slide 02 — Rankings</div>
+  <h2 class="section-title">Ranked by Sleep Hours</h2>
+  <p class="section-intro">
+    Countries ordered from least to most sleep. GDP cost annotations reveal the economic toll of a sleep-deprived workforce — Japan loses $138bn a year.
+  </p>
+
+  <div class="chart-wrapper">
+    <div id="bar-chart" class="bar-chart"></div>
+  </div>
+  <p style="font-size:0.78rem; color: var(--text-dim); margin-top: 1rem;">
+    * GDP cost data from Rand Corporation 2016 report. Mortality cliff at <span style="color:var(--gold);">7h 00m</span> per Matthew Walker / Why We Sleep (2017).
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- CULTURE SECTION -->
+<section id="culture-section">
+  <div class="section-label">Slide 03 — Culture</div>
+  <h2 class="section-title">Sleep is Political</h2>
+  <p class="section-intro">
+    The data isn't just biology. It's culture. Three vignettes that explain why East Asia systematically under-sleeps — and one exception that proves the rule.
+  </p>
+
+  <div class="culture-grid">
+    <div class="culture-card japan">
+      <span class="card-emoji">🇯🇵</span>
+      <h3 class="card-title">Japan</h3>
+      <div class="card-concept">「居眠り」inemuri — "sleeping while present"</div>
+      <p class="card-body">
+        In Japan, falling asleep at your desk doesn't get you fired — it signals dedication.
+        You're so committed you work until exhaustion. <em>Inemuri</em> is socially sanctioned collapse.
+        The paradox: the permission to nap publicly exists because the culture expects you to never truly rest.
+        7h 22min average. $138bn/yr in GDP lost.
+      </p>
+    </div>
+
+    <div class="culture-card korea">
+      <span class="card-emoji">🇰🇷</span>
+      <h3 class="card-title">South Korea</h3>
+      <div class="card-concept">빨리빨리 ppalli ppalli — "hurry hurry"</div>
+      <p class="card-body">
+        South Korea's <em>ppalli ppalli</em> culture demands speed in everything — delivery, work, life.
+        Sleep is the enemy of productivity. To rest is to fall behind.
+        The country rebuilt from war to tech powerhouse in a generation, but the cultural operating system
+        still runs on urgency. 7h 51min. The body doesn't care about GDP.
+      </p>
+    </div>
+
+    <div class="culture-card spain">
+      <span class="card-emoji">🇪🇸</span>
+      <h3 class="card-title">Spain / Mediterranean</h3>
+      <div class="card-concept">siesta — an afternoon pause</div>
+      <p class="card-body">
+        The siesta was never laziness — it was circadian wisdom.
+        A post-lunch rest aligned with the body's natural afternoon dip, then extended work into a cooler evening.
+        But globalization killed it. Spain's siesta is largely a tourist myth now.
+        What remains: a culture that still socializes late, sleeps late, and hasn't fully adopted Northern European schedules.
+      </p>
+    </div>
+  </div>
+
+  <!-- Science box -->
+  <div id="science-section" class="science-box">
+    <h3 class="science-box-title">
+      <span>⚠️</span>
+      The 7-Hour Mortality Cliff
+    </h3>
+    <p style="color: var(--text-dim); line-height: 1.8; max-width: 700px;">
+      Sleep scientist Matthew Walker's research (and broader epidemiology) shows a nonlinear relationship
+      between sleep and mortality. Below 7 hours per night, the risks spike sharply:
+      cardiovascular disease, cancer risk, immune suppression, cognitive decline.
+      The human body was not optimized for <em>inemuri</em>.
+      It was optimized for 7–9 uninterrupted hours.
+    </p>
+    <div class="science-stats">
+      <div class="science-stat">
+        <span class="science-stat-number">+89%</span>
+        <div class="science-stat-label">Increased risk of obesity<br>below 6hrs sleep</div>
+      </div>
+      <div class="science-stat">
+        <span class="science-stat-number">3×</span>
+        <div class="science-stat-label">More likely to catch a cold<br>sleeping under 7hrs</div>
+      </div>
+      <div class="science-stat">
+        <span class="science-stat-number">$680bn</span>
+        <div class="science-stat-label">Annual GDP loss across<br>5 major economies</div>
+      </div>
+      <div class="science-stat">
+        <span class="science-stat-number">7–9h</span>
+        <div class="science-stat-label">WHO-recommended sleep<br>for adults</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>Atlas of Culture — Sleep Deprivation Index</strong><br>
+  Data: Sleep Cycle Global Sleep Report · OECD Time Use Survey · Rand Corporation (2016) · Matthew Walker, <em>Why We Sleep</em> (2017)<br>
+  <span style="color: #5a5a6a; font-size: 0.75rem; margin-top: 0.5rem; display: block;">
+    Built with D3.js · GeoJSON: Natural Earth via datasets/geo-countries
+  </span>
+</footer>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const SLEEP_DATA = {
+  "Japan": { hours: 7.37, display: "7h 22min" },
+  "South Korea": { hours: 7.51, display: "7h 31min" },
+  "Saudi Arabia": { hours: 7.67, display: "7h 40min" },
+  "Malaysia": { hours: 7.67, display: "7h 40min" },
+  "China": { hours: 7.83, display: "7h 50min" },
+  "Philippines": { hours: 7.84, display: "7h 50min" },
+  "Indonesia": { hours: 7.95, display: "7h 57min" },
+  "Singapore": { hours: 7.95, display: "7h 57min" },
+  "India": { hours: 8.0,  display: "8h 00min" },
+  "Brazil": { hours: 8.08, display: "8h 05min" },
+  "Mexico": { hours: 8.1,  display: "8h 06min" },
+  "Germany": { hours: 8.17, display: "8h 10min" },
+  "France": { hours: 8.25, display: "8h 15min" },
+  "United Kingdom": { hours: 8.33, display: "8h 20min" },
+  "Canada": { hours: 8.42, display: "8h 25min" },
+  "Australia": { hours: 8.67, display: "8h 40min" },
+  "New Zealand": { hours: 8.83, display: "8h 50min" },
+  "Finland": { hours: 8.83, display: "8h 50min" },
+  "Netherlands": { hours: 8.83, display: "8h 50min" },
+  "United States of America": { hours: 8.8, display: "8h 48min" },
+};
+
+// Also map common variant names → data keys
+const NAME_MAP = {
+  "USA": "United States of America",
+  "US": "United States of America",
+  "United States": "United States of America",
+  "UK": "United Kingdom",
+  "South Korea": "South Korea",
+  "Korea": "South Korea",
+  "Republic of Korea": "South Korea",
+};
+
+const GDP_COST = {
+  "United States of America": { cost: 411, label: "$411bn/yr" },
+  "Japan": { cost: 138, label: "$138bn/yr" },
+  "Germany": { cost: 60, label: "$60bn/yr" },
+  "United Kingdom": { cost: 50, label: "$50bn/yr" },
+  "Canada": { cost: 21, label: "$21bn/yr" },
+};
+
+// Display names for chart/lookup
+const DISPLAY_NAMES = {
+  "United States of America": "United States",
+  "United Kingdom": "UK",
+};
+
+function displayName(key) {
+  return DISPLAY_NAMES[key] || key;
+}
+
+// ─── COLOR SCALE ────────────────────────────────────────────────────────────
+const colorScale = d3.scaleLinear()
+  .domain([7.0, 7.5, 8.0, 8.5, 9.0])
+  .range(["#c0392b", "#e74c3c", "#e8a030", "#e8b547", "#e8c547"])
+  .clamp(true);
+
+// ─── WORLD MAP ──────────────────────────────────────────────────────────────
+const svg = d3.select("#world-map");
+const g = svg.select("#countries-group");
+const tooltip = document.getElementById("map-tooltip");
+const ttCountry = document.getElementById("tt-country");
+const ttHours = document.getElementById("tt-hours");
+const ttCost = document.getElementById("tt-cost");
+
+const projection = d3.geoNaturalEarth1()
+  .scale(153)
+  .translate([480, 250]);
+
+const path = d3.geoPath().projection(projection);
+
+function resolveCountry(geoName) {
+  if (SLEEP_DATA[geoName]) return geoName;
+  if (NAME_MAP[geoName] && SLEEP_DATA[NAME_MAP[geoName]]) return NAME_MAP[geoName];
+  return null;
+}
+
+fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson")
+  .then(r => r.json())
+  .then(world => {
+    g.selectAll("path")
+      .data(world.features)
+      .enter()
+      .append("path")
+      .attr("class", d => {
+        const key = resolveCountry(d.properties.name);
+        return key ? "country-path" : "country-path no-data";
+      })
+      .attr("d", path)
+      .attr("fill", d => {
+        const key = resolveCountry(d.properties.name);
+        if (!key) return "#1e1e2e";
+        return colorScale(SLEEP_DATA[key].hours);
+      })
+      .on("mousemove", function(event, d) {
+        const key = resolveCountry(d.properties.name);
+        if (!key) return;
+        const data = SLEEP_DATA[key];
+        const gdp = GDP_COST[key];
+        ttCountry.textContent = displayName(key);
+        ttHours.textContent = data.display + " avg/night";
+        ttCost.textContent = gdp ? `GDP loss: ${gdp.label}` : "";
+        tooltip.classList.add("visible");
+
+        const mapRect = document.querySelector(".map-container").getBoundingClientRect();
+        const x = event.clientX - mapRect.left + 12;
+        const y = event.clientY - mapRect.top - 40;
+        tooltip.style.left = Math.min(x, mapRect.width - 200) + "px";
+        tooltip.style.top = Math.max(y, 8) + "px";
+      })
+      .on("mouseleave", function() {
+        tooltip.classList.remove("visible");
+      });
+  })
+  .catch(err => {
+    console.error("GeoJSON load failed:", err);
+    g.append("text")
+      .attr("x", 480).attr("y", 250)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#5a5a6a")
+      .text("Map unavailable — check network connection");
+  });
+
+// ─── COUNTRY LOOKUP ──────────────────────────────────────────────────────────
+const select = document.getElementById("country-select");
+const resultBox = document.getElementById("lookup-result");
+const resHours = document.getElementById("res-hours");
+const resCountry = document.getElementById("res-country");
+const resNote = document.getElementById("res-note");
+
+const CULTURAL_NOTES = {
+  "Japan": "7h 22min average. Inemuri culture: sleeping at your desk signals dedication, not laziness.",
+  "South Korea": "7h 31min average. Ppalli ppalli ('hurry hurry') culture — rest is seen as falling behind.",
+  "United States of America": "8h 48min average. Still loses $411bn/yr to sleep deprivation — 4th most in world.",
+  "United Kingdom": "8h 20min average. GDP loss: ~$50bn/yr.",
+  "Germany": "8h 10min average. GDP loss: ~$60bn/yr.",
+  "Canada": "8h 25min average. GDP loss: ~$21bn/yr.",
+  "Finland": "8h 50min average. Among the highest in the dataset. Nordic work culture balances productivity and rest.",
+  "Netherlands": "8h 50min average. High wellbeing scores correlate with adequate sleep.",
+  "New Zealand": "8h 50min average. Oceanian countries show some of the highest sleep averages.",
+  "Australia": "8h 40min average.",
+  "France": "8h 15min average. Mediterranean influence on daily rhythms persists.",
+  "Brazil": "8h 05min average.",
+  "Mexico": "8h 06min average.",
+  "India": "8h 00min average. Exactly on the WHO minimum threshold.",
+  "Singapore": "7h 57min average. One of Asia's most work-intensive city-states.",
+  "Indonesia": "7h 57min average.",
+  "Philippines": "7h 50min average.",
+  "China": "7h 50min average. Rapid urbanization and tech-sector culture driving sleep loss.",
+  "Malaysia": "7h 40min average.",
+  "Saudi Arabia": "7h 40min average.",
+};
+
+const sortedCountries = Object.keys(SLEEP_DATA).sort((a,b) =>
+  SLEEP_DATA[a].hours - SLEEP_DATA[b].hours
+);
+
+sortedCountries.forEach(key => {
+  const opt = document.createElement("option");
+  opt.value = key;
+  opt.textContent = displayName(key);
+  select.appendChild(opt);
+});
+
+select.addEventListener("change", () => {
+  const key = select.value;
+  if (!key) { resultBox.classList.add("hidden"); return; }
+  const d = SLEEP_DATA[key];
+  resHours.textContent = d.display;
+  resCountry.textContent = displayName(key);
+  resNote.textContent = CULTURAL_NOTES[key] || `${d.display} average sleep per night.`;
+  resultBox.classList.remove("hidden");
+});
+
+// ─── BAR CHART ───────────────────────────────────────────────────────────────
+const chartEl = document.getElementById("bar-chart");
+
+// sorted least → most
+const chartData = sortedCountries.map(k => ({
+  key: k,
+  hours: SLEEP_DATA[k].hours,
+  display: SLEEP_DATA[k].display,
+  gdp: GDP_COST[k] || null,
+}));
+
+const minH = 7.0;
+const maxH = 9.2;
+
+// Add mortality reference inside the bar track
+// We'll calculate the % position for 7h
+const mortalityPct = ((7.0 - minH) / (maxH - minH)) * 100;
+
+chartData.forEach(d => {
+  const pct = ((d.hours - minH) / (maxH - minH)) * 100;
+  const isHighlight = d.gdp !== null;
+
+  const row = document.createElement("div");
+  row.className = "bar-row";
+
+  const label = document.createElement("div");
+  label.className = "bar-label" + (isHighlight ? " highlight" : "");
+  label.textContent = displayName(d.key);
+
+  const track = document.createElement("div");
+  track.className = "bar-track";
+
+  const fill = document.createElement("div");
+  fill.className = "bar-fill";
+  fill.style.width = "0%";
+  fill.style.background = colorScale(d.hours);
+
+  // mortality line
+  const mLine = document.createElement("div");
+  mLine.className = "mortality-line";
+  mLine.style.left = mortalityPct + "%";
+
+  track.appendChild(fill);
+  track.appendChild(mLine);
+
+  if (d.gdp) {
+    const ann = document.createElement("div");
+    ann.className = "bar-annotation";
+    ann.textContent = d.gdp.label + " lost";
+    fill.appendChild(ann);
+  }
+
+  const value = document.createElement("div");
+  value.className = "bar-value" + (isHighlight ? " highlight" : "");
+  value.textContent = d.display;
+
+  row.appendChild(label);
+  row.appendChild(track);
+  row.appendChild(value);
+  chartEl.appendChild(row);
+
+  // animate in
+  setTimeout(() => {
+    fill.style.width = pct + "%";
+  }, 100);
+});
+
+// ─── ANIMATE ON SCROLL ───────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const fills = e.target.querySelectorAll(".bar-fill");
+      fills.forEach(f => {
+        const parent = f.parentElement;
+        const row = parent.parentElement;
+        const labelEl = row.querySelector(".bar-label");
+        // already animated - just ensure visible
+      });
+    }
+  });
+}, { threshold: 0.1 });
+
+observer.observe(chartEl);
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://www.rand.org/pubs/research_reports/RR1594.html" style="color:#4A9EBF;text-decoration:none">RAND Corporation — Why Sleep Matters: Quantifying the Economic Costs of Insufficient Sleep</a> — <span style="color:rgba(255,255,255,0.6)">Landmark 2016 report estimating GDP losses from sleep deprivation across five countries (US, UK, Germany, Japan, Canada), including productivity and mortality modeling.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.science.org/doi/10.1126/sciadv.1501705" style="color:#4A9EBF;text-decoration:none">Walch et al. — A global quantification of 'normal' sleep schedules using smartphone data, Science Advances</a> — <span style="color:rgba(255,255,255,0.6)">Peer-reviewed 2016 study analyzing sleep duration, timing, and social jetlag across 100+ countries using anonymized data from the Entrain smartphone app.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.oecd.org/en/data/indicators/time-use.html" style="color:#4A9EBF;text-decoration:none">OECD Time Use Database</a> — <span style="color:rgba(255,255,255,0.6)">Harmonized time-use survey data from OECD member countries capturing average daily minutes spent sleeping, covering survey waves from the 2000s–2020s.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://aasm.org/resources/pdf/sleepstatement.pdf" style="color:#4A9EBF;text-decoration:none">American Academy of Sleep Medicine / Sleep Research Society — Consensus Statement on Recommended Sleep Duration</a> — <span style="color:rgba(255,255,255,0.6)">2015 consensus defining the 7–9 hour adult sleep recommendation used as the benchmark threshold for classifying sleep deprivation in most comparative studies.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Most national averages rely on self-reported sleep duration, which consistently overestimates actual sleep by 30–60 minutes compared to actigraphy or polysomnography measurements — meaning true deprivation rates are likely higher than shown.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Smartphone and wearable-derived datasets (including the Walch et al. study) carry significant selection bias: users who track sleep skew younger, wealthier, and more health-conscious than the general population, potentially flattering averages in high-income countries.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Economic cost estimates vary widely by model: the RAND figures assume a direct link between short sleep and mortality/absenteeism, but causality is difficult to establish — poor health often causes short sleep rather than the reverse, which may inflate attributed costs.</li>
+  </ul>
+</div>
+</body>
+</html>

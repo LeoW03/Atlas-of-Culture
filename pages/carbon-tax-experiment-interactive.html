@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Carbon Tax Experiment — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --gold: #e8c547;
+    --coral: #ff6b6b;
+    --teal: #4ecdc4;
+    --green-deep: #1a7a4a;
+    --green-mid: #2eb872;
+    --text-dim: rgba(255,255,255,0.55);
+    --text-bright: rgba(255,255,255,0.92);
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text-bright);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+  }
+  nav .wordmark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  nav .pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 5rem 2rem 3rem;
+    text-align: center;
+  }
+  .hero .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #fff 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .hook {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    max-width: 680px;
+    margin: 0 auto 2.5rem;
+  }
+  .hero .hook strong {
+    color: var(--text-bright);
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    padding: 2rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 0 2rem 4rem;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.4rem;
+    font-weight: 500;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat .num.coral { color: var(--coral); }
+  .stat .num.teal  { color: var(--teal); }
+  .stat .label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+  }
+  section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  section .subtitle {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── MAP ── */
+  #map-container {
+    position: relative;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  #map-svg { width: 100%; display: block; }
+  #map-tooltip {
+    position: absolute;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-size: 0.82rem;
+    max-width: 200px;
+    backdrop-filter: blur(8px);
+  }
+  #map-tooltip .t-name {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+  }
+  #map-tooltip .t-price {
+    color: var(--text-bright);
+  }
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .legend-gradient {
+    width: 160px;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #2a2a35, #1a7a4a, #2eb872, #e8c547);
+  }
+
+  /* ── DUAL AXIS CHART ── */
+  #chart-container {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  #chart-svg { width: 100%; display: block; }
+  .chart-legend {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 12px; height: 3px; border-radius: 2px;
+  }
+
+  /* ── BAR CHART ── */
+  #bar-container {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  #bar-svg { width: 100%; display: block; }
+
+  /* ── EXPLAINER ── */
+  .explainer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .explainer-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .explainer-card .icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .explainer-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+  .explainer-card p {
+    font-size: 0.84rem;
+    line-height: 1.65;
+    color: var(--text-dim);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .stats-row { gap: 1.5rem; }
+    .stat .num { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="wordmark">Atlas of Culture</span>
+  <span class="pill">Environment</span>
+</nav>
+
+<div class="hero">
+  <div class="tag">Data Essay · Carbon Pricing</div>
+  <h1>The Carbon Tax Experiment</h1>
+  <p class="hook">
+    In 1991, Sweden put a <strong>$30 tax on carbon</strong>. Now it's <strong>$130/tonne</strong> — the highest in the world.
+    Since then: emissions <strong>down 27%</strong>, GDP <strong>up 75%</strong>.
+    Sweden ran the longest, most aggressive carbon pricing experiment in history. It worked.
+  </p>
+</div>
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="num">$130</div>
+    <div class="label">Sweden carbon price (2024, USD/tonne)</div>
+  </div>
+  <div class="stat">
+    <div class="num coral">−27%</div>
+    <div class="label">Emissions since 1990</div>
+  </div>
+  <div class="stat">
+    <div class="num teal">+75%</div>
+    <div class="label">Real GDP growth since 1991</div>
+  </div>
+  <div class="stat">
+    <div class="num">33</div>
+    <div class="label">Years the tax has been running</div>
+  </div>
+</div>
+
+<!-- SECTION 1: WORLD MAP -->
+<section>
+  <h2>Where Carbon Is Priced</h2>
+  <div class="subtitle">Carbon price per tonne CO₂ (USD, 2024). Hover for details.</div>
+  <div id="map-container">
+    <svg id="map-svg" viewBox="0 0 960 500"></svg>
+    <div id="map-tooltip">
+      <div class="t-name" id="tt-name"></div>
+      <div class="t-price" id="tt-price"></div>
+    </div>
+  </div>
+  <div class="map-legend">
+    <span>$0</span>
+    <div class="legend-gradient"></div>
+    <span>$130/tonne</span>
+    <span style="margin-left:1rem; color: rgba(255,255,255,0.3)">· Grey = no price data / $0</span>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SECTION 2: SWEDEN DUAL AXIS -->
+<section>
+  <h2>Sweden: Green Growth in Action</h2>
+  <div class="subtitle">Emissions (Mt CO₂eq, left) vs. Real GDP index (right), 1990–2022</div>
+  <div id="chart-container">
+    <svg id="chart-svg" viewBox="0 0 900 400"></svg>
+    <div class="chart-legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--coral)"></div>
+        <span>CO₂ Emissions (Mt)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--teal)"></div>
+        <span>Real GDP (indexed, 1990=100)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SECTION 3: BAR COMPARISON -->
+<section>
+  <h2>Carbon Price by Country</h2>
+  <div class="subtitle">Effective carbon price (USD/tonne CO₂), 2024. Bars show named/explicit prices.</div>
+  <div id="bar-container">
+    <svg id="bar-svg" viewBox="0 0 900 460"></svg>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SECTION 4: EXPLAINER -->
+<section>
+  <h2>Why Sweden Works — And Why Others Don't Copy It</h2>
+  <div class="subtitle">The anatomy of a successful carbon tax</div>
+  <div class="explainer-grid">
+    <div class="explainer-card">
+      <div class="icon">♻️</div>
+      <h3>Revenue Recycled</h3>
+      <p>Sweden returns carbon tax revenue to households and businesses through income tax cuts and targeted rebates. It's not a net tax increase — it's a shift in what gets taxed.</p>
+    </div>
+    <div class="explainer-card">
+      <div class="icon">📈</div>
+      <h3>Gradual Escalation</h3>
+      <p>The price started at ~$30/tonne and rose predictably over 33 years. Businesses could plan. Investments in clean technology had a clear return on investment.</p>
+    </div>
+    <div class="explainer-card">
+      <div class="icon">🏭</div>
+      <h3>Industry Exemptions (Early)</h3>
+      <p>Energy-intensive industries received partial exemptions early on to prevent carbon leakage. These were phased out as cleaner alternatives emerged — pragmatic sequencing.</p>
+    </div>
+    <div class="explainer-card">
+      <div class="icon">🌲</div>
+      <h3>Pre-existing Clean Grid</h3>
+      <p>Sweden's electricity was already 90% clean (hydro + nuclear) in 1991. The carbon tax accelerated decarbonization of heating and transport, where it had the most leverage.</p>
+    </div>
+    <div class="explainer-card">
+      <div class="icon">🗳️</div>
+      <h3>Political Durability</h3>
+      <p>The carbon tax has survived every government — left and right — since 1991. Revenue recycling made it politically resilient. Australia repealed theirs in 2 years.</p>
+    </div>
+    <div class="explainer-card">
+      <div class="icon">🌍</div>
+      <h3>The Copying Problem</h3>
+      <p>Sweden is small (10M people), already clean, and has high social trust. Scaling the model requires political will, institutional capacity, and willingness to face industry lobbying — all scarce globally.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Atlas of Culture · Data: IEA, World Bank, Swedish Energy Agency, Carbon Pricing Dashboard (World Bank) · 2024
+</footer>
+
+<script>
+// ────────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────────
+
+const carbonPrices = {
+  "Sweden": 130,
+  "Switzerland": 131,
+  "Liechtenstein": 131,
+  "Finland": 85,
+  "Norway": 95,
+  "Netherlands": 65,
+  "Denmark": 27,
+  "Germany": 45,
+  "France": 50,
+  "Austria": 35,
+  "Ireland": 56,
+  "Luxembourg": 35,
+  "Belgium": 30,
+  "Portugal": 30,
+  "Spain": 30,
+  "Italy": 30,
+  "Greece": 30,
+  "Czech Republic": 30,
+  "Poland": 30,
+  "Slovakia": 30,
+  "Slovenia": 30,
+  "Hungary": 30,
+  "Croatia": 30,
+  "Romania": 30,
+  "Bulgaria": 30,
+  "Estonia": 30,
+  "Latvia": 30,
+  "Lithuania": 30,
+  "Cyprus": 30,
+  "Malta": 30,
+  "Iceland": 35,
+  "United Kingdom": 45,
+  "Canada": 65,
+  "New Zealand": 35,
+  "Japan": 3,
+  "South Korea": 8,
+  "China": 10,
+  "Singapore": 25,
+  "Chile": 5,
+  "Colombia": 5,
+  "Mexico": 3,
+  "Argentina": 5,
+  "Ukraine": 1,
+  "Kazakhstan": 2,
+};
+
+// Countries with zero/no price
+const noPrice = [
+  "United States of America","United States","Australia","Brazil","India","Russia",
+  "Saudi Arabia","Iran","Iraq","Indonesia","Nigeria","South Africa","Turkey",
+  "Pakistan","Bangladesh","Egypt","Vietnam","Thailand","Malaysia","Philippines",
+  "Tanzania","Kenya","Ghana","Mozambique","Zambia","Zimbabwe","Cameroon",
+  "Côte d'Ivoire","Sudan","Ethiopia","Somalia","Yemen","Syria","Libya",
+  "Angola","DR Congo","Congo","Madagascar","Senegal","Mali","Niger",
+  "Burkina Faso","Guinea","Chad","Eritrea","Benin","Togo","Sierra Leone",
+  "Liberia","Gabon","Equatorial Guinea","Central African Republic",
+  "South Sudan","Djibouti","Rwanda","Burundi","Malawi","Botswana",
+  "Namibia","Lesotho","Swaziland","Eswatini","Mauritius","Mauritania",
+  "Morocco","Algeria","Tunisia","Libya","Bolivia","Paraguay","Uruguay",
+  "Ecuador","Peru","Venezuela","Cuba","Haiti","Dominican Republic",
+  "Jamaica","Guatemala","Honduras","El Salvador","Nicaragua","Costa Rica",
+  "Panama","Belarus","Moldova","Georgia","Armenia","Azerbaijan",
+  "Uzbekistan","Turkmenistan","Tajikistan","Kyrgyzstan","Mongolia",
+  "Myanmar","Cambodia","Laos","Nepal","Sri Lanka","Afghanistan",
+  "United Arab Emirates","Qatar","Kuwait","Bahrain","Oman","Jordan",
+  "Lebanon","Israel","Tunisia","Papua New Guinea","New Caledonia",
+  "Taiwan","North Korea",
+];
+
+// Sweden historical data
+const swedenData = [
+  {year:1990, emissions:72.0, gdpIdx:100},
+  {year:1991, emissions:70.5, gdpIdx:99},
+  {year:1992, emissions:69.0, gdpIdx:97},
+  {year:1993, emissions:68.0, gdpIdx:98},
+  {year:1994, emissions:69.5, gdpIdx:103},
+  {year:1995, emissions:71.0, gdpIdx:107},
+  {year:1996, emissions:73.5, gdpIdx:110},
+  {year:1997, emissions:70.0, gdpIdx:115},
+  {year:1998, emissions:68.5, gdpIdx:120},
+  {year:1999, emissions:67.5, gdpIdx:126},
+  {year:2000, emissions:67.0, gdpIdx:133},
+  {year:2001, emissions:66.5, gdpIdx:133},
+  {year:2002, emissions:66.0, gdpIdx:134},
+  {year:2003, emissions:67.5, gdpIdx:136},
+  {year:2004, emissions:68.0, gdpIdx:142},
+  {year:2005, emissions:66.5, gdpIdx:146},
+  {year:2006, emissions:65.5, gdpIdx:152},
+  {year:2007, emissions:63.0, gdpIdx:158},
+  {year:2008, emissions:61.5, gdpIdx:157},
+  {year:2009, emissions:56.0, gdpIdx:148},
+  {year:2010, emissions:59.5, gdpIdx:158},
+  {year:2011, emissions:57.5, gdpIdx:163},
+  {year:2012, emissions:56.0, gdpIdx:163},
+  {year:2013, emissions:55.5, gdpIdx:165},
+  {year:2014, emissions:54.0, gdpIdx:170},
+  {year:2015, emissions:53.5, gdpIdx:176},
+  {year:2016, emissions:53.0, gdpIdx:181},
+  {year:2017, emissions:52.5, gdpIdx:186},
+  {year:2018, emissions:52.0, gdpIdx:190},
+  {year:2019, emissions:51.5, gdpIdx:193},
+  {year:2020, emissions:49.0, gdpIdx:186},
+  {year:2021, emissions:50.5, gdpIdx:197},
+  {year:2022, emissions:52.4, gdpIdx:200},
+];
+
+const barData = [
+  { country: "Sweden",      price: 130, highlight: true },
+  { country: "Switzerland", price: 131, highlight: false },
+  { country: "Norway",      price: 95,  highlight: false },
+  { country: "Finland",     price: 85,  highlight: false },
+  { country: "Canada",      price: 65,  highlight: false },
+  { country: "Netherlands", price: 65,  highlight: false },
+  { country: "EU ETS",      price: 65,  highlight: false },
+  { country: "Ireland",     price: 56,  highlight: false },
+  { country: "UK",          price: 45,  highlight: false },
+  { country: "Germany",     price: 45,  highlight: false },
+  { country: "France",      price: 50,  highlight: false },
+  { country: "New Zealand", price: 35,  highlight: false },
+  { country: "Singapore",   price: 25,  highlight: false },
+  { country: "China (ETS)", price: 10,  highlight: false },
+  { country: "S. Korea",    price: 8,   highlight: false },
+  { country: "Japan",       price: 3,   highlight: false },
+  { country: "Australia",   price: 0,   highlight: false, note: "repealed 2014" },
+  { country: "USA",         price: 0,   highlight: false, note: "no federal price" },
+  { country: "India",       price: 0,   highlight: false, note: "no price" },
+  { country: "Brazil",      price: 0,   highlight: false, note: "no price" },
+].sort((a,b) => b.price - a.price);
+
+
+// ────────────────────────────────────────────────
+// SLIDE 1: WORLD MAP
+// ────────────────────────────────────────────────
+
+async function renderMap() {
+  const svg = d3.select("#map-svg");
+  const W = 960, H = 500;
+
+  const colorScale = d3.scaleSequential()
+    .domain([0, 130])
+    .interpolator(t => {
+      if (t === 0) return "#2a2a35";
+      return d3.interpolateRgbBasis(["#2a2a35", "#1a4a2e", "#1a7a4a", "#2eb872", "#e8c547"])(t);
+    });
+
+  const projection = d3.geoNaturalEarth1()
+    .scale(155)
+    .translate([W/2, H/2 + 20]);
+
+  const path = d3.geoPath().projection(projection);
+
+  const tooltip = document.getElementById("map-tooltip");
+  const ttName = document.getElementById("tt-name");
+  const ttPrice = document.getElementById("tt-price");
+  const container = document.getElementById("map-container");
+
+  try {
+    const geo = await fetch("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson").then(r => r.json());
+
+    svg.selectAll("path")
+      .data(geo.features)
+      .join("path")
+      .attr("d", path)
+      .attr("fill", d => {
+        const name = d.properties.name;
+        if (name === "Sweden") return "#e8c547";
+        const price = carbonPrices[name];
+        if (price !== undefined) return colorScale(price);
+        return "#2a2a35";
+      })
+      .attr("stroke", "#0a0a0f")
+      .attr("stroke-width", 0.4)
+      .style("cursor", "pointer")
+      .on("mousemove", function(event, d) {
+        const name = d.properties.name;
+        const price = name === "Sweden" ? 130 : (carbonPrices[name] ?? null);
+        ttName.textContent = name;
+        if (name === "Sweden") {
+          ttPrice.innerHTML = `<span style="color:#e8c547">$130/tonne</span><br><small style="color:rgba(255,255,255,0.5)">World's highest carbon tax</small>`;
+        } else if (price) {
+          ttPrice.textContent = `$${price}/tonne CO₂`;
+        } else {
+          ttPrice.innerHTML = `<span style="color:rgba(255,255,255,0.4)">No carbon price</span>`;
+        }
+        const rect = container.getBoundingClientRect();
+        let x = event.clientX - rect.left + 12;
+        let y = event.clientY - rect.top - 10;
+        if (x + 210 > rect.width) x = event.clientX - rect.left - 220;
+        tooltip.style.left = x + "px";
+        tooltip.style.top = y + "px";
+        tooltip.style.opacity = 1;
+      })
+      .on("mouseleave", function() {
+        tooltip.style.opacity = 0;
+      });
+
+    // Sweden label
+    const swe = geo.features.find(f => f.properties.name === "Sweden");
+    if (swe) {
+      const c = path.centroid(swe);
+      svg.append("text")
+        .attr("x", c[0])
+        .attr("y", c[1] - 8)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#0a0a0f")
+        .attr("font-family", "IBM Plex Mono, monospace")
+        .attr("font-size", "7px")
+        .attr("font-weight", "600")
+        .attr("pointer-events", "none")
+        .text("SE");
+    }
+  } catch(e) {
+    svg.append("text")
+      .attr("x", W/2).attr("y", H/2)
+      .attr("text-anchor","middle")
+      .attr("fill","rgba(255,255,255,0.4)")
+      .attr("font-family","Inter,sans-serif")
+      .attr("font-size","14px")
+      .text("Map requires network access to load GeoJSON");
+  }
+}
+
+// ────────────────────────────────────────────────
+// SLIDE 2: DUAL AXIS LINE CHART
+// ────────────────────────────────────────────────
+
+function renderLineChart() {
+  const svg = d3.select("#chart-svg");
+  const W = 900, H = 400;
+  const margin = { top: 30, right: 70, bottom: 50, left: 60 };
+  const iW = W - margin.left - margin.right;
+  const iH = H - margin.top - margin.bottom;
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear().domain([1990, 2022]).range([0, iW]);
+  const yEmissions = d3.scaleLinear().domain([45, 78]).range([iH, 0]);
+  const yGDP = d3.scaleLinear().domain([85, 210]).range([iH, 0]);
+
+  // Grid
+  g.selectAll(".grid-h")
+    .data(yEmissions.ticks(6))
+    .join("line")
+    .attr("class","grid-h")
+    .attr("x1",0).attr("x2",iW)
+    .attr("y1",d => yEmissions(d)).attr("y2",d => yEmissions(d))
+    .attr("stroke","rgba(255,255,255,0.05)").attr("stroke-width",1);
+
+  g.selectAll(".grid-v")
+    .data(x.ticks(8))
+    .join("line")
+    .attr("class","grid-v")
+    .attr("x1",d => x(d)).attr("x2",d => x(d))
+    .attr("y1",0).attr("y2",iH)
+    .attr("stroke","rgba(255,255,255,0.05)").attr("stroke-width",1);
+
+  // Axes
+  g.append("g").attr("transform", `translate(0,${iH})`)
+    .call(d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")))
+    .call(ax => ax.select(".domain").remove())
+    .call(ax => ax.selectAll("text").attr("fill","rgba(255,255,255,0.4)").attr("font-size","11px").attr("font-family","IBM Plex Mono, monospace"))
+    .call(ax => ax.selectAll("line").remove());
+
+  g.append("g")
+    .call(d3.axisLeft(yEmissions).ticks(6).tickFormat(d => d + " Mt"))
+    .call(ax => ax.select(".domain").remove())
+    .call(ax => ax.selectAll("text").attr("fill","#ff6b6b").attr("font-size","11px").attr("font-family","IBM Plex Mono, monospace"))
+    .call(ax => ax.selectAll("line").remove());
+
+  g.append("g").attr("transform", `translate(${iW},0)`)
+    .call(d3.axisRight(yGDP).ticks(6).tickFormat(d => d))
+    .call(ax => ax.select(".domain").remove())
+    .call(ax => ax.selectAll("text").attr("fill","#4ecdc4").attr("font-size","11px").attr("font-family","IBM Plex Mono, monospace"))
+    .call(ax => ax.selectAll("line").remove());
+
+  // Axis labels
+  g.append("text").attr("x",-margin.left+8).attr("y",-14)
+    .attr("fill","#ff6b6b").attr("font-size","11px").attr("font-family","Inter,sans-serif")
+    .text("← Emissions (Mt CO₂eq)");
+
+  g.append("text").attr("x",iW+8).attr("y",-14)
+    .attr("fill","#4ecdc4").attr("font-size","11px").attr("font-family","Inter,sans-serif")
+    .text("GDP Index →");
+
+  // Carbon tax annotation
+  g.append("line")
+    .attr("x1", x(1991)).attr("x2", x(1991))
+    .attr("y1", 0).attr("y2", iH)
+    .attr("stroke", "rgba(232,197,71,0.4)")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "4,3");
+
+  g.append("text")
+    .attr("x", x(1991) + 5).attr("y", 18)
+    .attr("fill", "rgba(232,197,71,0.7)")
+    .attr("font-size", "10px")
+    .attr("font-family", "IBM Plex Mono, monospace")
+    .text("Tax introduced");
+
+  // Areas
+  const areaEmissions = d3.area()
+    .x(d => x(d.year))
+    .y0(iH)
+    .y1(d => yEmissions(d.emissions))
+    .curve(d3.curveCatmullRom);
+
+  g.append("path")
+    .datum(swedenData)
+    .attr("fill", "rgba(255,107,107,0.08)")
+    .attr("d", areaEmissions);
+
+  // Lines
+  const lineEmissions = d3.line()
+    .x(d => x(d.year))
+    .y(d => yEmissions(d.emissions))
+    .curve(d3.curveCatmullRom);
+
+  const lineGDP = d3.line()
+    .x(d => x(d.year))
+    .y(d => yGDP(d.gdpIdx))
+    .curve(d3.curveCatmullRom);
+
+  g.append("path")
+    .datum(swedenData)
+    .attr("fill","none")
+    .attr("stroke","#ff6b6b")
+    .attr("stroke-width",2.5)
+    .attr("d", lineEmissions);
+
+  g.append("path")
+    .datum(swedenData)
+    .attr("fill","none")
+    .attr("stroke","#4ecdc4")
+    .attr("stroke-width",2.5)
+    .attr("d", lineGDP);
+
+  // End labels
+  const last = swedenData[swedenData.length - 1];
+  g.append("text")
+    .attr("x", x(last.year)+5).attr("y", yEmissions(last.emissions)+4)
+    .attr("fill","#ff6b6b").attr("font-size","11px").attr("font-family","IBM Plex Mono, monospace")
+    .text("52 Mt");
+
+  g.append("text")
+    .attr("x", x(last.year)+5).attr("y", yGDP(last.gdpIdx)+4)
+    .attr("fill","#4ecdc4").attr("font-size","11px").attr("font-family","IBM Plex Mono, monospace")
+    .text("+75%");
+}
+
+// ────────────────────────────────────────────────
+// SLIDE 3: BAR CHART
+// ────────────────────────────────────────────────
+
+function renderBarChart() {
+  const svg = d3.select("#bar-svg");
+  const W = 900, H = 460;
+  const margin = { top: 20, right: 20, bottom: 20, left: 100 };
+  const iW = W - margin.left - margin.right;
+  const iH = H - margin.top - margin.bottom;
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const sorted = [...barData];
+  const y = d3.scaleBand().domain(sorted.map(d => d.country)).range([0, iH]).padding(0.28);
+  const x = d3.scaleLinear().domain([0, 140]).range([0, iW]);
+
+  // Grid
+  g.selectAll(".bg-line")
+    .data(x.ticks(7))
+    .join("line")
+    .attr("x1",d=>x(d)).attr("x2",d=>x(d))
+    .attr("y1",0).attr("y2",iH)
+    .attr("stroke","rgba(255,255,255,0.05)");
+
+  // Bars
+  g.selectAll("rect")
+    .data(sorted)
+    .join("rect")
+    .attr("y", d => y(d.country))
+    .attr("x", 0)
+    .attr("width", d => x(d.price))
+    .attr("height", y.bandwidth())
+    .attr("rx", 3)
+    .attr("fill", d => {
+      if (d.country === "Sweden") return "#e8c547";
+      if (d.price === 0) return "rgba(255,255,255,0.06)";
+      const t = d.price / 130;
+      return d3.interpolateRgbBasis(["#1a4a2e", "#1a7a4a", "#2eb872"])(t);
+    });
+
+  // Country labels
+  g.selectAll(".country-label")
+    .data(sorted)
+    .join("text")
+    .attr("class","country-label")
+    .attr("x",-8).attr("y", d => y(d.country) + y.bandwidth()/2 + 4)
+    .attr("text-anchor","end")
+    .attr("fill", d => d.country === "Sweden" ? "#e8c547" : (d.price === 0 ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.7)"))
+    .attr("font-size","11px")
+    .attr("font-family","IBM Plex Mono, monospace")
+    .text(d => d.country);
+
+  // Price labels
+  g.selectAll(".price-label")
+    .data(sorted)
+    .join("text")
+    .attr("class","price-label")
+    .attr("x", d => d.price > 0 ? x(d.price) + 6 : 6)
+    .attr("y", d => y(d.country) + y.bandwidth()/2 + 4)
+    .attr("fill", d => d.country === "Sweden" ? "#e8c547" : (d.price === 0 ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.55)"))
+    .attr("font-size","10px")
+    .attr("font-family","IBM Plex Mono, monospace")
+    .text(d => d.price > 0 ? `$${d.price}` : (d.note || "$0"));
+}
+
+// ────────────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────────────
+
+renderMap();
+renderLineChart();
+renderBarChart();
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://openknowledge.worldbank.org/handle/10986/39796" style="color:#4A9EBF;text-decoration:none">World Bank — State and Trends of Carbon Pricing 2023</a> — <span style="color:rgba(255,255,255,0.6)">Annual report tracking 73 carbon pricing instruments worldwide (ETS and carbon taxes), covering price levels, revenue, and emissions coverage as of 2023.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://carbonpricingdashboard.worldbank.org/" style="color:#4A9EBF;text-decoration:none">World Bank Carbon Pricing Dashboard</a> — <span style="color:rgba(255,255,255,0.6)">Interactive database of all active and scheduled carbon taxes and emissions trading systems globally, with historical price and coverage data updated through 2024.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.oecd.org/en/publications/effective-carbon-rates-2023_b84d5b8d-en.html" style="color:#4A9EBF;text-decoration:none">OECD — Effective Carbon Rates 2023</a> — <span style="color:rgba(255,255,255,0.6)">Cross-country analysis of effective carbon pricing across 71 countries, combining explicit carbon taxes, ETS prices, and energy taxes, benchmarked against a €60/tCO₂ reference price.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.imf.org/en/Publications/WP/Issues/2019/01/15/Carbon-Taxes-Many-Strengths-Some-Challenges-46378" style="color:#4A9EBF;text-decoration:none">IMF Working Paper — Carbon Taxes: Many Strengths, Some Challenges (WP/19/5)</a> — <span style="color:rgba(255,255,255,0.6)">IMF staff analysis of macroeconomic and GDP impacts of carbon pricing across implemented regimes, covering distributional effects and revenue recycling outcomes.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Attribution is deeply uncertain — isolating a carbon price's effect on emissions from confounding factors (economic recessions, energy price shocks, parallel regulations) requires strong counterfactual assumptions that vary across studies.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">GDP impact estimates depend heavily on whether and how carbon revenues are recycled; studies assuming lump-sum rebates or corporate tax cuts show near-neutral or positive GDP effects, while studies assuming no recycling show losses — the policy design matters as much as the price level.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Most existing carbon pricing schemes cover only a fraction of national emissions (e.g., the EU ETS covers ~40% of EU emissions, Sweden's carbon tax exempts certain industrial sectors), so reported 'national' emissions reductions are not fully attributable to the carbon price alone.</li>
+  </ul>
+</div>
+</body>
+</html>

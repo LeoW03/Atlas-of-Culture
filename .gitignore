@@ -1,4 +1,5 @@
 *
+!*.html
 !pages/
 !pages/*.html
 !.gitignore

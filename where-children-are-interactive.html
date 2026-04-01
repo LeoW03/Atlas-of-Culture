@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Children Are — Atlas of Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --gold: #e8c547;
+    --gold-dim: rgba(232,197,71,0.15);
+    --blue-deep: #1e3a8a;
+    --blue-mid: #2563eb;
+    --text: #e8e8f0;
+    --text-dim: rgba(232,232,240,0.5);
+    --border: rgba(232,197,71,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(232,197,71,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .series-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 28px;
+  }
+
+  .hero-hook {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 400;
+    line-height: 1.25;
+    max-width: 800px;
+    margin-bottom: 24px;
+  }
+
+  .hero-hook em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 580px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  .scroll-cue {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  .scroll-cue::after {
+    content: '↓';
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.9; }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 100px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 3.5vw, 42px);
+    font-weight: 400;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .section-desc {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 640px;
+    margin-bottom: 48px;
+    line-height: 1.75;
+  }
+
+  /* ── MAP ── */
+  .map-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    position: relative;
+  }
+
+  #map-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .legend-bar {
+    width: 200px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #e8c547, #f97316, #7c3aed, #1e3a8a);
+  }
+
+  .map-tooltip {
+    position: fixed;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 13px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .map-tooltip .country-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .map-tooltip .stat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+  }
+
+  /* ── SCATTER ── */
+  .chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+  }
+
+  #scatter-svg {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .scatter-tooltip {
+    position: fixed;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 13px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  /* ── IMPLICATIONS ── */
+  .implications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    margin-top: 48px;
+  }
+
+  .impl-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .impl-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0.6;
+  }
+
+  .impl-flag {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .impl-country {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .impl-stat {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .impl-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .impl-body {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── NARRATIVE ── */
+  .narrative {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .narrative p {
+    font-size: 18px;
+    line-height: 1.85;
+    margin-bottom: 28px;
+    color: var(--text-dim);
+  }
+
+  .narrative p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .narrative blockquote {
+    border-left: 2px solid var(--gold);
+    padding-left: 24px;
+    margin: 40px 0;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px 24px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── AXIS / D3 ── */
+  .axis text { fill: rgba(232,232,240,0.5); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .axis line, .axis path { stroke: rgba(232,232,240,0.15); }
+  .grid line { stroke: rgba(232,232,240,0.07); stroke-dasharray: 3,3; }
+  .grid path { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="series-label">Atlas of Culture — Economics</div>
+  <h1 class="hero-hook">
+    Niger's median age: <em>15</em>.<br>
+    Japan's: <em>49</em>.<br>
+    Different demographic universes.
+  </h1>
+  <p class="hero-sub">
+    Median age and fertility rate together tell the story of where humanity is headed.
+    Young, fast-growing populations in Sub-Saharan Africa.
+    Aging, shrinking populations in East Asia and Southern Europe.
+    The gap is widening.
+  </p>
+  <div class="scroll-cue">Explore the data</div>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 1: MAP -->
+<section id="map-section">
+  <div class="section-label">01 — Global View</div>
+  <h2 class="section-title">The Age of the World</h2>
+  <p class="section-desc">
+    Median age by country. The north-south divide is stark — northern populations age rapidly
+    while sub-Saharan Africa remains demographically young. Hover any country for details.
+  </p>
+
+  <div class="map-container">
+    <svg id="map-svg" viewBox="-40 33 984 340" xmlns="http://www.w3.org/2000/svg">
+      <g id="map-countries"></g>
+    </svg>
+    <div class="map-legend">
+      <span>Young</span>
+      <div class="legend-bar"></div>
+      <span>Old</span>
+      <span style="margin-left:auto; opacity:0.5">Median age (years)</span>
+    </div>
+  </div>
+  <div class="map-tooltip" id="mapTooltip">
+    <div class="country-name" id="tt-country"></div>
+    <div class="stat" id="tt-age"></div>
+    <div class="stat" id="tt-tfr"></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 2: SCATTER -->
+<section id="scatter-section">
+  <div class="section-label">02 — The Correlation</div>
+  <h2 class="section-title">Age vs. Fertility</h2>
+  <p class="section-desc">
+    Every additional year of median age correlates with a lower fertility rate.
+    The curve is steep. Japan and Niger occupy opposite ends of the same axis.
+    South Korea's 0.78 TFR is the fastest demographic collapse ever recorded.
+  </p>
+
+  <div class="chart-container">
+    <svg id="scatter-svg" height="520"></svg>
+  </div>
+  <div class="scatter-tooltip" id="scatterTooltip">
+    <div class="country-name" id="st-country" style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:4px;"></div>
+    <div id="st-stats" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#e8c547;"></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- NARRATIVE -->
+<div class="narrative">
+  <p>
+    <strong>Demographics are destiny.</strong> It's a cliché because it's true. The median age of a population
+    predicts everything: its labor force size, its pension burden, its appetite for risk, its political temperament.
+    Countries with young populations consume. Countries with old populations preserve.
+  </p>
+
+  <blockquote>
+    "The fastest demographic collapse in recorded history isn't happening in a country at war.
+    It's happening in South Korea — at peace, prosperous, and emptying out."
+  </blockquote>
+
+  <p>
+    South Korea's total fertility rate of <strong>0.78</strong> means the country is replacing roughly
+    <strong>37% of its population</strong> each generation. No war, no plague — just the arithmetic of
+    modernization pushed to its extreme. Women choosing careers, cities, independence. Each individual
+    decision rational. The aggregate: civilizational contraction.
+  </p>
+
+  <p>
+    On the other end: Niger. Median age 15. Total fertility rate 6.8. Every family with six children
+    means a population that doubles in a generation. This is not just a statistic — it's an economic
+    and political pressure system. <strong>A country where more than half the population is under 18</strong>
+    needs schools, jobs, infrastructure at a rate no government can sustain.
+  </p>
+
+  <p>
+    Japan sits between these extremes — not as extreme as Korea, but facing its own reckoning.
+    In 2023, Japan's working-age population shrank by <strong>800,000 people</strong>. The country is
+    importing workers it once refused to admit, extending retirement ages, automating everything it can.
+    It's a preview of what Germany, Italy, and Spain will face in the coming decade.
+  </p>
+
+  <p>
+    <strong>The economic logic is unavoidable.</strong> Young countries have more workers per retiree.
+    Old countries have fewer. At some ratio, the math breaks the pension system.
+    At some age, innovation slows. At some fertility rate, recovery becomes impossible
+    within any political timeframe.
+  </p>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 3: IMPLICATIONS -->
+<section id="implications-section">
+  <div class="section-label">03 — What It Means</div>
+  <h2 class="section-title">Three Different Futures</h2>
+  <p class="section-desc">
+    Each extreme of the demographic spectrum faces a distinct economic challenge.
+    None of them is simple. None of them is solved.
+  </p>
+
+  <div class="implications-grid">
+    <div class="impl-card">
+      <div class="impl-flag">🇯🇵</div>
+      <div class="impl-country">Japan</div>
+      <div class="impl-stat">49</div>
+      <div class="impl-headline">The Shrinking Workforce</div>
+      <div class="impl-body">
+        Japan lost 800,000 working-age people in 2023 alone. By 2050, one in three Japanese citizens
+        will be over 65. The country that built its postwar economy on cheap, disciplined labor
+        now can't find workers for its convenience stores. Immigration — long taboo — is now policy.
+        Automation is survival.
+      </div>
+    </div>
+
+    <div class="impl-card">
+      <div class="impl-flag">🇰🇷</div>
+      <div class="impl-country">South Korea</div>
+      <div class="impl-stat">0.78</div>
+      <div class="impl-headline">The Fastest Collapse Ever</div>
+      <div class="impl-body">
+        South Korea's TFR of 0.78 is the lowest ever recorded in a large economy —
+        lower than during wars, famines, or plagues. It's the product of extreme housing costs,
+        brutal work culture, and the highest private education spending on earth.
+        Seoul's population could halve by 2100. No country has reversed a decline this steep.
+      </div>
+    </div>
+
+    <div class="impl-card">
+      <div class="impl-flag">🇳🇪</div>
+      <div class="impl-country">Niger</div>
+      <div class="impl-stat">6.8</div>
+      <div class="impl-headline">The Youth Bulge</div>
+      <div class="impl-body">
+        Niger's TFR of 6.8 produces a population pyramid unlike any other.
+        More than half the country is under 18. The government would need to build a new school
+        every day to keep pace. The demographic dividend — the economic windfall young populations
+        can unlock — requires jobs. Right now, the jobs aren't there.
+        The pressure has nowhere to go.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  <div style="margin-bottom:8px; color: #e8c547; opacity:0.7;">ATLAS OF CULTURE</div>
+  Data: UN World Population Prospects 2024 · ~2023 estimates · Where Children Are
+</footer>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const medianAge = {
+  "Japan": 49, "Italy": 47, "Germany": 46, "Greece": 46, "Spain": 45,
+  "South Korea": 44, "Portugal": 44, "Finland": 43, "Switzerland": 43,
+  "Austria": 43, "France": 42, "United Kingdom": 40, "Russia": 40,
+  "United States": 38, "China": 39, "Brazil": 34, "Argentina": 32,
+  "Mexico": 29, "Indonesia": 30, "India": 28, "Philippines": 25,
+  "Nigeria": 18, "Ethiopia": 19, "Mali": 16, "Chad": 15, "Niger": 15
+};
+
+const tfr = {
+  "Niger": 6.8, "Mali": 5.9, "Chad": 6.1, "Somalia": 6.0, "Nigeria": 5.1,
+  "Ethiopia": 4.3, "India": 2.0, "Indonesia": 2.2, "United States": 1.67,
+  "France": 1.68, "United Kingdom": 1.56, "Germany": 1.46, "Russia": 1.42,
+  "China": 1.09, "Italy": 1.24, "Spain": 1.19, "Japan": 1.2, "South Korea": 0.78
+};
+
+// GeoJSON name aliases
+const nameAliases = {
+  "South Korea": ["Republic of Korea", "Korea, South", "South Korea"],
+  "United Kingdom": ["United Kingdom"],
+  "United States": ["United States of America"],
+  "Russia": ["Russia"],
+  "China": ["China"],
+};
+
+function resolveCountry(geoName) {
+  // Direct match first
+  if (medianAge[geoName] !== undefined) return geoName;
+  // Alias lookup
+  for (const [key, aliases] of Object.entries(nameAliases)) {
+    if (aliases.includes(geoName)) return key;
+  }
+  // Partial match
+  for (const key of Object.keys(medianAge)) {
+    if (geoName.includes(key) || key.includes(geoName)) return key;
+  }
+  return null;
+}
+
+// ─── COLOR SCALE ────────────────────────────────────────────────────────────
+// Young (15) = gold/amber, Old (49) = deep blue
+const colorScale = d3.scaleSequential()
+  .domain([15, 49])
+  .interpolator(t => {
+    // 0 = young (gold), 1 = old (blue)
+    if (t < 0.3) {
+      // gold to orange
+      return d3.interpolateRgb("#e8c547", "#f97316")(t / 0.3);
+    } else if (t < 0.6) {
+      // orange to purple
+      return d3.interpolateRgb("#f97316", "#7c3aed")((t - 0.3) / 0.3);
+    } else {
+      // purple to deep blue
+      return d3.interpolateRgb("#7c3aed", "#1e3a8a")((t - 0.6) / 0.4);
+    }
+  });
+
+// ─── MAP ────────────────────────────────────────────────────────────────────
+const mapTooltip = document.getElementById('mapTooltip');
+
+async function buildMap() {
+  const geoData = await d3.json("https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson");
+
+  const svg = d3.select("#map-svg");
+  const projection = d3.geoNaturalEarth1()
+    .translate([452, 203])
+    .scale(153);
+
+  const path = d3.geoPath().projection(projection);
+  const g = svg.select("#map-countries");
+
+  g.selectAll("path")
+    .data(geoData.features)
+    .join("path")
+    .attr("d", path)
+    .attr("fill", d => {
+      const name = d.properties.name || d.properties.ADMIN || d.properties.NAME;
+      const key = resolveCountry(name);
+      if (key && medianAge[key] !== undefined) {
+        return colorScale(medianAge[key]);
+      }
+      return "#1e1e2e";
+    })
+    .attr("stroke", "#0a0a0f")
+    .attr("stroke-width", 0.4)
+    .style("cursor", d => {
+      const name = d.properties.name || d.properties.ADMIN;
+      const key = resolveCountry(name);
+      return (key && medianAge[key]) ? "pointer" : "default";
+    })
+    .on("mousemove", function(event, d) {
+      const name = d.properties.name || d.properties.ADMIN || d.properties.NAME;
+      const key = resolveCountry(name);
+      const age = key ? medianAge[key] : null;
+      const rate = key ? tfr[key] : null;
+
+      if (age) {
+        d3.select(this).attr("stroke", "#e8c547").attr("stroke-width", 1.2);
+        document.getElementById('tt-country').textContent = key || name;
+        document.getElementById('tt-age').textContent = `Median age: ${age} yrs`;
+        document.getElementById('tt-tfr').textContent = rate ? `TFR: ${rate}` : '';
+        mapTooltip.style.display = 'block';
+        mapTooltip.style.left = (event.clientX + 14) + 'px';
+        mapTooltip.style.top = (event.clientY - 10) + 'px';
+      }
+    })
+    .on("mouseleave", function() {
+      d3.select(this).attr("stroke", "#0a0a0f").attr("stroke-width", 0.4);
+      mapTooltip.style.display = 'none';
+    });
+}
+
+buildMap().catch(() => {
+  document.getElementById('map-countries').innerHTML =
+    '<text x="452" y="190" text-anchor="middle" fill="rgba(232,197,71,0.4)" font-family="IBM Plex Mono" font-size="12">Map requires network access to load GeoJSON</text>';
+});
+
+// ─── SCATTER PLOT ────────────────────────────────────────────────────────────
+function buildScatter() {
+  const data = Object.keys(medianAge)
+    .filter(k => tfr[k] !== undefined)
+    .map(k => ({ country: k, age: medianAge[k], tfr: tfr[k] }));
+
+  const margin = { top: 30, right: 40, bottom: 60, left: 60 };
+  const svgEl = document.getElementById('scatter-svg');
+  const totalW = svgEl.clientWidth || 900;
+  const totalH = 520;
+  const W = totalW - margin.left - margin.right;
+  const H = totalH - margin.top - margin.bottom;
+
+  const svg = d3.select("#scatter-svg")
+    .attr("viewBox", `0 0 ${totalW} ${totalH}`)
+    .attr("preserveAspectRatio", "xMidYMid meet");
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const xScale = d3.scaleLinear().domain([10, 52]).range([0, W]);
+  const yScale = d3.scaleLinear().domain([0, 7.5]).range([H, 0]);
+
+  // Grid
+  g.append("g").attr("class", "grid")
+    .call(d3.axisLeft(yScale).tickSize(-W).tickFormat(""));
+  g.append("g").attr("class", "grid")
+    .attr("transform", `translate(0,${H})`)
+    .call(d3.axisBottom(xScale).tickSize(-H).tickFormat(""));
+
+  // Axes
+  g.append("g").attr("class", "axis")
+    .attr("transform", `translate(0,${H})`)
+    .call(d3.axisBottom(xScale).ticks(8).tickFormat(d => d + " yrs"));
+
+  g.append("g").attr("class", "axis")
+    .call(d3.axisLeft(yScale).ticks(6));
+
+  // Axis labels
+  g.append("text")
+    .attr("x", W/2).attr("y", H + 50)
+    .attr("text-anchor", "middle")
+    .attr("fill", "rgba(232,232,240,0.5)")
+    .attr("font-family", "IBM Plex Mono, monospace")
+    .attr("font-size", "12px")
+    .attr("letter-spacing", "0.1em")
+    .text("MEDIAN AGE");
+
+  g.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -H/2).attr("y", -48)
+    .attr("text-anchor", "middle")
+    .attr("fill", "rgba(232,232,240,0.5)")
+    .attr("font-family", "IBM Plex Mono, monospace")
+    .attr("font-size", "12px")
+    .attr("letter-spacing", "0.1em")
+    .text("TOTAL FERTILITY RATE");
+
+  // Trend line (simple exponential decay visual)
+  const trendData = d3.range(12, 52, 0.5).map(x => ({ x, y: Math.max(0.5, 8.5 * Math.exp(-0.055 * x)) }));
+  const line = d3.line().x(d => xScale(d.x)).y(d => yScale(d.y)).curve(d3.curveCatmullRom);
+  g.append("path")
+    .datum(trendData)
+    .attr("fill", "none")
+    .attr("stroke", "rgba(232,197,71,0.2)")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "5,5")
+    .attr("d", line);
+
+  // Replacement-level line
+  g.append("line")
+    .attr("x1", 0).attr("x2", W)
+    .attr("y1", yScale(2.1)).attr("y2", yScale(2.1))
+    .attr("stroke", "rgba(255,255,255,0.1)")
+    .attr("stroke-dasharray", "3,5");
+  g.append("text")
+    .attr("x", W - 4).attr("y", yScale(2.1) - 6)
+    .attr("text-anchor", "end")
+    .attr("fill", "rgba(255,255,255,0.3)")
+    .attr("font-family", "IBM Plex Mono, monospace")
+    .attr("font-size", "10px")
+    .text("Replacement level 2.1");
+
+  // Highlight labels for extreme countries
+  const labels = ["South Korea", "Japan", "Niger", "China", "Italy"];
+
+  // Scatter points
+  const scatterTooltip = document.getElementById('scatterTooltip');
+
+  g.selectAll("circle")
+    .data(data)
+    .join("circle")
+    .attr("cx", d => xScale(d.age))
+    .attr("cy", d => yScale(d.tfr))
+    .attr("r", d => labels.includes(d.country) ? 7 : 5)
+    .attr("fill", d => {
+      if (d.country === "Niger") return "#e8c547";
+      if (d.country === "South Korea") return "#ef4444";
+      if (d.country === "Japan") return "#60a5fa";
+      return colorScale(d.age);
+    })
+    .attr("stroke", d => labels.includes(d.country) ? "#fff" : "rgba(255,255,255,0.2)")
+    .attr("stroke-width", d => labels.includes(d.country) ? 1.5 : 0.5)
+    .attr("opacity", 0.9)
+    .style("cursor", "pointer")
+    .on("mousemove", function(event, d) {
+      d3.select(this).attr("r", d => labels.includes(d.country) ? 9 : 7);
+      document.getElementById('st-country').textContent = d.country;
+      document.getElementById('st-stats').textContent = `Age: ${d.age} · TFR: ${d.tfr}`;
+      scatterTooltip.style.display = 'block';
+      scatterTooltip.style.left = (event.clientX + 14) + 'px';
+      scatterTooltip.style.top = (event.clientY - 10) + 'px';
+    })
+    .on("mouseleave", function(event, d) {
+      d3.select(this).attr("r", labels.includes(d.country) ? 7 : 5);
+      scatterTooltip.style.display = 'none';
+    });
+
+  // Country labels for extremes
+  const labelOffsets = {
+    "South Korea": [8, -12],
+    "Japan": [8, -10],
+    "Niger": [8, 4],
+    "China": [8, -10],
+    "Italy": [8, -10],
+  };
+
+  labels.forEach(country => {
+    const d = data.find(x => x.country === country);
+    if (!d) return;
+    const [dx, dy] = labelOffsets[country] || [8, -10];
+    g.append("text")
+      .attr("x", xScale(d.age) + dx)
+      .attr("y", yScale(d.tfr) + dy)
+      .attr("fill", country === "South Korea" ? "#ef4444" : country === "Niger" ? "#e8c547" : "rgba(232,232,240,0.7)")
+      .attr("font-family", "IBM Plex Mono, monospace")
+      .attr("font-size", "11px")
+      .text(country === "South Korea" ? "Korea 0.78 ←" : country);
+  });
+}
+
+buildScatter();
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://population.un.org/wpp/" style="color:#4A9EBF;text-decoration:none">UN World Population Prospects 2024</a> — <span style="color:rgba(255,255,255,0.6)">The UN Population Division's authoritative dataset on global fertility rates, age-structure projections, and child population counts by country and region, with estimates through 2100.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.unicef.org/reports/state-worlds-children" style="color:#4A9EBF;text-decoration:none">UNICEF State of the World's Children 2023</a> — <span style="color:rgba(255,255,255,0.6)">UNICEF's annual flagship report providing country-level data on the under-18 population, regional demographic concentrations, and trends in child population share.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://data.worldbank.org/indicator/SP.DYN.TFRT.IN" style="color:#4A9EBF;text-decoration:none">World Bank Open Data — Fertility Rate (Total Births per Woman)</a> — <span style="color:rgba(255,255,255,0.6)">World Bank series of total fertility rate estimates by country from 1960–2022, sourced from national statistical offices and the UN Population Division.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://ourworldindata.org/fertility-rate" style="color:#4A9EBF;text-decoration:none">Our World in Data — Fertility Rate</a> — <span style="color:rgba(255,255,255,0.6)">Aggregated long-run fertility and child population data with interactive breakdowns by income group, region, and historical period, drawing on UN WPP and historical demographic sources.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Fertility rate estimates for sub-Saharan Africa and parts of South Asia rely heavily on household surveys (DHS, MICS) rather than complete civil registration systems, introducing sampling error and potential underreporting of births — margins of uncertainty can exceed ±0.3 children per woman in data-sparse countries.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">The definition of 'child' varies across sources: UN demographic projections use under-15 as the standard age cutoff for youth dependency ratios, while UNICEF uses under-18 — this produces meaningfully different figures for regional child population shares and should be checked when comparing datasets.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">National averages mask sharp sub-national variation; in large, high-fertility countries like Nigeria, Niger, and the DRC, urban-rural fertility gaps of 2–3 children per woman are common, so country-level figures may misrepresent where children actually live within a country.</li>
+  </ul>
+</div>
+</body>
+</html>

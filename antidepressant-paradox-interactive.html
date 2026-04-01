@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Antidepressant Paradox — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --gold: #e8c547;
+    --gold-dim: rgba(232,197,71,0.15);
+    --body: rgba(255,255,255,0.55);
+    --subhead: rgba(255,255,255,0.65);
+    --bright: rgba(255,255,255,0.9);
+    --teal-light: #7ecec4;
+    --teal-deep: #0d6b6b;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--body);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 40px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 0.8rem; color: var(--body);
+    text-decoration: none; letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--bright); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 120px 80px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 40%, rgba(232,197,71,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(13,107,107,0.1) 0%, transparent 50%);
+  }
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 700;
+    color: var(--bright);
+    line-height: 1.1;
+    max-width: 760px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero-sub {
+    font-size: 1.2rem;
+    color: var(--subhead);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .hero-stat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--body);
+    border-left: 2px solid var(--gold);
+    padding-left: 16px;
+    line-height: 1.8;
+    position: relative;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 32px; right: 80px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    color: var(--body); text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .scroll-hint::before {
+    content: '';
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--gold));
+  }
+
+  /* ── SECTIONS ── */
+  section { padding: 100px 80px; }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.25em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: var(--bright); line-height: 1.25;
+    max-width: 600px; margin-bottom: 20px;
+  }
+  .section-body {
+    font-size: 1rem; color: var(--body);
+    max-width: 580px; line-height: 1.8;
+    margin-bottom: 48px;
+  }
+
+  /* ── VIZ CONTAINERS ── */
+  .viz-frame {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 40px;
+    margin-top: 40px;
+    position: relative;
+  }
+  .viz-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--body); margin-bottom: 24px;
+  }
+
+  /* ── SCATTER ── */
+  #scatter-container { position: relative; }
+  #scatter-svg { width: 100%; max-width: 900px; display: block; margin: 0 auto; }
+
+  /* ── TOOLTIP ── */
+  .tooltip {
+    position: fixed;
+    background: var(--bg3);
+    border: 1px solid rgba(232,197,71,0.3);
+    border-radius: 3px;
+    padding: 12px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--bright);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 999;
+    min-width: 180px;
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip-country { font-size: 0.85rem; color: var(--gold); margin-bottom: 6px; font-family: 'Inter', sans-serif; font-weight: 600; }
+  .tooltip-row { display: flex; justify-content: space-between; gap: 20px; margin-top: 3px; }
+  .tooltip-label { color: var(--body); }
+  .tooltip-val { color: var(--bright); }
+
+  /* ── MAP ── */
+  #map-container { position: relative; }
+  #map-svg { width: 100%; max-width: 1000px; display: block; margin: 0 auto; }
+  .map-legend {
+    display: flex; align-items: center; gap: 12px; margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--body);
+    justify-content: center;
+  }
+  .legend-bar {
+    width: 200px; height: 8px;
+    background: linear-gradient(to right, #d4f0ec, #0d6b6b);
+    border-radius: 2px;
+  }
+
+  /* ── INSIGHT CARDS ── */
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px; margin-top: 48px;
+  }
+  .card {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 32px;
+  }
+  .card-flag {
+    font-size: 2rem; margin-bottom: 16px;
+  }
+  .card-country {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; color: var(--bright);
+    margin-bottom: 8px;
+  }
+  .card-stat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem; color: var(--gold);
+    margin-bottom: 12px; letter-spacing: 0.05em;
+  }
+  .card-body { font-size: 0.9rem; color: var(--body); line-height: 1.7; }
+  .card.highlight { border-color: rgba(232,197,71,0.35); background: linear-gradient(135deg, var(--bg2), rgba(232,197,71,0.03)); }
+
+  /* ── EXPLAINER ── */
+  .explainer { max-width: 700px; }
+  .explainer h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; color: var(--bright); margin-bottom: 12px;
+  }
+  .explainer p { font-size: 0.95rem; color: var(--body); line-height: 1.8; margin-bottom: 24px; }
+  .explainer strong { color: var(--subhead); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 60px 80px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; align-items: start;
+  }
+  .footer-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem; color: var(--gold);
+    letter-spacing: 0.15em; margin-bottom: 12px;
+  }
+  .footer-note { font-size: 0.85rem; color: var(--body); line-height: 1.7; }
+  .footer-sources { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--body); line-height: 2; }
+  .footer-sources a { color: var(--body); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+    margin: 0 80px;
+  }
+
+  /* ── BIG NUMBER ── */
+  .big-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(4rem, 8vw, 7rem);
+    color: var(--gold); line-height: 1;
+    margin-bottom: 8px;
+  }
+  .big-num-label {
+    font-size: 0.85rem; color: var(--body);
+    max-width: 300px; line-height: 1.6;
+  }
+
+  .stats-row {
+    display: flex; gap: 60px; flex-wrap: wrap;
+    margin-top: 60px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    section, .hero, footer { padding: 80px 24px; }
+    .nav-links { display: none; }
+    nav { padding: 16px 24px; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .divider { margin: 0 24px; }
+    .scroll-hint { display: none; }
+  }
+
+  /* scatter dots */
+  .dot { cursor: pointer; transition: r 0.2s; }
+  .dot:hover { r: 9; }
+  .dot-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; fill: rgba(255,255,255,0.65);
+    pointer-events: none;
+  }
+  .dot-label.us { fill: var(--gold); font-weight: 500; }
+  .axis-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; fill: rgba(255,255,255,0.35); }
+  .axis-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; fill: rgba(255,255,255,0.45); letter-spacing: 0.08em; }
+  .grid-line { stroke: rgba(255,255,255,0.05); stroke-dasharray: 3,4; }
+  .trend-line { stroke: rgba(255,255,255,0.15); stroke-dasharray: 6,4; stroke-width: 1.5; }
+  .quadrant-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; fill: rgba(255,255,255,0.2); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* map styles */
+  .country-path { stroke: rgba(255,255,255,0.08); stroke-width: 0.4; transition: opacity 0.2s; cursor: pointer; }
+  .country-path:hover { opacity: 0.8; stroke: rgba(255,255,255,0.3); }
+  .country-path.no-data { fill: #1e1e2a; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Atlas of Culture</div>
+  <div class="nav-links">
+    <a href="#scatter">The Paradox</a>
+    <a href="#map">Global Map</a>
+    <a href="#story">The Real Story</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Health · Data Essay</div>
+  <h1>The <em>Antidepressant</em><br>Paradox</h1>
+  <p class="hero-sub">Iceland takes more antidepressants per capita than almost anywhere on earth. It's also one of the happiest countries. The numbers don't mean what you think they mean.</p>
+  <div class="hero-stat">
+    OECD Antidepressant Data · World Happiness Report 2023<br>
+    Defined Daily Doses per 1,000 inhabitants per day
+  </div>
+  <div class="scroll-hint">Scroll to explore</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SCATTER SECTION -->
+<section id="scatter">
+  <div class="section-label">01 — The Scatter</div>
+  <h2 class="section-title">More pills,<br>more sadness?<br><em style="color:var(--gold);font-style:italic">Not quite.</em></h2>
+  <p class="section-body">If antidepressant consumption tracked national misery, you'd expect a downward slope — more drugs, less happiness. The data tells a stranger story. Hover over the dots.</p>
+
+  <div class="viz-frame" id="scatter-container">
+    <div class="viz-title">Antidepressant Consumption vs. Happiness Score</div>
+    <svg id="scatter-svg" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="stats-row">
+    <div>
+      <div class="big-num">130</div>
+      <div class="big-num-label">Defined daily doses per 1,000 per day — Iceland, the world's highest per capita consumer</div>
+    </div>
+    <div>
+      <div class="big-num">7.5</div>
+      <div class="big-num-label">Iceland's happiness score — 5th happiest country on earth, per World Happiness Report 2023</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MAP SECTION -->
+<section id="map">
+  <div class="section-label">02 — The Map</div>
+  <h2 class="section-title">Where the world medicates</h2>
+  <p class="section-body">SSRI consumption mapped across the OECD. The richest, best-resourced countries — not the most miserable — cluster at the top. Grey countries lack comparable data.</p>
+
+  <div class="viz-frame" id="map-container">
+    <div class="viz-title">Antidepressant Consumption by Country (DDD per 1,000/day)</div>
+    <svg id="map-svg" viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="map-legend">
+      <span>Low / No data</span>
+      <div class="legend-bar"></div>
+      <span>High (130+ DDD)</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STORY SECTION -->
+<section id="story">
+  <div class="section-label">03 — The Real Story</div>
+  <h2 class="section-title">What the numbers<br>actually measure</h2>
+  <p class="section-body">Antidepressant consumption doesn't map onto depression prevalence. It maps onto something else entirely.</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-flag">🇮🇸</div>
+      <div class="card-country">Iceland</div>
+      <div class="card-stat">~130 DDD/1k/day · Happiness: 7.5</div>
+      <div class="card-body">High consumption reflects universal healthcare access, low stigma, and a medical culture that diagnoses and treats. Seasonal affective disorder is real here — but so is treatment.</div>
+    </div>
+    <div class="card highlight">
+      <div class="card-flag">🇺🇸</div>
+      <div class="card-country">United States</div>
+      <div class="card-stat">~90 DDD/1k/day · Happiness: 6.9</div>
+      <div class="card-body">The real outlier. High consumption <em>and</em> middling happiness. America medicates without the underlying systems — community, security, trust — that Nordic countries have. Pills can't replace society.</div>
+    </div>
+    <div class="card">
+      <div class="card-flag">🇯🇵</div>
+      <div class="card-country">Japan</div>
+      <div class="card-stat">~15 DDD/1k/day · Happiness: 6.1</div>
+      <div class="card-body">Low consumption doesn't mean low depression. Cultural stigma around mental illness suppresses diagnosis and treatment-seeking. Japan has one of the world's highest suicide rates. The silence is louder than the data.</div>
+    </div>
+    <div class="card">
+      <div class="card-flag">🇵🇹</div>
+      <div class="card-country">Portugal</div>
+      <div class="card-stat">~120 DDD/1k/day · Happiness: 6.1</div>
+      <div class="card-body">High consumption, moderate happiness. Portugal's "saudade" — a cultural melancholy — may be real. But so is its universal healthcare system. A counterpoint to the Nordic pattern.</div>
+    </div>
+    <div class="card">
+      <div class="card-flag">🇰🇷</div>
+      <div class="card-country">South Korea</div>
+      <div class="card-stat">~12 DDD/1k/day · Happiness: 5.9</div>
+      <div class="card-body">Like Japan, mental health stigma is profound. Low consumption correlates with low help-seeking, not low suffering. South Korea's competitive pressure culture generates enormous psychological stress with few safety valves.</div>
+    </div>
+    <div class="card">
+      <div class="card-flag">🇩🇪</div>
+      <div class="card-country">Germany</div>
+      <div class="card-stat">~55 DDD/1k/day · Happiness: 7.0</div>
+      <div class="card-body">Middle of the pack in both metrics. Germany's healthcare system is strong but its psychotherapy culture developed differently from the UK or Nordic countries. A model of coherence — what you'd expect if the relationship were simple.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EXPLAINER -->
+<section>
+  <div class="section-label">04 — The Argument</div>
+  <div class="explainer">
+    <h3>Consumption as a proxy for access, not suffering</h3>
+    <p>The OECD data measures <strong>defined daily doses dispensed</strong> — a supply-side metric. It captures what healthcare systems provide, not what populations need. Countries with robust public mental health infrastructure, low out-of-pocket costs, and destigmatized treatment will show higher numbers almost by definition.</p>
+
+    <h3>The US exception</h3>
+    <p>What makes America genuinely unusual is high consumption <em>without</em> the social goods that Nordic high-consumption countries have. Healthcare access is privatized and unequal. Gun violence, economic precarity, and eroded community bonds create depression that antidepressants alone can't address. The drugs are getting distributed; the underlying causes aren't being treated.</p>
+
+    <h3>What's being measured in the low-consumption countries</h3>
+    <p>Japan (15 DDD) and South Korea (12 DDD) don't have low depression rates — they have low <em>diagnosis</em> rates. Both countries rank significantly below their OECD peers in happiness despite relatively prosperous, high-functioning societies. <strong>Stigma suppresses the data.</strong> Suffering goes unmeasured, unnamed, untreated.</p>
+
+    <h3>The paradox, resolved</h3>
+    <p>Antidepressant consumption is a measure of a society's willingness and ability to address mental illness openly. In that light, Iceland isn't contradictory — it's exemplary. The US isn't high because it's sick. It's high because it medicates a sickness that goes deeper than pharmacology can reach.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Atlas of Culture</div>
+      <div class="footer-note">Data essays exploring how culture shapes the numbers we live inside. Each post is a single idea, made visible.</div>
+    </div>
+    <div class="footer-sources">
+      <strong style="color:var(--subhead)">Sources</strong><br>
+      OECD Health Statistics 2022 — Antidepressants (ATC N06A)<br>
+      World Happiness Report 2023 — Gallup World Poll<br>
+      Data reflects ~2021 consumption figures<br>
+      DDD = Defined Daily Doses per 1,000 inhabitants per day
+    </div>
+  </div>
+</footer>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-country" id="tt-country"></div>
+  <div class="tooltip-row"><span class="tooltip-label">Antidepressants</span><span class="tooltip-val" id="tt-ddd"></span></div>
+  <div class="tooltip-row"><span class="tooltip-label">Happiness</span><span class="tooltip-val" id="tt-happy"></span></div>
+  <div class="tooltip-row"><span class="tooltip-label">Region</span><span class="tooltip-val" id="tt-region"></span></div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const COUNTRIES = [
+  { name: "Iceland",      ddd: 130, happy: 7.52, flag: "🇮🇸", region: "Nordic",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Portugal",     ddd: 120, happy: 6.06, flag: "🇵🇹", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "UK",           ddd: 105, happy: 7.03, flag: "🇬🇧", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Australia",    ddd: 100, happy: 7.10, flag: "🇦🇺", region: "Pacific",   highlight: false, labelOffset: [10, 0]   },
+  { name: "Sweden",       ddd:  98, happy: 7.40, flag: "🇸🇪", region: "Nordic",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Denmark",      ddd:  95, happy: 7.59, flag: "🇩🇰", region: "Nordic",    highlight: false, labelOffset: [10, -14] },
+  { name: "US",           ddd:  90, happy: 6.89, flag: "🇺🇸", region: "Americas",  highlight: true,  labelOffset: [10, 0]   },
+  { name: "Canada",       ddd:  85, happy: 6.96, flag: "🇨🇦", region: "Americas",  highlight: false, labelOffset: [10, 0]   },
+  { name: "Finland",      ddd:  80, happy: 7.80, flag: "🇫🇮", region: "Nordic",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Norway",       ddd:  78, happy: 7.32, flag: "🇳🇴", region: "Nordic",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Belgium",      ddd:  75, happy: 6.89, flag: "🇧🇪", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Spain",        ddd:  70, happy: 6.48, flag: "🇪🇸", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Netherlands",  ddd:  65, happy: 7.40, flag: "🇳🇱", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "France",       ddd:  62, happy: 6.66, flag: "🇫🇷", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Germany",      ddd:  55, happy: 7.03, flag: "🇩🇪", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "New Zealand",  ddd:  90, happy: 7.03, flag: "🇳🇿", region: "Pacific",   highlight: false, labelOffset: [10, 12]  },
+  { name: "Switzerland",  ddd:  50, happy: 7.24, flag: "🇨🇭", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Austria",      ddd:  48, happy: 7.31, flag: "🇦🇹", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Italy",        ddd:  38, happy: 6.40, flag: "🇮🇹", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Poland",       ddd:  35, happy: 6.14, flag: "🇵🇱", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Czech Rep.",   ddd:  30, happy: 6.74, flag: "🇨🇿", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Greece",       ddd:  28, happy: 5.93, flag: "🇬🇷", region: "Europe",    highlight: false, labelOffset: [10, 0]   },
+  { name: "Turkey",       ddd:  22, happy: 4.61, flag: "🇹🇷", region: "Asia",      highlight: false, labelOffset: [10, 0]   },
+  { name: "Mexico",       ddd:  18, happy: 6.33, flag: "🇲🇽", region: "Americas",  highlight: false, labelOffset: [10, 0]   },
+  { name: "Japan",        ddd:  15, happy: 6.13, flag: "🇯🇵", region: "Asia",      highlight: false, labelOffset: [10, 0]   },
+  { name: "S. Korea",     ddd:  12, happy: 5.95, flag: "🇰🇷", region: "Asia",      highlight: false, labelOffset: [10, 12]  },
+  { name: "China",        ddd:   8, happy: 5.82, flag: "🇨🇳", region: "Asia",      highlight: false, labelOffset: [10, 0]   },
+];
+
+// Map data (ISO → consumption for choropleth)
+const MAP_DATA = {
+  "Iceland": 130, "Portugal": 120, "United Kingdom": 105, "Australia": 100,
+  "Sweden": 98, "Denmark": 95, "United States of America": 90, "Canada": 85,
+  "Finland": 80, "Norway": 78, "Belgium": 75, "Spain": 70,
+  "Netherlands": 65, "France": 62, "Germany": 55, "New Zealand": 90,
+  "Switzerland": 50, "Austria": 48, "Italy": 38, "Poland": 35,
+  "Czech Republic": 30, "Greece": 28, "Turkey": 22, "Mexico": 18,
+  "Japan": 15, "South Korea": 12, "China": 8
+};
+
+// ─── SCATTER PLOT ────────────────────────────────────────────────────────────
+(function buildScatter() {
+  const svg = document.getElementById('scatter-svg');
+  const W = 860, H = 560;
+  const pad = { top: 30, right: 40, bottom: 60, left: 60 };
+  const innerW = W - pad.left - pad.right;
+  const innerH = H - pad.top - pad.bottom;
+
+  const xMin = 0, xMax = 145;
+  const yMin = 4.2, yMax = 8.1;
+
+  function xScale(v) { return pad.left + (v - xMin) / (xMax - xMin) * innerW; }
+  function yScale(v) { return pad.top + (1 - (v - yMin) / (yMax - yMin)) * innerH; }
+
+  // Grid lines
+  const yTicks = [5, 5.5, 6, 6.5, 7, 7.5, 8];
+  const xTicks = [0, 20, 40, 60, 80, 100, 120, 140];
+
+  yTicks.forEach(v => {
+    const y = yScale(v);
+    svg.innerHTML += `<line class="grid-line" x1="${pad.left}" y1="${y}" x2="${W - pad.right}" y2="${y}"/>`;
+    svg.innerHTML += `<text class="axis-label" x="${pad.left - 8}" y="${y + 4}" text-anchor="end">${v}</text>`;
+  });
+
+  xTicks.forEach(v => {
+    const x = xScale(v);
+    svg.innerHTML += `<line class="grid-line" x1="${x}" y1="${pad.top}" x2="${x}" y2="${H - pad.bottom}"/>`;
+    svg.innerHTML += `<text class="axis-label" x="${x}" y="${H - pad.bottom + 18}" text-anchor="middle">${v}</text>`;
+  });
+
+  // Axis labels
+  svg.innerHTML += `<text class="axis-title" x="${pad.left + innerW/2}" y="${H - 8}" text-anchor="middle">ANTIDEPRESSANT CONSUMPTION (DDD per 1,000/day)</text>`;
+  svg.innerHTML += `<text class="axis-title" x="${20}" y="${pad.top + innerH/2}" text-anchor="middle" transform="rotate(-90, 20, ${pad.top + innerH/2})">HAPPINESS SCORE</text>`;
+
+  // Quadrant labels
+  svg.innerHTML += `<text class="quadrant-label" x="${pad.left + 20}" y="${pad.top + 20}">Low use · Happy</text>`;
+  svg.innerHTML += `<text class="quadrant-label" x="${W - pad.right - 120}" y="${pad.top + 20}">High use · Happy</text>`;
+  svg.innerHTML += `<text class="quadrant-label" x="${pad.left + 20}" y="${H - pad.bottom - 10}">Low use · Unhappy</text>`;
+  svg.innerHTML += `<text class="quadrant-label" x="${W - pad.right - 130}" y="${H - pad.bottom - 10}">High use · Unhappy</text>`;
+
+  // Midpoint lines (soft quadrant dividers)
+  const xMid = xScale(72), yMid = yScale(6.5);
+  svg.innerHTML += `<line stroke="rgba(255,255,255,0.04)" x1="${xMid}" y1="${pad.top}" x2="${xMid}" y2="${H - pad.bottom}"/>`;
+  svg.innerHTML += `<line stroke="rgba(255,255,255,0.04)" x1="${pad.left}" y1="${yMid}" x2="${W - pad.right}" y2="${yMid}"/>`;
+
+  // Simple trend line (linear regression)
+  const n = COUNTRIES.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  COUNTRIES.forEach(d => { sumX += d.ddd; sumY += d.happy; sumXY += d.ddd * d.happy; sumX2 += d.ddd * d.ddd; });
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+  const x1t = xMin, y1t = slope * x1t + intercept;
+  const x2t = xMax, y2t = slope * x2t + intercept;
+  svg.innerHTML += `<line class="trend-line" x1="${xScale(x1t)}" y1="${yScale(y1t)}" x2="${xScale(x2t)}" y2="${yScale(y2t)}"/>`;
+  svg.innerHTML += `<text class="quadrant-label" x="${xScale(110)}" y="${yScale(slope*110+intercept)-10}" fill="rgba(255,255,255,0.25)">no clear trend →</text>`;
+
+  // Dots & labels
+  COUNTRIES.forEach(d => {
+    const cx = xScale(d.ddd), cy = yScale(d.happy);
+    const isUS = d.name === "US";
+    const isIceland = d.name === "Iceland";
+    const r = isUS || isIceland ? 8 : 6;
+    const fill = isUS ? '#e8c547' : isIceland ? '#7ecec4' : 'rgba(255,255,255,0.35)';
+    const stroke = isUS ? '#e8c547' : isIceland ? '#7ecec4' : 'rgba(255,255,255,0.15)';
+
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "dot-group");
+    g.setAttribute("data-country", d.name);
+    g.setAttribute("data-ddd", d.ddd);
+    g.setAttribute("data-happy", d.happy);
+    g.setAttribute("data-region", d.region);
+    g.setAttribute("data-flag", d.flag);
+
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", cx); circle.setAttribute("cy", cy);
+    circle.setAttribute("r", r); circle.setAttribute("fill", fill);
+    circle.setAttribute("stroke", stroke); circle.setAttribute("stroke-width", isUS||isIceland ? 1.5 : 1);
+    circle.setAttribute("class", "dot");
+    g.appendChild(circle);
+
+    // Label select countries
+    const labeled = ["Iceland","US","Japan","S. Korea","Portugal","UK","Finland","Germany","Australia"];
+    if (labeled.includes(d.name)) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", cx + d.labelOffset[0]);
+      text.setAttribute("y", cy + d.labelOffset[1] + 4);
+      text.setAttribute("class", `dot-label${isUS ? ' us' : ''}`);
+      text.textContent = d.name;
+      g.appendChild(text);
+    }
+
+    svg.appendChild(g);
+
+    // Hover
+    g.addEventListener('mouseenter', (e) => showTooltip(e, d));
+    g.addEventListener('mousemove', (e) => moveTooltip(e));
+    g.addEventListener('mouseleave', hideTooltip);
+  });
+})();
+
+// ─── MAP ─────────────────────────────────────────────────────────────────────
+async function buildMap() {
+  const svg = document.getElementById('map-svg');
+  const maxVal = 130;
+
+  function getColor(val) {
+    if (!val) return '#1e1e2a';
+    const t = Math.min(val / maxVal, 1);
+    // pale teal → deep teal
+    const r = Math.round(212 - t * (212 - 13));
+    const g = Math.round(240 - t * (240 - 107));
+    const b = Math.round(236 - t * (236 - 107));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    const geojson = await res.json();
+
+    // Simple equirectangular projection
+    function project(lon, lat) {
+      const W = 1000, H = 520;
+      const x = (lon + 180) / 360 * W;
+      const y = (90 - lat) / 180 * H;
+      return [x, y];
+    }
+
+    function coordsToPath(coords) {
+      return coords.map((ring, ri) =>
+        ring.map((pt, i) => {
+          const [x, y] = project(pt[0], pt[1]);
+          return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+        }).join(' ') + 'Z'
+      ).join(' ');
+    }
+
+    geojson.features.forEach(f => {
+      const name = f.properties.ADMIN || f.properties.name;
+      const val = MAP_DATA[name];
+      const fill = getColor(val);
+
+      let pathStr = '';
+      if (f.geometry.type === 'Polygon') {
+        pathStr = coordsToPath(f.geometry.coordinates);
+      } else if (f.geometry.type === 'MultiPolygon') {
+        pathStr = f.geometry.coordinates.map(poly => coordsToPath(poly)).join(' ');
+      }
+
+      if (!pathStr) return;
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", pathStr);
+      path.setAttribute("fill", fill);
+      path.setAttribute("class", `country-path${val ? '' : ' no-data'}`);
+      path.setAttribute("data-country", name);
+      path.setAttribute("data-val", val || '');
+
+      if (val) {
+        path.addEventListener('mouseenter', (e) => {
+          showTooltip(e, { name, ddd: val, flag: '' });
+        });
+        path.addEventListener('mousemove', moveTooltip);
+        path.addEventListener('mouseleave', hideTooltip);
+      }
+
+      svg.appendChild(path);
+    });
+  } catch(err) {
+    svg.innerHTML = `<text x="500" y="260" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="IBM Plex Mono, monospace" font-size="14">Map unavailable — requires network connection</text>`;
+    console.warn('Map load failed:', err);
+  }
+}
+buildMap();
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, d) {
+  document.getElementById('tt-country').textContent = (d.flag || '') + ' ' + (d.name || '');
+  document.getElementById('tt-ddd').textContent = d.ddd ? `${d.ddd} DDD/1k/day` : '—';
+  document.getElementById('tt-happy').textContent = d.happy ? d.happy.toFixed(2) : '—';
+  document.getElementById('tt-region').textContent = d.region || '—';
+  tooltip.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const x = e.clientX + 16, y = e.clientY + 16;
+  tooltip.style.left = Math.min(x, window.innerWidth - 220) + 'px';
+  tooltip.style.top = Math.min(y, window.innerHeight - 120) + 'px';
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://www.oecd-ilibrary.org/social-issues-migration-health/health-at-a-glance_19991312" style="color:#4A9EBF;text-decoration:none">OECD Health at a Glance</a> — <span style="color:rgba(255,255,255,0.6)">Tracks antidepressant consumption across OECD nations in defined daily doses (DDD) per 1,000 inhabitants per day; most recent edition covers data through 2021–2022.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://worldhappiness.report/" style="color:#4A9EBF;text-decoration:none">World Happiness Report</a> — <span style="color:rgba(255,255,255,0.6)">Annual report ranking countries by self-reported life satisfaction using the Gallup World Poll Cantril ladder scale; 2024 edition draws on 2021–2023 survey data.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://stats.oecd.org/Index.aspx?DataSetCode=HEALTH_PHMC" style="color:#4A9EBF;text-decoration:none">OECD Health Statistics (OECD.Stat)</a> — <span style="color:rgba(255,255,255,0.6)">Underlying pharmaceutical consumption database used for cross-country antidepressant comparisons, with annual figures by ATC drug class.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://ec.europa.eu/eurostat/web/microdata/european-health-interview-survey" style="color:#4A9EBF;text-decoration:none">European Health Interview Survey (Eurostat)</a> — <span style="color:rgba(255,255,255,0.6)">EU-wide household survey capturing self-reported antidepressant use and general health status; latest wave conducted 2019.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Prescription rates measure treatment, not illness burden — countries with stronger primary-care systems, lower stigma, or more liberal prescribing guidelines will appear to have higher 'antidepressant use' even if underlying depression prevalence is similar to lower-prescribing peers.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">The World Happiness Report's Cantril ladder asks respondents to rate their life overall, not their day-to-day mood; this life-evaluation score can diverge significantly from measures of hedonic affect or clinical depression rates, making direct comparisons to antidepressant data conceptually imprecise.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">DDD (Defined Daily Dose) standardization assumes a fixed maintenance dose per drug, but prescribing norms vary across countries — a country that favors higher-dose SSRIs will register more DDDs without necessarily having more patients treated.</li>
+  </ul>
+</div>
+</body>
+</html>

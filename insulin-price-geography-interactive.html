@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Insulin Price Gap · Atlas of Culture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #07070c;
+    --bg2: #0d0d18;
+    --gold: #e8c547;
+    --blue: #4a9ebf;
+    --text: #f0ece0;
+    --muted: rgba(255,255,255,0.35);
+    --dim: rgba(255,255,255,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 60px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(232,197,71,0.55);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(40px, 5vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+  }
+
+  h1 .gold { color: var(--gold); font-style: italic; }
+  h1 .blue { color: var(--blue); }
+
+  .hero-sub {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 32px;
+  }
+
+  .hero-sub strong { color: rgba(255,255,255,0.65); font-weight: 500; }
+
+  .stat-pills {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 14px 20px;
+  }
+
+  .pill-num {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pill-num.gold { color: var(--gold); }
+  .pill-num.blue { color: var(--blue); }
+
+  .pill-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  /* ── Map section ── */
+  .map-section {
+    padding: 50px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 8px;
+  }
+
+  .section-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .map-container {
+    position: relative;
+    background: #0a0a1a;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  #world-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Tooltip */
+  #tooltip {
+    position: fixed;
+    background: rgba(10,10,25,0.97);
+    border: 1px solid rgba(232,197,71,0.25);
+    border-radius: 6px;
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+    backdrop-filter: blur(8px);
+    min-width: 160px;
+  }
+
+  #tooltip .tt-country {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  #tooltip .tt-price {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  #tooltip .tt-vs {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Legend */
+  .legend-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .legend-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .legend-bar {
+    flex: 0 0 240px;
+    height: 8px;
+    border-radius: 3px;
+  }
+
+  /* ── Table section ── */
+  .table-section {
+    padding: 50px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted);
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(232,197,71,0.1);
+    border-color: rgba(232,197,71,0.3);
+    color: var(--gold);
+  }
+
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .price-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-align: left;
+    padding: 0 12px 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .price-table td {
+    padding: 11px 12px 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .price-table tr.us-row td {
+    color: var(--gold);
+    background: rgba(232,197,71,0.03);
+  }
+
+  .price-table .td-country {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .price-table tr.us-row .td-country { color: var(--gold); }
+
+  .price-table .td-price {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    text-align: right;
+    padding-right: 24px;
+  }
+
+  .price-table .td-mult {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .bar-cell { width: 200px; }
+  .mini-bar {
+    height: 6px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #1e4460, #2e6888);
+  }
+  tr.us-row .mini-bar {
+    background: linear-gradient(90deg, #9a7012, #e8c547);
+  }
+
+  /* ── Narrative section ── */
+  .narrative {
+    padding: 50px 60px 80px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .narrative h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+
+  .narrative h2:first-child { margin-top: 0; }
+
+  .narrative p {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  .narrative p strong {
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+  }
+
+  .narrative p em { color: var(--gold); font-style: italic; }
+
+  .pull-quote {
+    border-left: 3px solid rgba(232,197,71,0.4);
+    padding: 16px 24px;
+    margin: 28px 0;
+    background: rgba(232,197,71,0.04);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-style: italic;
+    color: rgba(255,255,255,0.65) !important;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 30px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .site-footer .handle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  .site-footer .source {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+</style>
+</head>
+<body>
+
+<div id="tooltip">
+  <div class="tt-country" id="tt-country"></div>
+  <div class="tt-price" id="tt-price"></div>
+  <div class="tt-vs" id="tt-vs"></div>
+</div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Health Economics</div>
+  <h1>
+    Germany pays <span class="blue">$11</span>.<br/>
+    The US pays <span class="gold">$98.70</span>.
+  </h1>
+  <p class="hero-sub">
+    The same vial of insulin. The same molecule, the same chemistry, often manufactured by the same company.
+    <strong>The US pays more than 8× the price of other wealthy nations</strong> — not because it costs more to produce,
+    but because of market structure, patent law, and the absence of price negotiation.
+  </p>
+  <div class="stat-pills">
+    <div class="pill">
+      <div class="pill-num gold">8.4×</div>
+      <div class="pill-label">US vs Germany</div>
+    </div>
+    <div class="pill">
+      <div class="pill-num gold">21×</div>
+      <div class="pill-label">US vs Pakistan</div>
+    </div>
+    <div class="pill">
+      <div class="pill-num blue">$1</div>
+      <div class="pill-label">Price of original patent (1921)</div>
+    </div>
+    <div class="pill">
+      <div class="pill-num blue">9M</div>
+      <div class="pill-label">Americans rationing doses</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAP ── -->
+<div class="map-section">
+  <div class="section-title">Retail price by country</div>
+  <p class="section-sub">Hover any country to see its price. Gold = expensive. Blue = cheap. Most of the world pays under $15.</p>
+  <div class="map-container">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#0a0a1a"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="legend-strip" style="padding: 0 20px 16px;">
+      <span class="legend-label">Cheap</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Expensive</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABLE ── -->
+<div class="table-section">
+  <div class="section-title">All countries, sorted by price</div>
+  <p class="section-sub">Filter by region. Click any column to re-sort.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterRegion('all',this)">All countries</button>
+    <button class="filter-btn" onclick="filterRegion('wealthy',this)">Wealthy peers</button>
+    <button class="filter-btn" onclick="filterRegion('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterRegion('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterRegion('africa',this)">Africa</button>
+  </div>
+  <table class="price-table" id="price-table">
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th style="text-align:right; padding-right:24px">Price (USD)</th>
+        <th style="text-align:right">vs USA</th>
+        <th class="bar-cell"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- ── NARRATIVE ── -->
+<div class="narrative">
+  <h2>Why does this happen?</h2>
+  <p>
+    Insulin was invented in 1921. <strong>The patent was sold to the University of Toronto for $1</strong> — Frederick Banting, the lead researcher, believed no one should profit from a medicine people need to survive.
+  </p>
+  <p>
+    A century later, pharmaceutical companies have developed newer formulations ("analogue insulin") and secured new patents on those. In most countries, governments negotiate prices directly with manufacturers. In the United States, <strong>there is no federal price negotiation for most drugs</strong>.
+  </p>
+
+  <div class="pull-quote">
+    <p>"The molecule hasn't changed that much. The manufacturing process hasn't changed that much. What changed is the market structure."</p>
+  </div>
+
+  <p>
+    The result: Americans with diabetes — about 8.4 million of whom use insulin — pay prices that no comparable country comes close to. <em>About 9 million Americans ration their insulin doses</em>, cutting them, skipping them, or buying from Canada or Mexico. People have died from this.
+  </p>
+
+  <h2>What's surprising</h2>
+  <p>
+    The most striking comparison isn't US vs Pakistan or US vs India — you'd expect richer countries to pay more. The jaw-dropper is <strong>US vs Germany, US vs France, US vs Japan</strong>. These are wealthy nations with sophisticated healthcare systems. They pay $7–$15. The US pays $98.70.
+  </p>
+  <p>
+    Canada, which shares a border and a similar GDP, pays <strong>$12</strong>. That's why people drive across the border to buy insulin — or order it online from Canadian pharmacies.
+  </p>
+
+  <h2>The data</h2>
+  <p>
+    All figures from the <strong>RAND Corporation / Health Affairs 2021</strong> insulin pricing study, one of the most comprehensive cross-national comparisons available. Prices are retail, unadjusted for purchasing power — which, if anything, makes the US disparity look even larger on a PPP-adjusted basis.
+  </p>
+</div>
+
+<!-- ── FOOTER ── -->
+
+    <div class="source-item"><div class="source-name"><a href="https://www.healthaffairs.org/doi/10.1377/hlthaff.2020.00494" target="_blank" rel="noopener">Health Affairs, Vol. 40, No. 1 (2021)</a></div><div class="source-desc">Peer-reviewed companion analysis on insulin pricing disparities.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The RAND data reflects 2018 retail prices. Since then, US insulin list prices have changed materially: in 2023, all three major manufacturers (Eli Lilly, Novo Nordisk, Sanofi) capped out-of-pocket costs at $35/month for insured patients, and biosimilar insulins entered the market at lower prices. The structural gap with other wealthy nations persists, but the most extreme figures are somewhat improved.</li>
+      <li>Prices are unadjusted for purchasing power parity. A PPP-adjusted comparison would make the US gap smaller relative to wealthier countries and larger relative to lower-income ones.</li>
+      <li>The '9 million Americans ration insulin' figure is from Herkert et al. (2019, Yale) and predates the 2023 cap legislation. Current rationing figures are likely lower but remain significant.</li>
+      <li>Non-RAND country prices (India, Pakistan, and others beyond the study's 56 countries) are estimated from WHO and IMS Health data and carry higher uncertainty.</li>
+    
+  </div>
+
+">
+    <svg id="world-svg" viewBox="-40 33 984 330" preserveAspectRatio="xMidYMid meet">
+      <rect x="-100" y="-50" width="1200" height="500" fill="#0a0a1a"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="legend-strip" style="padding: 0 20px 16px;">
+      <span class="legend-label">Cheap</span>
+      <div class="legend-bar" id="legend-bar"></div>
+      <span class="legend-label">Expensive</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TABLE ── -->
+<div class="table-section">
+  <div class="section-title">All countries, sorted by price</div>
+  <p class="section-sub">Filter by region. Click any column to re-sort.</p>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterRegion('all',this)">All countries</button>
+    <button class="filter-btn" onclick="filterRegion('wealthy',this)">Wealthy peers</button>
+    <button class="filter-btn" onclick="filterRegion('asia',this)">Asia</button>
+    <button class="filter-btn" onclick="filterRegion('latam',this)">Latin America</button>
+    <button class="filter-btn" onclick="filterRegion('africa',this)">Africa</button>
+  </div>
+  <table class="price-table" id="price-table">
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th style="text-align:right; padding-right:24px">Price (USD)</th>
+        <th style="text-align:right">vs USA</th>
+        <th class="bar-cell"></th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<!-- ── NARRATIVE ── -->
+<div class="narrative">
+  <h2>Why does this happen?</h2>
+  <p>
+    Insulin was invented in 1921. <strong>The patent was sold to the University of Toronto for $1</strong> — Frederick Banting, the lead researcher, believed no one should profit from a medicine people need to survive.
+  </p>
+  <p>
+    A century later, pharmaceutical companies have developed newer formulations ("analogue insulin") and secured new patents on those. In most countries, governments negotiate prices directly with manufacturers. In the United States, <strong>there is no federal price negotiation for most drugs</strong>.
+  </p>
+
+  <div class="pull-quote">
+    <p>"The molecule hasn't changed that much. The manufacturing process hasn't changed that much. What changed is the market structure."</p>
+  </div>
+
+  <p>
+    The result: Americans with diabetes — about 8.4 million of whom use insulin — pay prices that no comparable country comes close to. <em>About 9 million Americans ration their insulin doses</em>, cutting them, skipping them, or buying from Canada or Mexico. People have died from this.
+  </p>
+
+  <h2>What's surprising</h2>
+  <p>
+    The most striking comparison isn't US vs Pakistan or US vs India — you'd expect richer countries to pay more. The jaw-dropper is <strong>US vs Germany, US vs France, US vs Japan</strong>. These are wealthy nations with sophisticated healthcare systems. They pay $7–$15. The US pays $98.70.
+  </p>
+  <p>
+    Canada, which shares a border and a similar GDP, pays <strong>$12</strong>. That's why people drive across the border to buy insulin — or order it online from Canadian pharmacies.
+  </p>
+
+  <h2>The data</h2>
+  <p>
+    All figures from the <strong>RAND Corporation / Health Affairs 2021</strong> insulin pricing study, one of the most comprehensive cross-national comparisons available. Prices are retail, unadjusted for purchasing power — which, if anything, makes the US disparity look even larger on a PPP-adjusted basis.
+  </p>
+</div>
+
+<!-- ── FOOTER ── -->
+
+    <div class="source-item"><div class="source-name"><a href="https://www.healthaffairs.org/doi/10.1377/hlthaff.2020.00494" target="_blank" rel="noopener">Health Affairs, Vol. 40, No. 1 (2021)</a></div><div class="source-desc">Peer-reviewed companion analysis on insulin pricing disparities.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The RAND data reflects 2018 retail prices. Since then, US insulin list prices have changed materially: in 2023, all three major manufacturers (Eli Lilly, Novo Nordisk, Sanofi) capped out-of-pocket costs at $35/month for insured patients, and biosimilar insulins entered the market at lower prices. The structural gap with other wealthy nations persists, but the most extreme figures are somewhat improved.</li>
+      <li>Prices are unadjusted for purchasing power parity. A PPP-adjusted comparison would make the US gap smaller relative to wealthier countries and larger relative to lower-income ones.</li>
+      <li>The '9 million Americans ration insulin' figure is from Herkert et al. (2019, Yale) and predates the 2023 cap legislation. Current rationing figures are likely lower but remain significant.</li>
+      <li>Non-RAND country prices (India, Pakistan, and others beyond the study's 56 countries) are estimated from WHO and IMS Health data and carry higher uncertainty.</li>
+    
+  </div>
+
+
+  <!-- ── SOURCES & CAVEATS ── -->
+  <div class="sources-section">
+    <h2>Data sources</h2>
+    <div class="source-item"><div class="source-name"><a href="https://www.rand.org/pubs/research_reports/RR2525.html" target="_blank" rel="noopener">RAND Corporation / Health Affairs 2021</a></div><div class="source-desc">Internationally comparable retail prices for a standard vial of insulin across 56 countries. Prices are unadjusted for purchasing power parity.</div></div>
+    <div class="source-item"><div class="source-name"><a href="https://www.healthaffairs.org/doi/10.1377/hlthaff.2020.00494" target="_blank" rel="noopener">Health Affairs, Vol. 40, No. 1 (2021)</a></div><div class="source-desc">Peer-reviewed companion analysis on insulin pricing disparities.</div></div>
+    <h2>Caveats & methodology notes</h2>
+    
+      <li>The RAND data reflects 2018 retail prices. Since then, US insulin list prices have changed materially: in 2023, all three major manufacturers (Eli Lilly, Novo Nordisk, Sanofi) capped out-of-pocket costs at $35/month for insured patients, and biosimilar insulins entered the market at lower prices. The structural gap with other wealthy nations persists, but the most extreme figures are somewhat improved.</li>
+      <li>Prices are unadjusted for purchasing power parity. A PPP-adjusted comparison would make the US gap smaller relative to wealthier countries and larger relative to lower-income ones.</li>
+      <li>The '9 million Americans ration insulin' figure is from Herkert et al. (2019, Yale) and predates the 2023 cap legislation. Current rationing figures are likely lower but remain significant.</li>
+      <li>Non-RAND country prices (India, Pakistan, and others beyond the study's 56 countries) are estimated from WHO and IMS Health data and carry higher uncertainty.</li>
+    
+  </div>
+
+<div class="site-footer">
+  <div class="handle">@atlasofculture</div>
+  <div class="source">Data: RAND Corporation / Health Affairs 2021</div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const ALL_DATA = [
+  { c:'United States', p:98.70, r:'wealthy' },
+  { c:'Japan',         p:14.40, r:'asia'    },
+  { c:'Mexico',        p:14.40, r:'latam'   },
+  { c:'Canada',        p:12.00, r:'wealthy' },
+  { c:'Germany',       p:11.00, r:'wealthy' },
+  { c:'Brazil',        p:11.70, r:'latam'   },
+  { c:'Switzerland',   p:11.20, r:'wealthy' },
+  { c:'Norway',        p:10.80, r:'wealthy' },
+  { c:'Ireland',       p:10.80, r:'wealthy' },
+  { c:'Sweden',        p:10.50, r:'wealthy' },
+  { c:'Austria',       p:10.60, r:'wealthy' },
+  { c:'Netherlands',   p: 9.80, r:'wealthy' },
+  { c:'Belgium',       p: 9.90, r:'wealthy' },
+  { c:'France',        p: 9.08, r:'wealthy' },
+  { c:'Australia',     p: 9.08, r:'wealthy' },
+  { c:'New Zealand',   p: 9.20, r:'wealthy' },
+  { c:'Greece',        p: 9.20, r:'wealthy' },
+  { c:'Saudi Arabia',  p: 8.80, r:'wealthy' },
+  { c:'Chile',         p: 8.40, r:'latam'   },
+  { c:'Taiwan',        p: 8.60, r:'asia'    },
+  { c:'Portugal',      p: 8.80, r:'wealthy' },
+  { c:'South Africa',  p: 8.20, r:'africa'  },
+  { c:'Italy',         p:10.10, r:'wealthy' },
+  { c:'Spain',         p: 9.40, r:'wealthy' },
+  { c:'Israel',        p:10.40, r:'wealthy' },
+  { c:'Argentina',     p: 7.60, r:'latam'   },
+  { c:'United Kingdom',p: 7.52, r:'wealthy' },
+  { c:'Poland',        p: 7.20, r:'wealthy' },
+  { c:'Colombia',      p: 7.20, r:'latam'   },
+  { c:'Hungary',       p: 7.50, r:'wealthy' },
+  { c:'Malaysia',      p: 6.80, r:'asia'    },
+  { c:'Thailand',      p: 6.40, r:'asia'    },
+  { c:'Romania',       p: 6.80, r:'wealthy' },
+  { c:'Peru',          p: 6.80, r:'latam'   },
+  { c:'Philippines',   p: 6.20, r:'asia'    },
+  { c:'Venezuela',     p: 5.60, r:'latam'   },
+  { c:'Nigeria',       p: 5.60, r:'africa'  },
+  { c:'Turkey',        p: 5.60, r:'wealthy' },
+  { c:'Russia',        p: 5.40, r:'wealthy' },
+  { c:'Kazakhstan',    p: 5.40, r:'asia'    },
+  { c:'Kenya',         p: 5.40, r:'africa'  },
+  { c:'Vietnam',       p: 5.40, r:'asia'    },
+  { c:'Indonesia',     p: 5.80, r:'asia'    },
+  { c:'China',         p: 5.20, r:'asia'    },
+  { c:'Ukraine',       p: 5.20, r:'wealthy' },
+  { c:'Egypt',         p: 5.20, r:'africa'  },
+  { c:'Morocco',       p: 5.80, r:'africa'  },
+  { c:'Sri Lanka',     p: 5.10, r:'asia'    },
+  { c:'Iran',          p: 4.90, r:'asia'    },
+  { c:'Nepal',         p: 4.90, r:'asia'    },
+  { c:'Bangladesh',    p: 4.80, r:'asia'    },
+  { c:'India',         p: 4.76, r:'asia'    },
+  { c:'Pakistan',      p: 4.60, r:'asia'    },
+];
+
+const PRICES = {};
+ALL_DATA.forEach(d => { PRICES[d.c] = d.p; });
+
+const NAME_MAP = {
+  "Dem. Rep. Congo": "Democratic Republic of the Congo",
+  "Bosnia and Herz.": "Bosnia and Herzegovina",
+  "N. Macedonia": "North Macedonia", "Dominican Rep.": "Dominican Republic",
+  "eSwatini": "Eswatini", "Czech Republic": "Czechia",
+  "Somaliland": "Somalia", "N. Cyprus": "Cyprus",
+  "Türkiye": "Turkey", "United States of America": "United States",
+  "S. Korea": "South Korea",
+};
+
+function lookup(n) { return PRICES[n] ?? PRICES[NAME_MAP[n]] ?? null; }
+
+// ── Color ─────────────────────────────────────────────────────────────────────
+const STOPS = [
+  [0.00,[28,55,115]],[0.18,[38,95,135]],[0.35,[52,125,115]],
+  [0.50,[85,125,75]],[0.65,[145,115,38]],[0.80,[192,138,28]],
+  [0.92,[218,175,48]],[1.00,[232,197,71]],
+];
+function getColor(v) {
+  const t = Math.sqrt(Math.max(0,Math.min(1,(v-4)/94.7)));
+  let lo=STOPS[0],hi=STOPS[STOPS.length-1];
+  for(let i=0;i<STOPS.length-1;i++){if(t>=STOPS[i][0]&&t<=STOPS[i+1][0]){lo=STOPS[i];hi=STOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(i=>Math.round(lo[1][i]+s*(hi[1][i]-lo[1][i]))).join(',')})`;
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){
+  const T=W*0.4,segs=[[]];
+  ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});
+  return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');
+}
+function g2p(g){
+  if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');
+  if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');
+  return'';
+}
+
+// Legend
+const lgS=Array.from({length:18},(_,i)=>getColor(4+(94.7/17)*i));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+// Graticule
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a38');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+const tt=document.getElementById('tooltip');
+const ttC=document.getElementById('tt-country');
+const ttP=document.getElementById('tt-price');
+const ttV=document.getElementById('tt-vs');
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+  .then(r=>r.json())
+  .then(geo=>{
+    const el=document.getElementById('countries');
+    const sorted=[...geo.features].sort((a,b)=>{
+      const pa=lookup(a.properties.name||'');
+      const pb=lookup(b.properties.name||'');
+      if(pa===null&&pb===null)return 0;if(pa===null)return -1;if(pb===null)return 1;return pa-pb;
+    });
+    sorted.forEach(f=>{
+      const name=f.properties.name||'';
+      const price=lookup(name);
+      const d=g2p(f.geometry);
+      if(!d)return;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',d);
+      path.setAttribute('fill',price!==null?getColor(price):'#111126');
+      path.setAttribute('stroke','#07070c');
+      path.setAttribute('stroke-width','0.4');
+      path.style.cursor='pointer';
+      path.style.transition='opacity 0.15s';
+      path.addEventListener('mouseenter',e=>{
+        if(price===null)return;
+        ttC.textContent=name;
+        ttP.textContent='$'+price.toFixed(2);
+        const ratio=(98.70/price).toFixed(1);
+        ttV.textContent=price===98.70?'← the outlier':`USA pays ${ratio}× more`;
+        tt.style.display='block';
+      });
+      path.addEventListener('mousemove',e=>{
+        tt.style.left=(e.clientX+16)+'px';
+        tt.style.top=(e.clientY-50)+'px';
+      });
+      path.addEventListener('mouseleave',()=>{ tt.style.display='none'; });
+      el.appendChild(path);
+    });
+  });
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+function buildTable(filter='all') {
+  const data = filter==='all' ? ALL_DATA : ALL_DATA.filter(d=>d.r===filter);
+  const sorted = [...data].sort((a,b)=>b.p-a.p);
+  const tbody = document.getElementById('table-body');
+  const US_PRICE = 98.70;
+  tbody.innerHTML = sorted.map(d=>`
+    <tr class="${d.c==='United States'?'us-row':''}">
+      <td class="td-country">${d.c}</td>
+      <td class="td-price">$${d.p.toFixed(2)}</td>
+      <td class="td-mult">${d.c==='United States'?'—':'÷ '+(US_PRICE/d.p).toFixed(1)+'×'}</td>
+      <td class="bar-cell"><div class="mini-bar" style="width:${(d.p/US_PRICE*100).toFixed(1)}%"></div></td>
+    </tr>
+  `).join('');
+}
+
+function filterRegion(r, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTable(r);
+}
+
+buildTable();
+</script>
+</body>
+</html>

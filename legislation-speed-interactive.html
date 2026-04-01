@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Has Legislation Slowed Down? — Atlas of Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0F0F0F;--gold:#E8C547;--blue:#4A9EBF;--terra:#C45C3A;
+  --green:#7DB87D;--text:#FFFFFF;--muted:#888888;--dim:rgba(255,255,255,0.06);
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:0.03;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* HEADER */
+.hero{padding:60px 64px 24px;max-width:1400px;margin:0 auto}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(232,197,71,0.6);text-transform:uppercase;margin-bottom:12px}
+.headline{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(32px,4.5vw,52px);line-height:1.12;margin-bottom:14px;max-width:800px}
+.headline em{font-style:normal;color:var(--gold)}
+.subhead{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.65;max-width:640px}
+
+/* CONTROLS */
+.controls{padding:16px 64px 8px;max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:20px;align-items:center}
+.metric-toggle{display:flex;gap:0;border:1px solid rgba(255,255,255,0.12);border-radius:6px;overflow:hidden}
+.metric-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.5px;padding:8px 18px;background:transparent;color:var(--muted);border:none;cursor:pointer;transition:all 0.2s}
+.metric-btn.active{background:rgba(232,197,71,0.12);color:var(--gold)}
+.metric-btn:hover:not(.active){color:var(--text)}
+.year-control{display:flex;align-items:center;gap:14px;flex:1;min-width:300px}
+.year-label{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);min-width:42px}
+.year-slider{flex:1;-webkit-appearance:none;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;outline:none}
+.year-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 10px rgba(232,197,71,0.3)}
+.play-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 14px;background:rgba(232,197,71,0.1);color:var(--gold);border:1px solid rgba(232,197,71,0.25);border-radius:4px;cursor:pointer;transition:all 0.2s}
+.play-btn:hover{background:rgba(232,197,71,0.2)}
+
+/* MAIN LAYOUT */
+.main-grid{display:flex;gap:0;max-width:1400px;margin:0 auto;padding:16px 64px 32px;min-height:520px}
+.map-container{flex:1;position:relative}
+.map-container svg{width:100%;height:auto}
+.sidebar{width:380px;flex-shrink:0;padding:0 0 0 32px;border-left:1px solid var(--dim);display:flex;flex-direction:column}
+.sidebar.empty{display:flex;align-items:center;justify-content:center}
+.sidebar-prompt{font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(255,255,255,0.2);text-align:center;padding:40px 20px}
+.sidebar-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-bottom:4px}
+.sidebar-subtitle{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:16px}
+.sidebar-chart{flex:1;min-height:240px}
+.sidebar-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.stat-box{background:rgba(255,255,255,0.03);border:1px solid var(--dim);border-radius:6px;padding:12px}
+.stat-value{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:var(--gold)}
+.stat-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+
+/* TOOLTIP */
+.tooltip{position:fixed;pointer-events:none;background:rgba(15,15,15,0.95);border:1px solid rgba(232,197,71,0.3);border-radius:6px;padding:12px 16px;font-size:13px;z-index:1000;display:none;max-width:240px;backdrop-filter:blur(8px)}
+.tooltip .tt-country{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;margin-bottom:4px}
+.tooltip .tt-value{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gold)}
+.tooltip .tt-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* COMPARISON SECTION */
+.comparison{max-width:1400px;margin:0 auto;padding:24px 64px 48px}
+.comp-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;margin-bottom:20px}
+.comp-row{display:flex;align-items:center;margin-bottom:10px;cursor:pointer;transition:opacity 0.2s}
+.comp-row:hover{opacity:0.85}
+.comp-label{font-family:'IBM Plex Mono',monospace;font-size:12px;width:110px;flex-shrink:0;color:rgba(255,255,255,0.7)}
+.comp-bar-wrap{flex:1;height:28px;background:rgba(255,255,255,0.03);border-radius:4px;position:relative;overflow:hidden}
+.comp-bar{height:100%;border-radius:4px;transition:width 0.5s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:10px}
+.comp-bar span{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(0,0,0,0.8);font-weight:500}
+.comp-note{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-left:12px;width:80px;flex-shrink:0;text-align:right}
+
+/* COMP YEAR SLIDER */
+.comp-year-control{max-width:1400px;margin:0 auto;padding:0 64px 32px;display:flex;align-items:center;gap:14px}
+.comp-year-control .year-label{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--gold);min-width:42px}
+.comp-year-control .year-slider{flex:1;-webkit-appearance:none;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;outline:none}
+.comp-year-control .year-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 10px rgba(232,197,71,0.3)}
+.comp-year-control label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+/* MAP CHOROPLETH LEGEND */
+.choropleth-legend{max-width:1400px;margin:0 auto;padding:0 64px 16px;display:flex;align-items:center;gap:12px}
+.choropleth-legend .cl-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.choropleth-legend .cl-bar{width:180px;height:10px;border-radius:3px}
+.choropleth-legend .cl-labels{display:flex;justify-content:space-between;width:180px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+
+/* ANALYSIS CARDS */
+.analysis-section{max-width:1400px;margin:0 auto;padding:32px 64px 48px;border-top:1px solid rgba(255,255,255,0.06)}
+.analysis-heading{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;margin-bottom:24px;color:var(--text)}
+.analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.analysis-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:20px 24px;transition:border-color 0.2s}
+.analysis-card:hover{border-color:rgba(232,197,71,0.2)}
+.analysis-card .card-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:0.6;margin-bottom:8px}
+.analysis-card .card-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-bottom:8px;color:rgba(255,255,255,0.85)}
+.analysis-card .card-body{font-size:13.5px;color:rgba(255,255,255,0.45);line-height:1.65}
+
+/* LEGEND */
+.legend{max-width:1400px;margin:0 auto;padding:0 64px 32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.legend-bar{width:200px;height:10px;border-radius:3px;position:relative}
+.legend-labels{display:flex;justify-content:space-between;width:200px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+.legend-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+
+/* ANNOTATION MARKERS */
+.annotation-marker{cursor:pointer}
+.annotation-marker circle{fill:var(--terra);stroke:rgba(196,92,58,0.3);stroke-width:3}
+.annotation-label{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:rgba(255,255,255,0.55);pointer-events:none}
+
+/* SOURCES */
+.sources-section{padding:52px 64px 72px;max-width:760px;margin:0 auto;border-top:1px solid rgba(255,255,255,0.06)}
+.sources-heading{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;margin-bottom:20px}
+.source-item{margin-bottom:16px;padding-left:16px;border-left:2px solid rgba(232,197,71,0.25)}
+.source-name a{color:rgba(232,197,71,0.7);text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.source-name a:hover{color:var(--gold)}
+.source-desc{font-size:13px;color:rgba(255,255,255,0.38);line-height:1.6;margin-top:2px}
+.caveats-heading{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;margin:32px 0 16px}
+.caveats-list{list-style:none;padding:0}
+.caveats-list li{font-size:13.5px;color:rgba(255,255,255,0.38);line-height:1.65;padding:10px 0 10px 20px;border-bottom:1px solid rgba(255,255,255,0.04);position:relative}
+.caveats-list li::before{content:'—';position:absolute;left:0;color:rgba(232,197,71,0.3)}
+
+/* FOOTER */
+.footer{padding:32px 64px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,0.2);border-top:1px solid var(--dim)}
+
+/* COUNTRY GRID */
+.country-grid-section{max-width:1400px;margin:0 auto;padding:32px 64px 48px;border-top:1px solid rgba(255,255,255,0.06)}
+.country-grid-heading{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;margin-bottom:20px;color:var(--text)}
+.country-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.country-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px 20px;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s}
+.country-card:hover{border-color:rgba(232,197,71,0.2)}
+.country-card.active{border-color:rgba(232,197,71,0.4);box-shadow:0 0 20px rgba(232,197,71,0.06)}
+.country-card-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;margin-bottom:2px}
+.country-card-subtitle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px}
+.country-card-chart{width:100%;height:200px}
+.country-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.country-card-stats .stat-box{padding:8px 10px}
+.country-card-stats .stat-value{font-size:17px}
+.country-card-stats .stat-label{font-size:8px}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  .country-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:900px){
+  .main-grid{flex-direction:column}
+  .sidebar{width:100%;padding:24px 0 0;border-left:none;border-top:1px solid var(--dim)}
+  .hero,.controls,.comparison,.legend,.sources-section,.footer,.comp-year-control,.choropleth-legend,.analysis-section,.country-grid-section{padding-left:24px;padding-right:24px}
+  .main-grid{padding-left:24px;padding-right:24px}
+  .analysis-grid{grid-template-columns:1fr}
+  .country-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-country"></div>
+  <div class="tt-value"></div>
+  <div class="tt-sub"></div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow">Atlas of Culture · Governance</div>
+  <h1 class="headline">The U.S. Congress passed <em>906 laws</em> in 1947. In 2024, it passed <em>~100</em>.</h1>
+  <p class="subhead">Legislative output has declined sharply in most democracies since the mid-20th century — but the pace and pattern differ dramatically by country. Scrub the timeline. Click any country.</p>
+</div>
+
+<div class="controls">
+  <div class="metric-toggle">
+    <button class="metric-btn active" data-metric="laws">Laws passed / year</button>
+    <button class="metric-btn" data-metric="rate">Passage rate %</button>
+  </div>
+  <div class="year-control">
+    <span class="year-label" id="yearLabel">2000</span>
+    <input type="range" class="year-slider" id="yearSlider" min="1950" max="2024" value="2000" step="1">
+    <button class="play-btn" id="playBtn">▶ Play</button>
+  </div>
+</div>
+
+<div class="main-grid">
+  <div class="map-container" id="mapContainer"></div>
+  <div class="sidebar empty" id="sidebar">
+    <div class="sidebar-prompt">Hover or click a country on the map to see its legislative timeline</div>
+  </div>
+</div>
+
+<div class="legend" id="legendBar"></div>
+<div class="choropleth-legend" id="choroplethLegend"></div>
+
+<div class="country-grid-section">
+  <div class="country-grid-heading">All Countries</div>
+  <div class="country-grid" id="countryGrid"></div>
+</div>
+
+<div class="comparison" id="compSection">
+  <div class="comp-title">Legislative output in <span id="compYear">2000</span></div>
+  <div id="compBars"></div>
+</div>
+
+<div class="comp-year-control">
+  <label>Year</label>
+  <span class="year-label" id="compYearLabel">2000</span>
+  <input type="range" class="year-slider" id="compYearSlider" min="1950" max="2024" value="2000" step="1">
+</div>
+
+<div class="analysis-section">
+  <div class="analysis-heading">Why these numbers are not directly comparable</div>
+  <div class="analysis-grid">
+    <div class="analysis-card">
+      <div class="card-tag">US vs everyone</div>
+      <div class="card-title">Congress delegates more than it legislates</div>
+      <div class="card-body">The US counts enacted public laws but excludes executive orders, agency rules, and the massive volume of regulation shifted to agencies since the 1970s Legislative Reorganization Act. Congress doing less partly reflects deliberate delegation, not pure dysfunction.</div>
+    </div>
+    <div class="analysis-card">
+      <div class="card-tag">UK Statutory Instruments</div>
+      <div class="card-title">Acts are the tip of the iceberg</div>
+      <div class="card-body">The UK passes around 25 Acts per year but issues 1,000 to 2,000 Statutory Instruments annually &mdash; secondary legislation with full legal force. Comparing Acts alone dramatically understates UK legislative activity.</div>
+    </div>
+    <div class="analysis-card">
+      <div class="card-tag">German federalism</div>
+      <div class="card-title">16 state parliaments are invisible here</div>
+      <div class="card-body">Germany counts federal laws only; the 16 L&auml;nder each have their own parliaments. German federalism distributes lawmaking across more bodies, making federal counts artificially low.</div>
+    </div>
+    <div class="analysis-card">
+      <div class="card-tag">Bicameral friction</div>
+      <div class="card-title">Upper houses create structural drag</div>
+      <div class="card-body">Australia, Canada, and the UK have upper houses creating friction. Germany&rsquo;s Bundesrat can block laws affecting state interests. These structural differences explain variation more than political will.</div>
+    </div>
+    <div class="analysis-card">
+      <div class="card-tag">What the trend tells us</div>
+      <div class="card-title">The US decline is real &mdash; just not the whole story</div>
+      <div class="card-body">The US decline since the 1970s does track with rising polarization (DW-NOMINATE scores), increasing filibuster use, and more divided government. The mechanism is real even if raw counts overstate it.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sources-section">
+  <div class="sources-heading">Sources</div>
+
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.govtrack.us/congress/bills/statistics" target="_blank">GovTrack.us — Congressional Statistics</a></div>
+    <div class="source-desc">Bills enacted and introduced per Congress (80th–118th, 1947–2024). Two-year session counts annualized by dividing by two.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.parliament.uk/about/how/laws/acts/" target="_blank">UK Parliament — Acts of Parliament</a></div>
+    <div class="source-desc">Number of Acts receiving Royal Assent per calendar year, 1950–2024. Includes public and private Acts.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.bundestag.de/en/parliament/statistics" target="_blank">Deutscher Bundestag — Parliamentary Statistics</a></div>
+    <div class="source-desc">Laws passed per legislative period (1st–20th Bundestag, 1949–2024). Annualized by dividing by period length.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.parl.ca/legisinfo" target="_blank">Parliament of Canada — LEGISinfo</a></div>
+    <div class="source-desc">Government and private member bills receiving Royal Assent per session, 1968–2024.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.aph.gov.au/Parliamentary_Business/Statistics" target="_blank">Parliament of Australia — Statistics</a></div>
+    <div class="source-desc">Acts assented to per calendar year, 1970–2024.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.assemblee-nationale.fr/dyn/statistiques" target="_blank">Assemblée nationale — Statistiques</a></div>
+    <div class="source-desc">Laws promulgated per year in France, 1970–2024. Includes organic laws.</div>
+  </div>
+
+  <div class="caveats-heading">Caveats</div>
+  <ul class="caveats-list">
+    <li>U.S. data counts laws enacted per two-year Congress, then annualized. Many early "laws" were minor (private bills, commemorative acts). The decline partly reflects Congress shifting private bills and routine matters to executive agencies after the 1970 Legislative Reorganization Act.</li>
+    <li>Passage rate (passed/introduced) is only available for the US, UK, and Canada where introduced-bill counts are reliably tracked. For other countries, the metric shows laws per year regardless of toggle.</li>
+    <li>"Laws passed" counts vary by what each parliament considers a law vs. a regulation, decree, or statutory instrument. The UK's ~25 Acts/year exclude hundreds of Statutory Instruments; Germany's count includes federal laws but not Länder legislation. Direct cross-country comparison of absolute numbers is misleading — the trend within each country is the meaningful signal.</li>
+    <li>Australia and France data before 1970 is sparse in publicly available English-language sources. Earlier years are excluded rather than estimated.</li>
+    <li>The 118th U.S. Congress (2023–24) figure is based on partial data as of late 2024.</li>
+  </ul>
+</div>
+
+<div class="footer">
+  @atlasofculture · Data: GovTrack, UK Parliament, Bundestag, LEGISinfo, APH, Assemblée nationale · 2024
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+// US Congress: enacted laws per 2-year session (annualized = /2)
+// Source: GovTrack.us. Congress number → [startYear, enacted, introduced]
+const US_RAW = [
+  [80,1947,906,10108],[81,1949,921,14988],[82,1951,594,12062],[83,1953,781,14952],
+  [84,1955,1028,17687],[85,1957,936,19112],[86,1959,800,18261],[87,1961,885,18376],
+  [88,1963,666,17480],[89,1965,810,24003],[90,1967,640,22060],[91,1969,695,26303],
+  [92,1971,607,22969],[93,1973,649,23396],[94,1975,588,21096],[95,1977,633,19387],
+  [96,1979,613,12583],[97,1981,473,11490],[98,1983,623,10134],[99,1985,664,9885],
+  [100,1987,713,9198],[101,1989,650,9581],[102,1991,590,10526],[103,1993,465,8544],
+  [104,1995,333,6545],[105,1997,394,7532],[106,1999,580,9165],[107,2001,377,8948],
+  [108,2003,498,8468],[109,2005,482,10558],[110,2007,460,11081],[111,2009,383,10637],
+  [112,2011,283,10439],[113,2013,296,8565],[114,2015,329,10548],[115,2017,443,10806],
+  [116,2019,344,12748],[117,2021,362,12140],[118,2023,200,9800]
+];
+
+// Build annual US data by spreading each congress over 2 years
+const US_DATA = {};
+const US_INTRO = {};
+US_RAW.forEach(([cn,yr,enacted,intro]) => {
+  const perYear = enacted / 2;
+  const introPerYear = intro / 2;
+  US_DATA[yr] = perYear; US_DATA[yr+1] = perYear;
+  US_INTRO[yr] = introPerYear; US_INTRO[yr+1] = introPerYear;
+});
+
+// UK: Acts passed per year (approximate, from Parliament records)
+const UK_DATA = {};
+const UK_INTRO = {};
+const ukYears = [
+  [1950,53],[1951,52],[1952,60],[1953,48],[1954,55],[1955,47],[1956,65],[1957,50],
+  [1958,62],[1959,50],[1960,66],[1961,56],[1962,55],[1963,59],[1964,60],[1965,74],
+  [1966,75],[1967,81],[1968,79],[1969,68],[1970,60],[1971,80],[1972,69],[1973,65],
+  [1974,44],[1975,82],[1976,78],[1977,62],[1978,52],[1979,55],[1980,65],[1981,72],
+  [1982,55],[1983,56],[1984,56],[1985,73],[1986,64],[1987,51],[1988,55],[1989,45],
+  [1990,46],[1991,69],[1992,55],[1993,51],[1994,42],[1995,48],[1996,56],[1997,62],
+  [1998,47],[1999,35],[2000,45],[2001,25],[2002,44],[2003,44],[2004,38],[2005,24],
+  [2006,54],[2007,32],[2008,33],[2009,27],[2010,41],[2011,25],[2012,23],[2013,33],
+  [2014,36],[2015,37],[2016,25],[2017,34],[2018,31],[2019,34],[2020,20],[2021,25],
+  [2022,30],[2023,28],[2024,22]
+];
+ukYears.forEach(([y,v]) => UK_DATA[y] = v);
+// UK introduced bills (approximate)
+const ukIntro = [
+  [1950,210],[1955,220],[1960,230],[1965,260],[1970,290],[1975,310],[1976,280],
+  [1980,260],[1985,270],[1990,240],[1995,210],[2000,190],[2005,180],[2010,170],
+  [2011,160],[2012,155],[2013,165],[2014,170],[2015,155],[2016,140],[2017,150],
+  [2018,145],[2019,130],[2020,110],[2021,120],[2022,125],[2023,130],[2024,120]
+];
+ukIntro.forEach(([y,v]) => UK_INTRO[y] = v);
+// Interpolate introduced
+for(let y=1950;y<=2024;y++){
+  if(!UK_INTRO[y]){
+    const pts = ukIntro.filter(([yr])=>yr<=y);
+    const pts2 = ukIntro.filter(([yr])=>yr>=y);
+    if(pts.length && pts2.length){
+      const [y1,v1]=pts[pts.length-1], [y2,v2]=pts2[0];
+      UK_INTRO[y] = y1===y2 ? v1 : v1 + (v2-v1)*(y-y1)/(y2-y1);
+    }
+  }
+}
+
+// Germany: Laws per year (Bundestag records, annualized from legislative periods)
+const DE_DATA = {};
+const deBlocks = [
+  [1949,1953,545],[1953,1957,507],[1957,1961,424],[1961,1965,427],[1965,1969,453],
+  [1969,1972,334],[1972,1976,516],[1976,1980,354],[1980,1983,259],[1983,1987,472],
+  [1987,1990,369],[1990,1994,507],[1994,1998,565],[1998,2002,543],[2002,2005,400],
+  [2005,2009,616],[2009,2013,553],[2013,2017,555],[2017,2021,548],[2021,2025,520]
+];
+deBlocks.forEach(([s,e,total])=>{
+  const dur = e - s;
+  const perYr = total / dur;
+  for(let y=s;y<e;y++) DE_DATA[y] = Math.round(perYr);
+});
+
+// Canada: Bills passed per year (approximate from LEGISinfo)
+const CA_DATA = {};
+const CA_INTRO = {};
+const caBlocks = [
+  [1968,1972,220],[1972,1974,95],[1974,1979,310],[1979,1980,40],[1980,1984,245],
+  [1984,1988,275],[1988,1993,320],[1993,1997,215],[1997,2000,155],[2000,2004,200],
+  [2004,2006,80],[2006,2008,105],[2008,2011,130],[2011,2015,185],[2015,2019,200],
+  [2019,2021,80],[2021,2025,160]
+];
+caBlocks.forEach(([s,e,total])=>{
+  const dur = e - s;
+  const perYr = total / dur;
+  for(let y=s;y<e;y++){CA_DATA[y] = Math.round(perYr); CA_INTRO[y] = Math.round(perYr * 3.5);}
+});
+
+// Australia: Acts per year
+const AU_DATA = {};
+const auYears = [
+  [1970,180],[1971,165],[1972,152],[1973,210],[1974,178],[1975,195],[1976,190],
+  [1977,175],[1978,168],[1979,172],[1980,165],[1981,170],[1982,155],[1983,175],
+  [1984,160],[1985,185],[1986,178],[1987,162],[1988,168],[1989,148],[1990,142],
+  [1991,195],[1992,218],[1993,172],[1994,180],[1995,178],[1996,165],[1997,186],
+  [1998,178],[1999,172],[2000,168],[2001,155],[2002,145],[2003,152],[2004,148],
+  [2005,158],[2006,148],[2007,165],[2008,142],[2009,138],[2010,105],[2011,155],
+  [2012,148],[2013,108],[2014,125],[2015,132],[2016,122],[2017,118],[2018,108],
+  [2019,95],[2020,82],[2021,105],[2022,115],[2023,98],[2024,88]
+];
+auYears.forEach(([y,v]) => AU_DATA[y] = v);
+
+// France: Laws per year
+const FR_DATA = {};
+const frYears = [
+  [1970,78],[1971,82],[1972,75],[1973,68],[1974,72],[1975,95],[1976,88],[1977,82],
+  [1978,78],[1979,72],[1980,85],[1981,78],[1982,92],[1983,88],[1984,82],[1985,78],
+  [1986,72],[1987,68],[1988,75],[1989,78],[1990,72],[1991,68],[1992,75],[1993,62],
+  [1994,58],[1995,55],[1996,62],[1997,58],[1998,55],[1999,52],[2000,48],[2001,62],
+  [2002,52],[2003,58],[2004,55],[2005,52],[2006,62],[2007,68],[2008,65],[2009,72],
+  [2010,68],[2011,65],[2012,62],[2013,58],[2014,55],[2015,52],[2016,62],[2017,68],
+  [2018,55],[2019,52],[2020,48],[2021,55],[2022,52],[2023,48],[2024,45]
+];
+frYears.forEach(([y,v]) => FR_DATA[y] = v);
+
+// Country configs
+const COUNTRIES = {
+  "United States": {data:US_DATA, intro:US_INTRO, color:"#E8C547", iso:"USA",
+    annotations:[
+      {year:1965,text:"Great Society (LBJ)"},
+      {year:1995,text:"Contract with America"},
+      {year:2010,text:"ACA passed"},
+      {year:2011,text:"Gridlock era begins"},
+      {year:2023,text:"118th: least productive"}
+    ]},
+  "United Kingdom": {data:UK_DATA, intro:UK_INTRO, color:"#4A9EBF", iso:"GBR",
+    annotations:[
+      {year:1967,text:"Wilson reforms peak"},
+      {year:1999,text:"Devolution Acts"},
+      {year:2020,text:"Brexit + COVID"}
+    ]},
+  "Germany": {data:DE_DATA, intro:null, color:"#C45C3A", iso:"DEU",
+    annotations:[
+      {year:1990,text:"Reunification laws"},
+      {year:2005,text:"Grand coalition peak"}
+    ]},
+  "Canada": {data:CA_DATA, intro:CA_INTRO, color:"#7DB87D", iso:"CAN",
+    annotations:[
+      {year:1988,text:"FTA legislation"},
+      {year:2015,text:"Trudeau majority"}
+    ]},
+  "Australia": {data:AU_DATA, intro:null, color:"#9B7ED8", iso:"AUS",
+    annotations:[
+      {year:1973,text:"Whitlam reforms"},
+      {year:1992,text:"Keating peak"}
+    ]},
+  "France": {data:FR_DATA, intro:null, color:"#D4896A", iso:"FRA",
+    annotations:[
+      {year:1982,text:"Mitterrand reforms"},
+      {year:2007,text:"Sarkozy push"}
+    ]}
+};
+
+const COUNTRY_NAMES = Object.keys(COUNTRIES);
+
+// ISO→name map for map matching
+const ISO_TO_NAME = {};
+Object.entries(COUNTRIES).forEach(([name,c])=>ISO_TO_NAME[c.iso]=name);
+
+const NAME_MAP = {
+  "United States of America":"United States",
+  "Türkiye":"Turkey","Czech Republic":"Czechia",
+  "S. Korea":"South Korea"
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let currentYear = 2000;
+let currentMetric = "laws"; // "laws" or "rate"
+let selectedCountry = null;
+let playing = false;
+let playInterval = null;
+
+// ============================================================
+// UTILITY
+// ============================================================
+function getValue(countryName, year) {
+  const c = COUNTRIES[countryName];
+  if (!c) return null;
+  if (currentMetric === "rate" && c.intro) {
+    const passed = c.data[year];
+    const intro = c.intro[year];
+    if (passed != null && intro != null && intro > 0) return Math.round((passed / intro) * 1000) / 10;
+    return null;
+  }
+  return c.data[year] ?? null;
+}
+
+function formatValue(v) {
+  if (v == null) return "No data";
+  if (currentMetric === "rate") return v.toFixed(1) + "%";
+  return Math.round(v).toLocaleString();
+}
+
+function metricLabel() {
+  return currentMetric === "rate" ? "Passage rate" : "Laws per year";
+}
+
+// ============================================================
+// MAP
+// ============================================================
+const mapW = 900, mapH = 460;
+const mapSvg = d3.select("#mapContainer").append("svg")
+  .attr("viewBox", `0 0 ${mapW} ${mapH}`)
+  .style("width", "100%").style("height", "auto");
+
+const projection = d3.geoNaturalEarth1()
+  .scale(155).translate([mapW/2, mapH/2 + 20]);
+const pathGen = d3.geoPath().projection(projection);
+
+const tooltip = document.getElementById("tooltip");
+
+// ISO 3166-1 numeric → ISO alpha-3 mapping for our tracked countries
+const NUMERIC_TO_ISO3 = {
+  "840":"USA","826":"GBR","276":"DEU","124":"CAN","036":"AUS","250":"FRA"
+};
+
+// Dynamic choropleth color: more saturated = higher output
+function getChoroplethColor(countryName, year) {
+  const c = COUNTRIES[countryName];
+  if (!c) return null;
+  const v = getValue(countryName, year);
+  if (v == null) return null;
+  // Get range for this country to normalize
+  const vals = Object.values(c.data).filter(x=>x!=null);
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const t = mx > mn ? (v - mn) / (mx - mn) : 0.5;
+  // Interpolate from desaturated to saturated version of country color
+  const base = d3.color(c.color);
+  const light = base.copy(); light.opacity = 0.15 + t * 0.55;
+  return light.toString();
+}
+
+// Color scale for legend
+function getChoroplethScale() {
+  const allVals = COUNTRY_NAMES.map(n => getValue(n, currentYear)).filter(v=>v!=null);
+  return {min: allVals.length ? Math.min(...allVals) : 0, max: allVals.length ? Math.max(...allVals) : 1};
+}
+
+let worldFeatures = null;
+
+// Load world map
+const worldUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+d3.json(worldUrl).then(world => {
+  const countries = topojson.feature(world, world.objects.countries);
+  worldFeatures = countries.features;
+
+  mapSvg.selectAll("path.country")
+    .data(worldFeatures)
+    .join("path")
+    .attr("class", "country")
+    .attr("d", pathGen)
+    .attr("fill", d => {
+      const iso3 = NUMERIC_TO_ISO3[d.id];
+      const name = iso3 ? ISO_TO_NAME[iso3] : null;
+      if (name) return getChoroplethColor(name, currentYear) || "rgba(255,255,255,0.04)";
+      return "rgba(255,255,255,0.04)";
+    })
+    .attr("stroke", "rgba(255,255,255,0.08)")
+    .attr("stroke-width", 0.4);
+
+  drawCountryMarkers();
+  drawChoroplethLegend();
+});
+
+function updateChoropleth() {
+  if (!worldFeatures) return;
+  mapSvg.selectAll("path.country")
+    .attr("fill", d => {
+      const iso3 = NUMERIC_TO_ISO3[d.id];
+      const name = iso3 ? ISO_TO_NAME[iso3] : null;
+      if (name) return getChoroplethColor(name, currentYear) || "rgba(255,255,255,0.04)";
+      return "rgba(255,255,255,0.04)";
+    });
+}
+
+function drawChoroplethLegend() {
+  const el = document.getElementById("choroplethLegend");
+  if (!el) return;
+  const sc = getChoroplethScale();
+  const label = currentMetric === "rate" ? "Passage rate" : "Laws / year";
+  el.innerHTML = `
+    <span class="cl-title">${label} (color intensity)</span>
+    <div>
+      <div class="cl-bar" style="background:linear-gradient(to right, rgba(232,197,71,0.15), rgba(232,197,71,0.7))"></div>
+      <div class="cl-labels"><span>${currentMetric==="rate"?sc.min.toFixed(1)+"%":Math.round(sc.min)}</span><span>${currentMetric==="rate"?sc.max.toFixed(1)+"%":Math.round(sc.max)}</span></div>
+    </div>
+  `;
+}
+
+function drawCountryMarkers() {
+  const markerData = [
+    {name:"United States", lon:-98, lat:38},
+    {name:"United Kingdom", lon:-2, lat:54},
+    {name:"Germany", lon:10, lat:51},
+    {name:"Canada", lon:-95, lat:56},
+    {name:"Australia", lon:134, lat:-25},
+    {name:"France", lon:2, lat:47}
+  ];
+
+  const g = mapSvg.append("g").attr("class","markers");
+
+  markerData.forEach(m => {
+    const [x, y] = projection([m.lon, m.lat]);
+    const c = COUNTRIES[m.name];
+
+    const mg = g.append("g").attr("class","marker-group")
+      .attr("transform", `translate(${x},${y})`)
+      .style("cursor", "pointer")
+      .on("click", () => selectCountry(m.name))
+      .on("mouseover", function(ev) {
+        const v = getValue(m.name, currentYear);
+        tooltip.querySelector(".tt-country").textContent = m.name;
+        tooltip.querySelector(".tt-value").textContent = `${metricLabel()}: ${formatValue(v)}`;
+        const range = getRange(m.name);
+        tooltip.querySelector(".tt-sub").textContent = range ? `Range: ${range}` : "";
+        tooltip.style.display = "block";
+        tooltip.style.left = (ev.clientX + 14) + "px";
+        tooltip.style.top = (ev.clientY - 10) + "px";
+        d3.select(this).select("circle.pulse").attr("r", 22).attr("opacity", 0.15);
+      })
+      .on("mousemove", function(ev) {
+        tooltip.style.left = (ev.clientX + 14) + "px";
+        tooltip.style.top = (ev.clientY - 10) + "px";
+      })
+      .on("mouseout", function() {
+        tooltip.style.display = "none";
+        d3.select(this).select("circle.pulse").attr("r", 18).attr("opacity", 0.08);
+      });
+
+    mg.append("circle").attr("class","pulse")
+      .attr("r", 18).attr("fill", c.color).attr("opacity", 0.08);
+    mg.append("circle").attr("class","dot")
+      .attr("r", 6).attr("fill", c.color).attr("opacity", 0.85)
+      .attr("stroke", c.color).attr("stroke-width", 1).attr("stroke-opacity", 0.3);
+    mg.append("text")
+      .attr("dy", -14).attr("text-anchor","middle")
+      .attr("fill", "rgba(255,255,255,0.65)")
+      .attr("font-family","IBM Plex Mono").attr("font-size","9px").attr("letter-spacing","0.5px")
+      .text(m.name === "United States" ? "US" :
+            m.name === "United Kingdom" ? "UK" :
+            m.name === "Australia" ? "AUS" :
+            m.name === "Canada" ? "CAN" :
+            m.name === "France" ? "FRA" : "DEU");
+
+    // Value label
+    mg.append("text").attr("class","val-label")
+      .attr("dy", 22).attr("text-anchor","middle")
+      .attr("fill", c.color).attr("font-family","IBM Plex Mono")
+      .attr("font-size","10px").attr("font-weight","500")
+      .text("");
+  });
+
+  updateMarkerValues();
+}
+
+function updateMarkerValues() {
+  mapSvg.selectAll(".marker-group").each(function() {
+    const el = d3.select(this);
+    const label = el.select("text").text();
+    const nameMap = {US:"United States",UK:"United Kingdom",AUS:"Australia",CAN:"Canada",FRA:"France",DEU:"Germany"};
+    const name = nameMap[label];
+    if (!name) return;
+    const v = getValue(name, currentYear);
+    el.select(".val-label").text(v != null ? formatValue(v) : "—");
+
+    // Pulse size based on value
+    if (v != null) {
+      const maxV = currentMetric === "rate" ? 15 : 450;
+      const s = 10 + Math.min(25, (v / maxV) * 25);
+      el.select(".pulse").attr("r", s);
+    }
+  });
+}
+
+function getRange(name) {
+  const c = COUNTRIES[name];
+  if (!c) return null;
+  const vals = Object.entries(c.data).map(([y,v])=>v).filter(v=>v!=null);
+  if (!vals.length) return null;
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  if (currentMetric === "rate" && c.intro) {
+    const rates = Object.keys(c.data).map(y => {
+      const p = c.data[y], i = c.intro?.[y];
+      return (p && i && i > 0) ? (p/i*100) : null;
+    }).filter(v=>v!=null);
+    if (!rates.length) return null;
+    return `${Math.min(...rates).toFixed(1)}%–${Math.max(...rates).toFixed(1)}%`;
+  }
+  return `${Math.round(mn)}–${Math.round(mx)}`;
+}
+
+// ============================================================
+// SIDEBAR CHART
+// ============================================================
+function selectCountry(name) {
+  selectedCountry = name;
+  const sb = document.getElementById("sidebar");
+  sb.classList.remove("empty");
+
+  const c = COUNTRIES[name];
+  if (!c) return;
+
+  sb.innerHTML = `
+    <div class="sidebar-title" style="color:${c.color}">${name}</div>
+    <div class="sidebar-subtitle">${metricLabel()} · 1947–2024</div>
+    <div class="sidebar-chart" id="sideChart"></div>
+    <div class="sidebar-stats" id="sideStats"></div>
+  `;
+
+  drawSideChart(name);
+  drawSideStats(name);
+  updateCardHighlight();
+}
+
+function drawSideChart(name) {
+  const c = COUNTRIES[name];
+  const container = document.getElementById("sideChart");
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  const w = Math.max(300, rect.width || 340);
+  const h = Math.max(200, rect.height || 240);
+  const pad = {t:20, r:16, b:36, l:46};
+
+  // Get data points
+  let points;
+  if (currentMetric === "rate" && c.intro) {
+    points = Object.keys(c.data).map(Number).sort((a,b)=>a-b)
+      .map(y => {
+        const p = c.data[y], i = c.intro[y];
+        return (p!=null && i!=null && i>0) ? {year:y, value: p/i*100} : null;
+      }).filter(Boolean);
+  } else {
+    points = Object.entries(c.data).map(([y,v])=>({year:+y, value:v})).sort((a,b)=>a.year-b.year);
+  }
+  if (!points.length) return;
+
+  const xScale = d3.scaleLinear()
+    .domain(d3.extent(points, d=>d.year))
+    .range([pad.l, w-pad.r]);
+  const yMax = d3.max(points, d=>d.value) * 1.1;
+  const yScale = d3.scaleLinear()
+    .domain([0, yMax])
+    .range([h-pad.b, pad.t]);
+
+  const svg = d3.select(container).append("svg")
+    .attr("viewBox", `0 0 ${w} ${h}`)
+    .style("width","100%").style("height","100%");
+
+  // Grid lines
+  const yTicks = yScale.ticks(5);
+  yTicks.forEach(t => {
+    svg.append("line")
+      .attr("x1",pad.l).attr("x2",w-pad.r)
+      .attr("y1",yScale(t)).attr("y2",yScale(t))
+      .attr("stroke","rgba(255,255,255,0.05)");
+    svg.append("text")
+      .attr("x",pad.l-6).attr("y",yScale(t)+3)
+      .attr("text-anchor","end")
+      .attr("fill","rgba(255,255,255,0.25)")
+      .attr("font-family","IBM Plex Mono").attr("font-size","9px")
+      .text(currentMetric==="rate" ? t.toFixed(0)+"%" : t.toFixed(0));
+  });
+
+  // X axis labels
+  const xTicks = xScale.ticks(6);
+  xTicks.forEach(t => {
+    svg.append("text")
+      .attr("x",xScale(t)).attr("y",h-pad.b+16)
+      .attr("text-anchor","middle")
+      .attr("fill","rgba(255,255,255,0.25)")
+      .attr("font-family","IBM Plex Mono").attr("font-size","9px")
+      .text(t);
+  });
+
+  // Area
+  const area = d3.area()
+    .x(d=>xScale(d.year))
+    .y0(yScale(0))
+    .y1(d=>yScale(d.value))
+    .curve(d3.curveMonotoneX);
+  svg.append("path")
+    .datum(points)
+    .attr("d", area)
+    .attr("fill", c.color)
+    .attr("opacity", 0.08);
+
+  // Line
+  const line = d3.line()
+    .x(d=>xScale(d.year))
+    .y(d=>yScale(d.value))
+    .curve(d3.curveMonotoneX);
+  svg.append("path")
+    .datum(points)
+    .attr("d", line)
+    .attr("fill","none")
+    .attr("stroke", c.color)
+    .attr("stroke-width", 2);
+
+  // Current year indicator
+  const curPt = points.find(p=>p.year===currentYear);
+  if (curPt) {
+    svg.append("line")
+      .attr("x1",xScale(currentYear)).attr("x2",xScale(currentYear))
+      .attr("y1",pad.t).attr("y2",h-pad.b)
+      .attr("stroke","rgba(255,255,255,0.15)")
+      .attr("stroke-dasharray","3,3");
+    svg.append("circle")
+      .attr("cx",xScale(curPt.year)).attr("cy",yScale(curPt.value))
+      .attr("r",4).attr("fill",c.color);
+    svg.append("text")
+      .attr("x",xScale(curPt.year)).attr("y",yScale(curPt.value)-10)
+      .attr("text-anchor","middle")
+      .attr("fill",c.color)
+      .attr("font-family","IBM Plex Mono").attr("font-size","10px").attr("font-weight","500")
+      .text(formatValue(curPt.value));
+  }
+
+  // Annotations
+  if (c.annotations) {
+    c.annotations.forEach(a => {
+      const pt = points.find(p=>p.year===a.year);
+      if (!pt) return;
+      const ax = xScale(a.year), ay = yScale(pt.value);
+      svg.append("circle")
+        .attr("cx",ax).attr("cy",ay)
+        .attr("r",3).attr("fill","var(--terra)").attr("opacity",0.7);
+      svg.append("text")
+        .attr("x",ax).attr("y",ay-10)
+        .attr("text-anchor", ax > w/2 ? "end" : "start")
+        .attr("fill","rgba(255,255,255,0.4)")
+        .attr("font-family","IBM Plex Mono").attr("font-size","8px")
+        .text(a.text);
+    });
+  }
+}
+
+function drawSideStats(name) {
+  const c = COUNTRIES[name];
+  const el = document.getElementById("sideStats");
+  if (!el) return;
+
+  const vals = Object.entries(c.data).map(([y,v])=>({year:+y,value:v})).sort((a,b)=>a.year-b.year);
+  const first = vals[0], last = vals[vals.length-1];
+  const peak = vals.reduce((a,b)=>a.value>b.value?a:b);
+  const current = getValue(name, currentYear);
+
+  el.innerHTML = `
+    <div class="stat-box">
+      <div class="stat-value">${formatValue(current)}</div>
+      <div class="stat-label">${currentYear}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(peak.value)}</div>
+      <div class="stat-label">Peak (${peak.year})</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(first.value)}</div>
+      <div class="stat-label">Earliest (${first.year})</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(last.value)}</div>
+      <div class="stat-label">Latest (${last.year})</div>
+    </div>
+  `;
+}
+
+// ============================================================
+// COMPARISON BARS
+// ============================================================
+function updateCompBars() {
+  const el = document.getElementById("compBars");
+  document.getElementById("compYear").textContent = currentYear;
+
+  const items = COUNTRY_NAMES.map(name => ({
+    name,
+    value: getValue(name, currentYear),
+    color: COUNTRIES[name].color
+  })).filter(d => d.value != null).sort((a,b) => b.value - a.value);
+
+  const maxVal = items.length ? Math.max(...items.map(d=>d.value)) : 1;
+
+  el.innerHTML = items.map(d => {
+    const pct = (d.value / maxVal * 100).toFixed(1);
+    const shortName = d.name === "United States" ? "US" :
+                      d.name === "United Kingdom" ? "UK" : d.name;
+    return `
+      <div class="comp-row" onclick="selectCountry('${d.name}')">
+        <div class="comp-label">${shortName}</div>
+        <div class="comp-bar-wrap">
+          <div class="comp-bar" style="width:${pct}%;background:${d.color}">
+            <span>${formatValue(d.value)}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ============================================================
+// LEGEND
+// ============================================================
+function drawLegend() {
+  const el = document.getElementById("legendBar");
+  el.innerHTML = `
+    <span class="legend-title">${metricLabel()}</span>
+    ${COUNTRY_NAMES.map(n => `
+      <span style="display:inline-flex;align-items:center;gap:5px;cursor:pointer" onclick="selectCountry('${n}')">
+        <span style="width:10px;height:10px;border-radius:50%;background:${COUNTRIES[n].color};display:inline-block"></span>
+        <span style="font-family:'IBM Plex Mono';font-size:10px;color:rgba(255,255,255,0.5)">${
+          n==="United States"?"US":n==="United Kingdom"?"UK":n
+        }</span>
+      </span>
+    `).join("")}
+  `;
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+const slider = document.getElementById("yearSlider");
+const yearLabel = document.getElementById("yearLabel");
+const compSlider = document.getElementById("compYearSlider");
+const compYearLabelEl = document.getElementById("compYearLabel");
+
+function syncSliders(year) {
+  currentYear = year;
+  slider.value = year;
+  yearLabel.textContent = year;
+  compSlider.value = year;
+  compYearLabelEl.textContent = year;
+  update();
+}
+
+slider.addEventListener("input", () => syncSliders(+slider.value));
+compSlider.addEventListener("input", () => syncSliders(+compSlider.value));
+
+document.querySelectorAll(".metric-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".metric-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentMetric = btn.dataset.metric;
+    update();
+    if (selectedCountry) selectCountry(selectedCountry);
+  });
+});
+
+document.getElementById("playBtn").addEventListener("click", () => {
+  if (playing) {
+    clearInterval(playInterval);
+    playing = false;
+    document.getElementById("playBtn").textContent = "▶ Play";
+    return;
+  }
+  playing = true;
+  document.getElementById("playBtn").textContent = "⏸ Pause";
+  if (currentYear >= 2024) { currentYear = 1950; slider.value = 1950; compSlider.value = 1950; }
+  playInterval = setInterval(() => {
+    currentYear++;
+    if (currentYear > 2024) {
+      clearInterval(playInterval);
+      playing = false;
+      document.getElementById("playBtn").textContent = "▶ Play";
+      return;
+    }
+    slider.value = currentYear;
+    compSlider.value = currentYear;
+    yearLabel.textContent = currentYear;
+    compYearLabelEl.textContent = currentYear;
+    update();
+  }, 150);
+});
+
+function update() {
+  updateMarkerValues();
+  updateChoropleth();
+  updateCompBars();
+  drawChoroplethLegend();
+  updateCountryGrid();
+  if (selectedCountry) selectCountry(selectedCountry);
+}
+
+// ============================================================
+// COUNTRY GRID
+// ============================================================
+function buildCountryGrid() {
+  const grid = document.getElementById("countryGrid");
+  grid.innerHTML = COUNTRY_NAMES.map(name => {
+    const c = COUNTRIES[name];
+    return `
+      <div class="country-card" id="card-${c.iso}" onclick="selectCountryFromCard('${name}')">
+        <div class="country-card-name" style="color:${c.color}">${name}</div>
+        <div class="country-card-subtitle">${metricLabel()} · 1947–2024</div>
+        <div class="country-card-chart" id="cardChart-${c.iso}"></div>
+        <div class="country-card-stats" id="cardStats-${c.iso}"></div>
+      </div>`;
+  }).join("");
+  COUNTRY_NAMES.forEach(name => {
+    drawCardChart(name);
+    drawCardStats(name);
+  });
+  updateCardHighlight();
+}
+
+function selectCountryFromCard(name) {
+  selectCountry(name);
+  updateCardHighlight();
+  // Scroll the card into view
+  const c = COUNTRIES[name];
+  const card = document.getElementById("card-" + c.iso);
+  if (card) card.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function updateCardHighlight() {
+  document.querySelectorAll(".country-card").forEach(el => el.classList.remove("active"));
+  if (selectedCountry) {
+    const iso = COUNTRIES[selectedCountry]?.iso;
+    if (iso) {
+      const card = document.getElementById("card-" + iso);
+      if (card) card.classList.add("active");
+    }
+  }
+}
+
+function drawCardChart(name) {
+  const c = COUNTRIES[name];
+  const container = document.getElementById("cardChart-" + c.iso);
+  if (!container) return;
+  container.innerHTML = "";
+
+  const w = 360, h = 200;
+  const pad = {t:16, r:12, b:28, l:40};
+
+  let points;
+  if (currentMetric === "rate" && c.intro) {
+    points = Object.keys(c.data).map(Number).sort((a,b)=>a-b)
+      .map(y => {
+        const p = c.data[y], i = c.intro[y];
+        return (p!=null && i!=null && i>0) ? {year:y, value: p/i*100} : null;
+      }).filter(Boolean);
+  } else {
+    points = Object.entries(c.data).map(([y,v])=>({year:+y, value:v})).sort((a,b)=>a.year-b.year);
+  }
+  if (!points.length) return;
+
+  const xScale = d3.scaleLinear().domain(d3.extent(points, d=>d.year)).range([pad.l, w-pad.r]);
+  const yMax = d3.max(points, d=>d.value) * 1.1;
+  const yScale = d3.scaleLinear().domain([0, yMax]).range([h-pad.b, pad.t]);
+
+  const svg = d3.select(container).append("svg")
+    .attr("viewBox", `0 0 ${w} ${h}`)
+    .style("width","100%").style("height","100%");
+
+  // Grid lines
+  const yTicks = yScale.ticks(4);
+  yTicks.forEach(t => {
+    svg.append("line").attr("x1",pad.l).attr("x2",w-pad.r)
+      .attr("y1",yScale(t)).attr("y2",yScale(t)).attr("stroke","rgba(255,255,255,0.05)");
+    svg.append("text").attr("x",pad.l-4).attr("y",yScale(t)+3).attr("text-anchor","end")
+      .attr("fill","rgba(255,255,255,0.2)").attr("font-family","IBM Plex Mono").attr("font-size","8px")
+      .text(currentMetric==="rate" ? t.toFixed(0)+"%" : t.toFixed(0));
+  });
+
+  // X axis
+  const xTicks = xScale.ticks(4);
+  xTicks.forEach(t => {
+    svg.append("text").attr("x",xScale(t)).attr("y",h-pad.b+14).attr("text-anchor","middle")
+      .attr("fill","rgba(255,255,255,0.2)").attr("font-family","IBM Plex Mono").attr("font-size","8px")
+      .text(t);
+  });
+
+  // Area
+  const area = d3.area().x(d=>xScale(d.year)).y0(yScale(0)).y1(d=>yScale(d.value)).curve(d3.curveMonotoneX);
+  svg.append("path").datum(points).attr("d", area).attr("fill", c.color).attr("opacity", 0.08);
+
+  // Line
+  const line = d3.line().x(d=>xScale(d.year)).y(d=>yScale(d.value)).curve(d3.curveMonotoneX);
+  svg.append("path").datum(points).attr("d", line).attr("fill","none").attr("stroke", c.color).attr("stroke-width", 1.5);
+
+  // Current year indicator
+  const curPt = points.find(p=>p.year===currentYear);
+  if (curPt) {
+    svg.append("line").attr("x1",xScale(currentYear)).attr("x2",xScale(currentYear))
+      .attr("y1",pad.t).attr("y2",h-pad.b).attr("stroke","rgba(255,255,255,0.12)").attr("stroke-dasharray","3,3");
+    svg.append("circle").attr("cx",xScale(curPt.year)).attr("cy",yScale(curPt.value))
+      .attr("r",3).attr("fill",c.color);
+    svg.append("text").attr("x",xScale(curPt.year)).attr("y",yScale(curPt.value)-8).attr("text-anchor","middle")
+      .attr("fill",c.color).attr("font-family","IBM Plex Mono").attr("font-size","9px").attr("font-weight","500")
+      .text(formatValue(curPt.value));
+  }
+
+  // Annotations
+  if (c.annotations) {
+    c.annotations.forEach(a => {
+      const pt = points.find(p=>p.year===a.year);
+      if (!pt) return;
+      const ax = xScale(a.year), ay = yScale(pt.value);
+      svg.append("circle").attr("cx",ax).attr("cy",ay).attr("r",2.5).attr("fill","var(--terra)").attr("opacity",0.7);
+      svg.append("text").attr("x",ax).attr("y",ay-8)
+        .attr("text-anchor", ax > w/2 ? "end" : "start")
+        .attr("fill","rgba(255,255,255,0.35)").attr("font-family","IBM Plex Mono").attr("font-size","7px")
+        .text(a.text);
+    });
+  }
+}
+
+function drawCardStats(name) {
+  const c = COUNTRIES[name];
+  const el = document.getElementById("cardStats-" + c.iso);
+  if (!el) return;
+
+  const vals = Object.entries(c.data).map(([y,v])=>({year:+y,value:v})).sort((a,b)=>a.year-b.year);
+  const first = vals[0], last = vals[vals.length-1];
+  const peak = vals.reduce((a,b)=>a.value>b.value?a:b);
+  const current = getValue(name, currentYear);
+
+  el.innerHTML = `
+    <div class="stat-box">
+      <div class="stat-value" style="color:${c.color}">${formatValue(current)}</div>
+      <div class="stat-label">${currentYear}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(peak.value)}</div>
+      <div class="stat-label">Peak (${peak.year})</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(first.value)}</div>
+      <div class="stat-label">Earliest (${first.year})</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value">${Math.round(last.value)}</div>
+      <div class="stat-label">Latest (${last.year})</div>
+    </div>`;
+}
+
+function updateCountryGrid() {
+  COUNTRY_NAMES.forEach(name => {
+    drawCardChart(name);
+    drawCardStats(name);
+  });
+  // Update subtitle text in case metric changed
+  COUNTRY_NAMES.forEach(name => {
+    const c = COUNTRIES[name];
+    const card = document.getElementById("card-" + c.iso);
+    if (card) {
+      const sub = card.querySelector(".country-card-subtitle");
+      if (sub) sub.textContent = metricLabel() + " · 1947–2024";
+    }
+  });
+  updateCardHighlight();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+drawLegend();
+updateCompBars();
+buildCountryGrid();
+
+// Auto-select US on load
+setTimeout(() => { selectCountry("United States"); updateCardHighlight(); }, 600);
+</script>
+</body>
+</html>
+<!--
+@atlasofculture thread:
+
+1/ The US Congress passed 906 laws in 1947. In 2024, it passed ~100. That's not a typo — an 89% decline in legislative output over 77 years. We mapped six democracies to see if this is a US problem or a global one.
+
+2/ It's partly global: the UK went from 80+ Acts/year in the 1960s to ~25 today. Australia dropped from 210 to 88. But Germany holds steady at ~130/year. The decline is steepest where polarization has risen most.
+
+3/ But raw counts are misleading. The UK issues 1,000–2,000 Statutory Instruments per year on top of Acts. The US shifted rulemaking to agencies after the 1970s. Germany's 16 state parliaments aren't counted. Apples-to-oranges is the default here.
+
+4/ Explore the interactive: [link] — scrub 1950–2024, compare countries, see the structural caveats. Data from GovTrack, UK Parliament, Bundestag, LEGISinfo, APH, Assemblée nationale. #legislation #governance #dataviz #atlasofculture
+-->

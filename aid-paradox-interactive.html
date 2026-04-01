@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Aid Paradox — Atlas of Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0e0e18;
+    --bg3: #14141e;
+    --border: #1e1e2a;
+    --gold: #e8c547;
+    --text: #e8e8e0;
+    --muted: #7a7a72;
+    --dim: #3a3a32;
+    --red: #c23b3b;
+    --green: #3b8a5a;
+    --blue: #2a6db5;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HERO ─────────────────────────────── */
+  .hero {
+    max-width: 900px; margin: 0 auto;
+    padding: 96px 40px 64px;
+    border-bottom: 1px solid var(--border);
+  }
+  .series-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 7vw, 88px);
+    font-weight: 700; line-height: 1.0;
+    color: #f5f5ef; margin-bottom: 28px;
+  }
+  .hero-hook {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-style: italic;
+    color: var(--muted); line-height: 1.6;
+    max-width: 680px; margin-bottom: 36px;
+    border-left: 3px solid var(--gold);
+    padding-left: 24px;
+  }
+  .hero-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── NAV ──────────────────────────────── */
+  .nav-tabs {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; padding: 0 40px;
+  }
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim);
+    padding: 18px 24px; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    background: none; border-top: none;
+    border-left: none; border-right: none;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── SECTIONS ─────────────────────────── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-inner {
+    max-width: 900px; margin: 0 auto;
+    padding: 56px 40px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700;
+    color: #f5f5ef; margin-bottom: 10px;
+  }
+  .section-sub {
+    font-size: 15px; font-weight: 300;
+    color: var(--muted); margin-bottom: 36px;
+  }
+  .gold-rule {
+    width: 40px; height: 2px;
+    background: var(--gold); margin: 16px 0 32px;
+  }
+
+  /* ── SCATTER ──────────────────────────── */
+  .scatter-wrap {
+    position: relative;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+  #scatter-svg {
+    width: 100%;
+    display: block;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: #12121e;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 1000;
+    min-width: 160px;
+  }
+  .tooltip.visible { opacity: 1; }
+  .tt-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tt-row {
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .tt-row span { color: var(--text); font-weight: 500; }
+  .tt-note {
+    font-size: 11px; color: var(--dim);
+    margin-top: 6px; font-style: italic;
+  }
+
+  /* ── MAP ──────────────────────────────── */
+  .map-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  #map-svg {
+    width: 100%;
+    display: block;
+  }
+  .map-legend {
+    display: flex; align-items: center; gap: 12px;
+    margin-top: 14px;
+  }
+  .legend-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--dim);
+  }
+  .legend-gradient {
+    flex: 1; height: 8px; border-radius: 3px;
+    background: linear-gradient(to right, #1a1a2e, #1e3d6e, #2a6db5, #e8c547, #f5a623);
+  }
+
+  /* ── COUNTRY CARDS ─────────────────────── */
+  .country-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .c-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .c-card:hover { border-color: var(--gold); background: #12121e; }
+  .c-card.red { border-left: 3px solid var(--red); }
+  .c-card.green { border-left: 3px solid var(--green); }
+  .c-card.blue { border-left: 3px solid var(--blue); }
+  .c-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .c-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: #f5f5ef;
+  }
+  .c-label {
+    font-size: 11px; color: var(--dim);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.05em; margin-bottom: 10px;
+  }
+  .c-gov {
+    font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .gov-bar-wrap {
+    flex: 1; height: 4px;
+    background: #1a1a2a; border-radius: 2px;
+    overflow: hidden;
+  }
+  .gov-bar {
+    height: 100%; border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* ── MECHANISMS ───────────────────────── */
+  .mechanisms {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px; margin-bottom: 32px;
+  }
+  @media (max-width: 700px) {
+    .mechanisms { grid-template-columns: 1fr; }
+  }
+  .mech-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    padding: 24px 20px; border-radius: 4px;
+  }
+  .mech-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .mech-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px; font-weight: 700;
+    color: #f5f5ef; margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .mech-body {
+    font-size: 13px; color: var(--muted);
+    font-weight: 300; line-height: 1.65;
+  }
+  .mech-body strong { color: #c8c8c0; font-weight: 500; }
+
+  .case-study-block {
+    background: var(--bg2);
+    border: 1px solid #2e2e3a;
+    border-left: 4px solid var(--red);
+    padding: 28px 32px; border-radius: 4px;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 32px; align-items: center;
+    margin-bottom: 28px;
+  }
+  .cs-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--red);
+    letter-spacing: 0.15em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .cs-body {
+    font-size: 14px; color: var(--muted);
+    font-weight: 300; line-height: 1.7;
+  }
+  .cs-body strong { color: var(--text); font-weight: 500; }
+  .cs-body em { color: var(--gold); font-style: normal; }
+  .cs-stat { text-align: right; }
+  .cs-big {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px; font-weight: 700;
+    color: var(--red); line-height: 1;
+  }
+  .cs-small {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--dim);
+    letter-spacing: 0.05em; margin-top: 4px;
+  }
+
+  .counter-cards {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .counter-card {
+    background: var(--bg2);
+    border: 1px solid #1e2e1e;
+    border-left: 3px solid var(--green);
+    padding: 20px 22px; border-radius: 4px;
+  }
+  .cc-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: #4ab870;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .cc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 700;
+    color: #f5f5ef; margin-bottom: 8px;
+  }
+  .cc-body {
+    font-size: 13px; color: var(--muted);
+    font-weight: 300; line-height: 1.6;
+  }
+
+  /* ── FOOTER ──────────────────────────── */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    max-width: 900px; margin: 0 auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--dim);
+    letter-spacing: 0.05em;
+    display: flex; justify-content: space-between;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="series-tag">Atlas of Culture · Democracy · Data Essay</div>
+  <h1 class="hero-title">The Aid Paradox</h1>
+  <div class="hero-hook">
+    "Afghanistan received $82 billion in foreign aid over 20 years. The government collapsed in two weeks. Some aid doesn't fix broken states — it finances them."
+  </div>
+  <div class="hero-meta">OECD DAC · World Bank · 2000–2022 · Interactive</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-tabs">
+  <button class="tab-btn active" data-tab="scatter">01 · Scatter</button>
+  <button class="tab-btn" data-tab="map">02 · World Map</button>
+  <button class="tab-btn" data-tab="mechanism">03 · Mechanism</button>
+  <button class="tab-btn" data-tab="countries">Country Cards</button>
+</nav>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-row">Aid received: <span id="tt-aid"></span></div>
+  <div class="tt-row">Corruption score: <span id="tt-gov"></span></div>
+  <div class="tt-note" id="tt-note"></div>
+</div>
+
+<!-- ── SCATTER ─────────────────────────── -->
+<div class="section active" id="tab-scatter">
+  <div class="section-inner">
+    <h2 class="section-title">Money Without Mandate</h2>
+    <p class="section-sub">Foreign aid received (2000–2022) vs. governance quality. The correlation is essentially zero.</p>
+    <div class="gold-rule"></div>
+    <div class="scatter-wrap">
+      <svg id="scatter-svg" viewBox="0 0 820 560"></svg>
+    </div>
+    <p style="font-size:13px; color: var(--dim); font-family:'IBM Plex Mono',monospace; letter-spacing:0.05em;">
+      Hover dots for country details. Size = aid volume. Red = high aid + poor governance. Green = positive outlier.
+    </p>
+  </div>
+</div>
+
+<!-- ── MAP ────────────────────────────── -->
+<div class="section" id="tab-map">
+  <div class="section-inner">
+    <h2 class="section-title">Where the Money Goes</h2>
+    <p class="section-sub">Total aid received 2000–2022 · Sub-Saharan Africa, Middle East, and South Asia dominate</p>
+    <div class="gold-rule"></div>
+    <div class="map-wrap">
+      <svg id="map-svg" viewBox="-40 33 984 340" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="map-legend">
+        <span class="legend-text">No data / low</span>
+        <div class="legend-gradient"></div>
+        <span class="legend-text">$82bn+</span>
+      </div>
+    </div>
+    <p style="font-size:13px; color: var(--dim); font-family:'IBM Plex Mono',monospace; letter-spacing:0.05em;">
+      Hover countries for aid totals. Yellow = highest recipients.
+    </p>
+  </div>
+</div>
+
+<!-- ── MECHANISM ──────────────────────── -->
+<div class="section" id="tab-mechanism">
+  <div class="section-inner">
+    <h2 class="section-title">Why Aid Can Entrench Power</h2>
+    <p class="section-sub">Three mechanisms — and one catastrophic proof of concept</p>
+    <div class="gold-rule"></div>
+    <div class="mechanisms">
+      <div class="mech-card">
+        <div class="mech-num">Mechanism 01</div>
+        <div class="mech-title">The Accountability Bypass</div>
+        <div class="mech-body">
+          Governments that collect taxes from citizens answer to them. 
+          Governments funded by foreign aid answer to <strong>donors instead</strong>. 
+          Aid replaces the accountability loop. Citizens lose leverage.
+        </div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">Mechanism 02</div>
+        <div class="mech-title">Dutch Disease for Governance</div>
+        <div class="mech-body">
+          Large inflows crowd out domestic revenue. 
+          <strong>Why build a tax authority</strong> when donors keep the lights on? 
+          Institutional capacity atrophies from disuse. The state becomes a conduit, not a government.
+        </div>
+      </div>
+      <div class="mech-card">
+        <div class="mech-num">Mechanism 03</div>
+        <div class="mech-title">Strategic Aid ≠ Humanitarian Aid</div>
+        <div class="mech-body">
+          The largest recipients are often the most <strong>geopolitically important</strong>, 
+          not the most suffering. Egypt: $1.3bn/yr from the US, mostly military. 
+          Governance has declined steadily.
+        </div>
+      </div>
+    </div>
+
+    <div class="case-study-block">
+      <div>
+        <div class="cs-label">Case Study · Afghanistan</div>
+        <div class="cs-body">
+          <strong>$82 billion over 20 years</strong> built a government that existed 
+          primarily on paper. Salaries flowed to <em>"ghost soldiers"</em> who didn't exist. 
+          Contracts went to warlords who subcontracted to the Taliban. Aid funded the 
+          patronage networks it was supposed to dismantle. 
+          <strong>When the money stopped, so did the state.</strong> 
+          Two weeks after US withdrawal in August 2021, the government dissolved.
+        </div>
+      </div>
+      <div class="cs-stat">
+        <div class="cs-big">$82B</div>
+        <div class="cs-small">20 years of aid</div>
+        <div class="cs-small" style="margin-top:10px; color:var(--red);">2 weeks</div>
+        <div class="cs-small">to collapse</div>
+      </div>
+    </div>
+
+    <div class="counter-cards">
+      <div class="counter-card">
+        <div class="cc-tag">Counterexample · Rwanda</div>
+        <div class="cc-title">Aid Can Work — With Conditions</div>
+        <div class="cc-body">
+          Rwanda is a major recipient with genuinely improving governance. 
+          Difference: strong domestic institutions, enforced accountability, 
+          aid tied to measurable outcomes. Structure matters as much as money.
+        </div>
+      </div>
+      <div class="counter-card">
+        <div class="cc-tag">Counterexample · Botswana</div>
+        <div class="cc-title">Low Aid, High Governance</div>
+        <div class="cc-body">
+          Built institutions on diamond revenue — accountable to citizens because 
+          it needed their legitimacy. WB corruption score: +0.7. 
+          Among Africa's highest. Aid dependence: minimal. Fiscal contract intact.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COUNTRY CARDS ──────────────────── -->
+<div class="section" id="tab-countries">
+  <div class="section-inner">
+    <h2 class="section-title">Country Profiles</h2>
+    <p class="section-sub">Top aid recipients with governance scores · Click to expand</p>
+    <div class="gold-rule"></div>
+    <div class="country-cards" id="cards-container"></div>
+  </div>
+</div>
+
+<div style="max-width:900px; margin: 0 auto;">
+  <div class="site-footer">
+    <span>Atlas of Culture · The Aid Paradox</span>
+    <span>Sources: OECD DAC · World Bank Control of Corruption · 2000–2022</span>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────
+const countries = [
+  { name: 'Afghanistan', aid: 82, gov: -1.4, note: 'Govt. collapsed Aug 2021 after 20yr, $82bn effort', type: 'red' },
+  { name: 'Syria',       aid: 45, gov: -1.2, note: 'Civil war — aid overwhelmed by conflict dynamics', type: 'red' },
+  { name: 'Ethiopia',    aid: 43, gov: -0.7, note: 'Large population, consistent aid flows', type: 'blue' },
+  { name: 'Pakistan',    aid: 35, gov: -0.8, note: 'Strategic importance drives US/UK aid levels', type: 'blue' },
+  { name: 'DRC',         aid: 32, gov: -1.5, note: 'Mineral-rich, conflict-ridden — worst corruption score', type: 'red' },
+  { name: 'Tanzania',    aid: 22, gov: -0.4, note: 'Stable; governance improving slowly', type: 'blue' },
+  { name: 'Kenya',       aid: 21, gov: -0.4, note: 'Regional hub; persistent corruption challenges', type: 'blue' },
+  { name: 'Bangladesh',  aid: 19, gov: -0.8, note: 'Significant progress on development despite governance', type: 'blue' },
+  { name: 'South Sudan', aid: 18, gov: -1.3, note: 'World\'s newest state; humanitarian crisis', type: 'red' },
+  { name: 'Nigeria',     aid: 17, gov: -1.2, note: 'Africa\'s largest economy; oil wealth paradox', type: 'red' },
+  { name: 'Iraq',        aid: 16, gov: -1.0, note: 'Post-invasion reconstruction; governance weak', type: 'red' },
+  { name: 'Uganda',      aid: 16, gov: -0.7, note: 'Long Museveni rule; aid flows despite democratic backsliding', type: 'blue' },
+  { name: 'Mozambique',  aid: 15, gov: -0.5, note: 'Hidden debt scandal; LNG revenue emerging', type: 'blue' },
+  { name: 'Rwanda',      aid: 14, gov: 0.5, note: 'Counterexample: aid + governance reform working', type: 'green' },
+  { name: 'Mali',        aid: 12, gov: -0.9, note: 'Two coups 2020–2021; aid conditionality failed', type: 'red' },
+  { name: 'Botswana',    aid: 2,  gov: 0.7, note: 'Best governance in sub-Saharan Africa. Low aid. Diamond accountability.', type: 'green' },
+];
+
+const aidData = {};
+countries.forEach(c => { aidData[c.name] = c.aid; });
+const extraAid = {
+  'Democratic Republic of the Congo': 32,
+  'Egypt': 26, 'Sudan': 14, 'Somalia': 11, 'Yemen': 18,
+  'Chad': 9, 'Niger': 8, 'Burkina Faso': 8, 'Zimbabwe': 9,
+  'Zambia': 10, 'Malawi': 9, 'Cambodia': 8, 'Myanmar': 7,
+  'Haiti': 9, 'Bolivia': 5, 'Honduras': 6,
+};
+Object.assign(aidData, extraAid);
+
+// ── TABS ────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+    if (tab === 'map') initMap();
+  });
+});
+
+// ── TOOLTIP ─────────────────────────────
+const tooltip = document.getElementById('tooltip');
+const ttName = document.getElementById('tt-name');
+const ttAid = document.getElementById('tt-aid');
+const ttGov = document.getElementById('tt-gov');
+const ttNote = document.getElementById('tt-note');
+
+function showTip(e, name, aid, gov, note) {
+  ttName.textContent = name;
+  ttAid.textContent = aid ? '$' + aid + 'bn' : 'N/A';
+  ttGov.textContent = gov !== undefined ? gov.toFixed(2) : '—';
+  ttNote.textContent = note || '';
+  tooltip.classList.add('visible');
+  moveTip(e);
+}
+function moveTip(e) {
+  const x = e.clientX + 14;
+  const y = e.clientY - 10;
+  tooltip.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+  tooltip.style.top = y + 'px';
+}
+function hideTip() { tooltip.classList.remove('visible'); }
+
+// ── SCATTER ─────────────────────────────
+(function buildScatter() {
+  const svg = document.getElementById('scatter-svg');
+  const W = 820, H = 560;
+  const margin = { top: 30, right: 50, bottom: 60, left: 70 };
+  const pw = W - margin.left - margin.right;
+  const ph = H - margin.top - margin.bottom;
+
+  const xMin = 0, xMax = 90;
+  const yMin = -1.9, yMax = 1.1;
+
+  function xS(v) { return margin.left + (v - xMin) / (xMax - xMin) * pw; }
+  function yS(v) { return margin.top + ph - (v - yMin) / (yMax - yMin) * ph; }
+
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    (parent || svg).appendChild(e);
+    return e;
+  }
+  function txt(content, attrs, cls, parent) {
+    const t = el('text', attrs, parent);
+    t.textContent = content;
+    if (cls) t.setAttribute('class', cls);
+    t.style.fontFamily = "'IBM Plex Mono', monospace";
+    return t;
+  }
+
+  // Background rects
+  el('rect', { x: 0, y: 0, width: W, height: H, fill: 'none' });
+
+  // Grid
+  [-1.5, -1.0, -0.5, 0, 0.5, 1.0].forEach(v => {
+    el('line', {
+      x1: margin.left, x2: margin.left + pw,
+      y1: yS(v), y2: yS(v),
+      stroke: v === 0 ? '#2e2e3a' : '#1a1a24',
+      'stroke-width': v === 0 ? 1.5 : 1
+    });
+  });
+  [0, 20, 40, 60, 80].forEach(v => {
+    el('line', {
+      x1: xS(v), x2: xS(v),
+      y1: margin.top, y2: margin.top + ph,
+      stroke: '#1a1a24', 'stroke-width': 1
+    });
+    const t = txt(v + (v?'bn':''), { x: xS(v), y: margin.top + ph + 18, 'text-anchor': 'middle' });
+    t.style.fontSize = '10px'; t.style.fill = '#3a3a42';
+  });
+  [-1.5, -1.0, -0.5, 0, 0.5, 1.0].forEach(v => {
+    const t = txt(v.toFixed(1), { x: margin.left - 10, y: yS(v) + 4, 'text-anchor': 'end' });
+    t.style.fontSize = '10px'; t.style.fill = '#3a3a42';
+  });
+
+  // Axis labels
+  const ax = txt('TOTAL AID RECEIVED 2000–2022 ($bn)', { x: margin.left + pw/2, y: H - 6, 'text-anchor': 'middle' });
+  ax.style.fontSize = '10px'; ax.style.fill = '#4a4a52'; ax.style.letterSpacing = '0.08em';
+
+  const ay = txt('CONTROL OF CORRUPTION (WB, -2.5 to +2.5)', {
+    x: 0, y: 0,
+    transform: `translate(16, ${margin.top + ph/2}) rotate(-90)`,
+    'text-anchor': 'middle'
+  });
+  ay.style.fontSize = '10px'; ay.style.fill = '#4a4a52'; ay.style.letterSpacing = '0.08em';
+
+  // Zero line label
+  const zl = txt('Good governance threshold (0)', {
+    x: margin.left + pw - 4, y: yS(0) - 7, 'text-anchor': 'end'
+  });
+  zl.style.fontSize = '10px'; zl.style.fill = '#2e2e3a'; zl.style.fontStyle = 'italic';
+
+  // No correlation note
+  const nc = txt('r ≈ −0.12 · No significant correlation', {
+    x: margin.left + 30, y: margin.top + 18, 'text-anchor': 'start'
+  });
+  nc.style.fontSize = '12px'; nc.style.fill = '#2a2a36'; nc.style.fontFamily = "'Playfair Display', serif";
+  nc.style.fontStyle = 'italic';
+
+  const labelOff = {
+    'Afghanistan': { dx: 10, dy: -14 },
+    'DRC':         { dx: 10, dy: 14 },
+    'Syria':       { dx: 8, dy: -14 },
+    'Rwanda':      { dx: 10, dy: -13 },
+    'Botswana':    { dx: 10, dy: -13 },
+    'Ethiopia':    { dx: 8, dy: -13 },
+    'Pakistan':    { dx: -10, dy: 15, anchor: 'end' },
+    'South Sudan': { dx: 8, dy: 15 },
+    'Nigeria':     { dx: -10, dy: -10, anchor: 'end' },
+    'Tanzania':    { dx: 8, dy: -13 },
+    'Kenya':       { dx: 8, dy: 14 },
+    'Bangladesh':  { dx: -10, dy: 14, anchor: 'end' },
+    'Iraq':        { dx: -10, dy: -10, anchor: 'end' },
+    'Uganda':      { dx: 8, dy: 14 },
+    'Mozambique':  { dx: 8, dy: -12 },
+    'Mali':        { dx: 8, dy: -12 },
+  };
+
+  countries.forEach(d => {
+    const cx = xS(d.aid);
+    const cy = yS(d.gov);
+    const r = 6 + d.aid / 13;
+    const fill = d.type === 'red' ? '#c23b3b' : d.type === 'green' ? '#3b8a5a' : '#2a5a8a';
+    const stroke = d.type === 'red' ? '#e85555' : d.type === 'green' ? '#4ab870' : '#3a7abf';
+
+    const g = el('g', { style: 'cursor:pointer' });
+    const c = el('circle', { cx, cy, r, fill, stroke, 'stroke-width': 1.5, opacity: 0.85 }, g);
+    el('circle', { cx, cy, r: r + 6, fill: 'transparent' }, g);
+
+    const off = labelOff[d.name] || { dx: 10, dy: -12 };
+    const lbl = txt(d.name, { x: cx + off.dx, y: cy + off.dy, 'text-anchor': off.anchor || 'start' }, null, g);
+    lbl.style.fontSize = '11px';
+    lbl.style.fontFamily = "'Inter', sans-serif";
+    lbl.style.fontWeight = '500';
+    lbl.style.fill = d.type === 'red' ? '#e85555' : d.type === 'green' ? '#4ab870' : '#c8c8c0';
+
+    g.addEventListener('mousemove', e => { showTip(e, d.name, d.aid, d.gov, d.note); moveTip(e); });
+    g.addEventListener('mouseleave', hideTip);
+    svg.appendChild(g);
+  });
+
+  // Legend
+  const lx = margin.left + 10, ly = margin.top + 36;
+  [
+    { fill: '#c23b3b', stroke: '#e85555', label: 'High aid, poor governance' },
+    { fill: '#3b8a5a', stroke: '#4ab870', label: 'Positive outlier' },
+    { fill: '#2a5a8a', stroke: '#3a7abf', label: 'Other recipient' },
+  ].forEach((item, i) => {
+    el('circle', { cx: lx + 7, cy: ly + i*22, r: 7, fill: item.fill, stroke: item.stroke, 'stroke-width': 1.5, opacity: 0.85 });
+    const t = txt(item.label, { x: lx + 20, y: ly + i*22 + 4, 'text-anchor': 'start' });
+    t.style.fontSize = '11px'; t.style.fill = '#5a5a52';
+    t.style.fontFamily = "'Inter', sans-serif";
+  });
+})();
+
+// ── MAP ──────────────────────────────────
+let mapInited = false;
+function initMap() {
+  if (mapInited) return;
+  mapInited = true;
+
+  const svg = document.getElementById('map-svg');
+  const GEO_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson';
+
+  function aidColor(val) {
+    if (!val) return '#14141e';
+    if (val >= 70) return '#f5a623';
+    if (val >= 40) return '#e8c547';
+    if (val >= 20) return '#2a6db5';
+    if (val >= 10) return '#1e3d6e';
+    return '#1a2040';
+  }
+
+  fetch(GEO_URL)
+    .then(r => r.json())
+    .then(geo => {
+      geo.features.forEach(f => {
+        const name = f.properties.ADMIN || f.properties.name;
+        const val = aidData[name];
+        const color = aidColor(val);
+        const coords = f.geometry;
+        if (!coords) return;
+
+        function drawPoly(rings) {
+          const pts = rings[0];
+          if (!pts || pts.length < 3) return;
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          const d = pts.map((p, i) => {
+            const x = ((p[0] + 180) / 360) * 984 - 40;
+            const y = ((90 - p[1]) / 180) * 340 + 33;
+            return (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2);
+          }).join(' ') + ' Z';
+          path.setAttribute('d', d);
+          path.setAttribute('fill', color);
+          path.setAttribute('stroke', '#0a0a0f');
+          path.setAttribute('stroke-width', '0.4');
+          path.setAttribute('opacity', val ? '1' : '0.65');
+          if (val) {
+            path.style.cursor = 'pointer';
+            path.addEventListener('mousemove', e => showTip(e, name, val, undefined, ''));
+            path.addEventListener('mouseleave', hideTip);
+          }
+          svg.appendChild(path);
+        }
+
+        if (coords.type === 'Polygon') drawPoly(coords.coordinates);
+        else if (coords.type === 'MultiPolygon') coords.coordinates.forEach(p => drawPoly(p));
+      });
+    })
+    .catch(() => {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', '450'); t.setAttribute('y', '180');
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', '#3a3a42');
+      t.setAttribute('font-family', 'IBM Plex Mono, monospace');
+      t.setAttribute('font-size', '14');
+      t.textContent = 'Map requires network (fetching GeoJSON)';
+      svg.appendChild(t);
+    });
+}
+
+// ── COUNTRY CARDS ────────────────────────
+(function buildCards() {
+  const container = document.getElementById('cards-container');
+  const sorted = [...countries].sort((a, b) => b.aid - a.aid);
+
+  sorted.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'c-card ' + d.type;
+
+    const govPct = ((d.gov + 2.5) / 5 * 100).toFixed(1);
+    const barColor = d.gov > 0 ? '#4ab870' : d.gov > -0.8 ? '#2a6db5' : '#c23b3b';
+
+    card.innerHTML = `
+      <div class="c-name">${d.name}</div>
+      <div class="c-big">$${d.aid}bn</div>
+      <div class="c-label">Total aid 2000–2022</div>
+      <div class="c-gov">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); width:24px;">${d.gov >= 0 ? '+' : ''}${d.gov.toFixed(1)}</span>
+        <div class="gov-bar-wrap">
+          <div class="gov-bar" style="width:${govPct}%; background:${barColor};"></div>
+        </div>
+      </div>
+      <div style="font-size:11px; color:var(--dim); margin-top:10px; line-height:1.5;">${d.note}</div>
+    `;
+    container.appendChild(card);
+  });
+})();
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://stats.oecd.org/Index.aspx?DataSetCode=CRS1" style="color:#4A9EBF;text-decoration:none">OECD DAC Creditor Reporting System</a> — <span style="color:rgba(255,255,255,0.6)">Official Development Assistance flows by donor, recipient, and sector; data through 2023.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://info.worldbank.org/governance/wgi/" style="color:#4A9EBF;text-decoration:none">World Bank Worldwide Governance Indicators</a> — <span style="color:rgba(255,255,255,0.6)">Six aggregate governance dimensions—including Control of Corruption and Government Effectiveness—for 200+ countries; data through 2023.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.transparency.org/en/cpi" style="color:#4A9EBF;text-decoration:none">Transparency International Corruption Perceptions Index</a> — <span style="color:rgba(255,255,255,0.6)">Annual composite index of perceived public-sector corruption across 180 countries, scored 0–100; 2024 edition.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.aiddata.org/" style="color:#4A9EBF;text-decoration:none">AidData — Tracking Underreported Financial Flows</a> — <span style="color:rgba(255,255,255,0.6)">Research lab dataset linking bilateral and multilateral aid commitments to governance and development outcomes, with project-level data through 2021.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Reverse causality is a core problem: donors often direct more aid toward fragile, high-corruption states precisely because need is greatest, making a simple correlation between aid levels and poor governance misleading about cause and effect.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">The Corruption Perceptions Index measures expert and business perceptions of corruption, not directly observed corrupt acts — it can reflect media coverage and geopolitical framing as much as actual governance quality.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Aid is not monolithic: budget support disbursed directly to governments has very different governance implications than project aid delivered through NGOs or tied humanitarian assistance, but aggregate aid figures obscure these distinctions.</li>
+  </ul>
+</div>
+</body>
+</html>

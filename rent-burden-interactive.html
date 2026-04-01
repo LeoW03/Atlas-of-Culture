@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1080px;height:1080px;overflow:hidden;background:#07070c;font-family:'Inter',sans-serif;position:relative;}
+  body::before{content:'';position:absolute;inset:0;z-index:200;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;}
+
+  .canvas{position:absolute;inset:0;padding:52px 68px 46px;display:flex;flex-direction:column;}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,197,71,.6);margin-bottom:14px;flex-shrink:0;}
+  .headline{font-family:'Playfair Display',serif;font-weight:900;font-size:50px;line-height:1.06;color:#f5f0e4;margin-bottom:10px;flex-shrink:0;}
+  .headline em{font-style:italic;color:#e8c547;}
+  .subhead{font-family:'Inter',sans-serif;font-weight:400;font-size:14.5px;color:rgba(255,255,255,.55);line-height:1.5;margin-bottom:30px;flex-shrink:0;}
+  .subhead strong{color:rgba(255,255,255,.8);font-weight:500;}
+
+  .chart{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .chart-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:14px;flex-shrink:0;padding-left:164px;}
+  .rows{flex:1;display:flex;flex-direction:column;}
+  .row{flex:1;display:flex;align-items:center;}
+  .city{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.03em;width:156px;flex-shrink:0;text-align:right;padding-right:14px;color:rgba(255,255,255,.38);line-height:1.3;}
+  .city span{display:block;font-size:9px;letter-spacing:.06em;color:rgba(255,255,255,.2);margin-top:1px;}
+  .row.hi .city{color:#e8c547;}
+  .row.hi .city span{color:rgba(232,197,71,.45);}
+  .row.lo .city{color:rgba(74,184,216,.8);}
+  .track{flex:1;height:22px;background:rgba(255,255,255,.03);border-radius:2px;overflow:hidden;}
+  .fill{height:100%;border-radius:2px;}
+  .row.hi .fill{background:linear-gradient(90deg,#9a7012 0%,#c89820 40%,#e8c547 80%,#f0d560 100%);box-shadow:0 0 18px rgba(232,197,71,.15);}
+  .row.lo .fill{background:linear-gradient(90deg,#122030 0%,#1e4460 50%,#2e6888 100%);}
+  .row:not(.hi):not(.lo) .fill{background:linear-gradient(90deg,#152535 0%,#1e3a55 50%,#285070 100%);}
+  .pct{font-family:'IBM Plex Mono',monospace;font-size:11px;padding-left:10px;width:54px;flex-shrink:0;color:rgba(255,255,255,.25);}
+  .row.hi .pct{color:rgba(232,197,71,.65);font-size:12px;}
+  .row.lo .pct{color:rgba(74,184,216,.6);}
+
+  /* 30% parity line */
+  .parity-line{position:absolute;left:0;top:0;bottom:0;width:1px;background:rgba(255,255,255,.08);pointer-events:none;}
+
+  .footer{flex-shrink:0;border-top:1px solid rgba(255,255,255,.05);padding-top:12px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;}
+  .handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:.1em;}
+  .source{font-family:'Inter',sans-serif;font-size:9px;color:rgba(255,255,255,.12);}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="eyebrow">Housing · median rent as % of median income · 2023</div>
+  <div class="headline">New York: <em>68%</em>.<br/>Berlin: 27%.</div>
+  <div class="subhead">Median rent as a share of median income, major cities.<br/><strong>The 30% threshold is the conventional definition of "housing stress."</strong></div>
+
+  <div class="chart">
+    <div class="chart-label">% of median income spent on median rent</div>
+    <div class="rows" id="rows" style="position:relative;"></div>
+  </div>
+
+  <div class="footer">
+    <div class="handle">@atlasofculture</div>
+    <div class="source">OECD Affordable Housing Database 2023 · Numbeo · national statistics offices</div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {city:'New York',     country:'USA',         pct:68, hi:true},
+  {city:'San Francisco',country:'USA',         pct:64},
+  {city:'London',       country:'UK',          pct:58},
+  {city:'Sydney',       country:'Australia',   pct:55},
+  {city:'Los Angeles',  country:'USA',         pct:53},
+  {city:'Toronto',      country:'Canada',      pct:52},
+  {city:'Dublin',       country:'Ireland',     pct:48},
+  {city:'Amsterdam',    country:'Netherlands', pct:38},
+  {city:'Paris',        country:'France',      pct:36},
+  {city:'Stockholm',    country:'Sweden',      pct:34},
+  {city:'Tokyo',        country:'Japan',       pct:28},
+  {city:'Berlin',       country:'Germany',     pct:27, lo:true},
+  {city:'Vienna',       country:'Austria',     pct:24},
+  {city:'Helsinki',     country:'Finland',     pct:23},
+];
+const MAX=68;
+const rows=document.getElementById('rows');
+
+// Draw 30% parity line
+const lineDiv=document.createElement('div');
+lineDiv.className='parity-line';
+lineDiv.style.left=(30/MAX*100)+'%';
+lineDiv.style.position='absolute';
+lineDiv.title='30% threshold';
+rows.appendChild(lineDiv);
+
+// Add label for 30% line
+const lineLabel=document.createElement('div');
+lineLabel.style.cssText=`position:absolute;left:calc(${(30/MAX*100).toFixed(1)}% + 4px);top:0;font-family:IBM Plex Mono,monospace;font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.2);text-transform:uppercase;`;
+lineLabel.textContent='30% threshold';
+rows.appendChild(lineLabel);
+
+DATA.forEach(d=>{
+  const row=document.createElement('div');
+  row.className='row'+(d.hi?' hi':d.lo?' lo':'');
+  row.innerHTML=`
+    <div class="city">${d.city}<span>${d.country}</span></div>
+    <div class="track" style="position:relative;">
+      <div class="fill" style="width:${(d.pct/MAX*100).toFixed(1)}%"></div>
+    </div>
+    <div class="pct">${d.pct}%</div>
+  `;
+  rows.appendChild(row);
+});
+</script>
+</body>
+</html>

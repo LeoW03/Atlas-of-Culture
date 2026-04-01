@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Untaxed Wealth — Atlas of Culture</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --gold: #e8c547;
+    --gold2: #f5d76e;
+    --red: #e84747;
+    --red2: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --border: #2a2a3a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 2rem 4rem;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 2rem;
+    color: #fff;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero-hook {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.6;
+    border-left: 3px solid var(--gold);
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .hero-body {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #b8b8cc;
+    max-width: 680px;
+  }
+
+  /* STAT BAR */
+  .stat-bar {
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #fff;
+  }
+  .section-intro {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    max-width: 600px;
+  }
+
+  /* MAP SECTION */
+  .map-container {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .map-controls {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .map-btn {
+    flex: 1;
+    padding: 0.85rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid var(--border);
+  }
+  .map-btn:last-child { border-right: none; }
+  .map-btn.active {
+    background: var(--bg3);
+    color: var(--gold);
+  }
+  .map-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+  #map-svg-container {
+    width: 100%;
+    height: 500px;
+    position: relative;
+    overflow: hidden;
+  }
+  #world-map {
+    width: 100%;
+    height: 100%;
+  }
+  .map-legend {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .map-tooltip {
+    position: absolute;
+    background: rgba(10,10,15,0.97);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    pointer-events: none;
+    z-index: 50;
+    min-width: 160px;
+    display: none;
+  }
+  .tooltip-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.3rem;
+  }
+  .tooltip-val { color: var(--gold); font-family: 'IBM Plex Mono', monospace; }
+
+  /* BAR CHART */
+  .chart-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.1rem;
+    position: relative;
+  }
+  .bar-label {
+    width: 130px;
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    color: var(--text);
+    text-align: right;
+    line-height: 1.2;
+  }
+  .bar-label small {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: width 1s cubic-bezier(0.16,1,0.3,1);
+    width: 0;
+  }
+  .bar-fill.gold { background: linear-gradient(90deg, #b89520, var(--gold)); color: #0a0a0f; }
+  .bar-fill.red { background: linear-gradient(90deg, #8b2020, var(--red)); color: #fff; }
+  .bar-gdp-pill {
+    position: absolute;
+    right: -80px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .chart-footnote {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    line-height: 1.6;
+  }
+  .chart-tab-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .chart-tab {
+    padding: 0.4rem 1rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(232,197,71,0.05); }
+  .chart-tab:hover:not(.active) { color: var(--text); }
+
+  /* COST SECTION */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .cost-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .cost-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--red), transparent);
+  }
+  .cost-country {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .cost-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--red2);
+    margin-bottom: 0.5rem;
+  }
+  .cost-desc {
+    font-size: 0.82rem;
+    color: #888899;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+  .cost-could-buy {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .could-buy-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .buy-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-size: 0.8rem;
+    color: var(--text);
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+  }
+  .buy-item::before { content: '→'; color: var(--gold); flex-shrink: 0; }
+
+  /* KEYHOLE VISUAL */
+  .keyhole-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    margin: 3rem 0;
+  }
+  .keyhole-ratio {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 4rem;
+    color: var(--gold);
+    font-weight: 600;
+    display: block;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .keyhole-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .keyhole-compare {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .kc-item { text-align: center; }
+  .kc-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .kc-val.gold { color: var(--gold); }
+  .kc-val.muted { color: var(--muted); }
+  .kc-desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  .vs-divider { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 1.5rem; align-self: center; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+  }
+  .footer-sources {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .footer-sources strong { color: var(--text); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.6s ease forwards; }
+
+  /* DIVIDER */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .stat-bar { gap: 2rem; }
+    .stat-value { font-size: 2rem; }
+    .map-btn { font-size: 0.65rem; padding: 0.7rem 0.5rem; }
+    h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Atlas of Culture</span>
+  <ul class="nav-links">
+    <li><a href="#map">Map</a></li>
+    <li><a href="#chart">Chart</a></li>
+    <li><a href="#cost">The Cost</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <p class="hero-tag">Economics · Offshore Finance</p>
+  <h1>The <span>Untaxed</span> Wealth</h1>
+  <p class="hero-hook">"The Cayman Islands has a GDP of $6 billion. It holds an estimated $3 trillion in offshore wealth. That's not a country — it's a keyhole."</p>
+  <p class="hero-body">Offshore wealth as a percentage of global GDP is staggering — and it flows through a handful of tiny jurisdictions. This isn't abstract finance. It's money that should fund hospitals and schools, sitting in shell companies while the states that generated it run deficits.</p>
+</div>
+
+<div class="stat-bar">
+  <div class="stat-item">
+    <span class="stat-value">$10T</span>
+    <span class="stat-label">Total offshore wealth</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value">~10%</span>
+    <span class="stat-label">of global household wealth</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value">$480B</span>
+    <span class="stat-label">Lost in tax revenue / yr</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value">50,000×</span>
+    <span class="stat-label">Cayman wealth-to-GDP ratio</span>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- MAP -->
+<section id="map">
+  <p class="section-label">Section 01 — World Map</p>
+  <h2>Follow the Money</h2>
+  <p class="section-intro">Gold: jurisdictions holding offshore wealth. Red: countries losing tax revenue to offshore sheltering. Toggle between views — or compare side by side.</p>
+  <div class="map-container">
+    <div class="map-controls">
+      <button class="map-btn active" data-mode="havens" onclick="setMapMode('havens')">TAX HAVENS (wealth held)</button>
+      <button class="map-btn" data-mode="victims" onclick="setMapMode('victims')">TAX VICTIMS (revenue lost)</button>
+      <button class="map-btn" data-mode="both" onclick="setMapMode('both')">BOTH</button>
+    </div>
+    <div id="map-svg-container">
+      <svg id="world-map" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet">
+        <rect width="960" height="500" fill="#0d0d16"/>
+        <g id="countries-group"></g>
+        <g id="annotations-group"></g>
+      </svg>
+      <div class="map-tooltip" id="map-tooltip">
+        <div class="tooltip-name" id="tt-name"></div>
+        <div class="tooltip-val" id="tt-val"></div>
+        <div id="tt-extra" style="font-size:0.72rem;color:#6b6b88;margin-top:0.3rem;"></div>
+      </div>
+    </div>
+    <div class="map-legend" id="map-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--gold)"></div>Tax haven (offshore wealth held)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div>Tax victim (revenue lost/yr)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#2a2a3a"></div>No data</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- KEYHOLE -->
+<section>
+  <div class="keyhole-section">
+    <span class="keyhole-ratio">500×</span>
+    <p class="keyhole-label">The Cayman Islands holds 500× its own GDP in offshore wealth</p>
+    <div class="keyhole-compare">
+      <div class="kc-item">
+        <div class="kc-val gold">$3 Trillion</div>
+        <div class="kc-desc">Offshore wealth held</div>
+      </div>
+      <div class="vs-divider">vs</div>
+      <div class="kc-item">
+        <div class="kc-val muted">$6 Billion</div>
+        <div class="kc-desc">Cayman Islands GDP</div>
+      </div>
+      <div class="vs-divider">vs</div>
+      <div class="kc-item">
+        <div class="kc-val muted">264 km²</div>
+        <div class="kc-desc">Land area (smaller than Chicago)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- BAR CHART -->
+<section id="chart">
+  <p class="section-label">Section 02 — Bar Chart</p>
+  <h2>The Top Offshore Centers</h2>
+  <p class="section-intro">Ranked by estimated offshore wealth held. The absurdity of wealth-to-GDP ratios reveals these are not economies — they're vaults.</p>
+  <div class="chart-wrap">
+    <div class="chart-tab-controls">
+      <button class="chart-tab active" onclick="setChartMode('wealth')">WEALTH HELD ($T)</button>
+      <button class="chart-tab" onclick="setChartMode('gdp')">% OF OWN GDP</button>
+    </div>
+    <div id="bars-container"></div>
+    <p class="chart-footnote">* Physical size reference: BVI is 153 km² (smaller than Washington D.C.). Jersey is 118 km². Together, these three islands hold over $4.75 trillion in offshore wealth — more than the GDP of Japan. Sources: Tax Justice Network, Gabriel Zucman estimates, OECD.</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- COST -->
+<section id="cost">
+  <p class="section-label">Section 03 — The Cost</p>
+  <h2>What We're Actually Losing</h2>
+  <p class="section-intro">Annual tax revenue lost to offshore sheltering, by country. These aren't accounting abstractions — they're schools not built, doctors not hired, infrastructure not funded.</p>
+  <div class="cost-grid" id="cost-cards"></div>
+
+  <!-- US spotlight -->
+  <div class="keyhole-section" style="text-align:left;">
+    <p class="section-label" style="margin-bottom:1rem;">SPOTLIGHT — UNITED STATES</p>
+    <div style="display:flex;gap:3rem;align-items:flex-start;flex-wrap:wrap;">
+      <div>
+        <span class="keyhole-ratio" style="font-size:3rem;">$170B</span>
+        <p class="keyhole-label" style="text-align:left;">Lost to offshore tax sheltering every year</p>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <p class="could-buy-label">What $170 billion could fund annually:</p>
+        <div class="buy-item">Universal Pre-K for every child in America <strong style="color:var(--gold);margin-left:auto;flex-shrink:0;">$70B</strong></div>
+        <div class="buy-item">Free community college for all students <strong style="color:var(--gold);margin-left:auto;flex-shrink:0;">$90B</strong></div>
+        <div class="buy-item" style="color:var(--gold);">$10B remaining — with change to spare</div>
+        <div style="margin-top:1rem;font-size:0.78rem;color:var(--muted);line-height:1.6;">Or: fully fund the EPA for 17 years. Or: close the entire annual Medicaid funding gap. The arithmetic is not complicated. The will is the problem.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<footer>
+  <div>
+    <div class="footer-brand">Atlas of Culture</div>
+    <p style="font-size:0.72rem;color:var(--muted);margin-top:0.5rem;">Economics · March 2025</p>
+  </div>
+  <div class="footer-sources">
+    <strong>Sources</strong><br>
+    Tax Justice Network — State of Tax Justice 2023<br>
+    Gabriel Zucman — "The Hidden Wealth of Nations" (2015, updated estimates)<br>
+    OECD — Global Forum on Transparency and Exchange of Information<br>
+    IMF — Offshore Financial Centers: The Assessment Program<br>
+    World GeoJSON: datasets/geo-countries (public domain)
+  </div>
+</footer>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const HAVENS = {
+  "Cayman Islands":     { wealth: 3.0,  gdpPct: 50000, area: 264 },
+  "Switzerland":        { wealth: 2.5,  gdpPct: 350,   area: 41285 },
+  "British Virgin Islands": { wealth: 1.5, gdpPct: 100000, area: 153 },
+  "Luxembourg":         { wealth: 0.8,  gdpPct: 1200,  area: 2586 },
+  "Hong Kong":          { wealth: 0.8,  gdpPct: 240,   area: 1106 },
+  "Netherlands":        { wealth: 0.5,  gdpPct: 55,    area: 41543 },
+  "Singapore":          { wealth: 0.6,  gdpPct: 155,   area: 733 },
+  "Ireland":            { wealth: 0.4,  gdpPct: 60,    area: 70273 },
+  "Bahamas":            { wealth: 0.3,  gdpPct: 900,   area: 13943 },
+  "Jersey":             { wealth: 0.25, gdpPct: 5000,  area: 118 },
+};
+
+const VICTIMS = {
+  "United States": { lost: 170 },
+  "Germany":       { lost: 60 },
+  "France":        { lost: 50 },
+  "United Kingdom":{ lost: 45 },
+  "Brazil":        { lost: 25 },
+  "India":         { lost: 20 },
+  "Japan":         { lost: 18 },
+  "Canada":        { lost: 15 },
+  "Australia":     { lost: 12 },
+};
+
+const GEO_NAMES = {
+  "Cayman Islands": null,
+  "British Virgin Islands": "British Virgin Islands",
+  "Jersey": null,
+  "Bahamas": "The Bahamas",
+  "United Kingdom": "United Kingdom",
+  "United States": "United States of America",
+  "Hong Kong": "Hong Kong S.A.R.",
+};
+
+function geoName(n) {
+  if (n in GEO_NAMES) return GEO_NAMES[n];
+  return n;
+}
+
+// ── MAP ────────────────────────────────────────────────────────────────────
+let currentMode = 'havens';
+let geoData = null;
+
+const projection = d3.geoNaturalEarth1()
+  .scale(145)
+  .translate([480, 250]);
+
+const pathGen = d3.geoPath().projection(projection);
+
+const tooltip = document.getElementById('map-tooltip');
+const ttName = document.getElementById('tt-name');
+const ttVal = document.getElementById('tt-val');
+const ttExtra = document.getElementById('tt-extra');
+
+const havenMax = Math.max(...Object.values(HAVENS).map(d => d.wealth));
+const victimMax = Math.max(...Object.values(VICTIMS).map(d => d.lost));
+
+const goldScale = d3.scaleSequential()
+  .domain([0, havenMax])
+  .interpolator(t => d3.interpolate('#1a1a24', '#e8c547')(t ** 0.5));
+
+const redScale = d3.scaleSequential()
+  .domain([0, victimMax])
+  .interpolator(t => d3.interpolate('#1a1a24', '#e84747')(t ** 0.6));
+
+function getFill(name, mode) {
+  const mappedHaven = Object.keys(HAVENS).find(k => (geoName(k) || k) === name || k === name);
+  const mappedVictim = Object.keys(VICTIMS).find(k => (geoName(k) || k) === name || k === name);
+
+  if (mode === 'havens') {
+    if (mappedHaven) return goldScale(HAVENS[mappedHaven].wealth);
+    return '#1a1a24';
+  } else if (mode === 'victims') {
+    if (mappedVictim) return redScale(VICTIMS[mappedVictim].lost);
+    return '#1a1a24';
+  } else {
+    if (mappedHaven) return goldScale(HAVENS[mappedHaven].wealth);
+    if (mappedVictim) return redScale(VICTIMS[mappedVictim].lost);
+    return '#1a1a24';
+  }
+}
+
+function getTooltipData(name, mode) {
+  const mappedHaven = Object.keys(HAVENS).find(k => (geoName(k) || k) === name || k === name);
+  const mappedVictim = Object.keys(VICTIMS).find(k => (geoName(k) || k) === name || k === name);
+
+  if ((mode === 'havens' || mode === 'both') && mappedHaven) {
+    const d = HAVENS[mappedHaven];
+    return {
+      val: `$${d.wealth}T offshore wealth`,
+      extra: `${d.gdpPct.toLocaleString()}% of own GDP`
+    };
+  }
+  if ((mode === 'victims' || mode === 'both') && mappedVictim) {
+    const d = VICTIMS[mappedVictim];
+    return {
+      val: `$${d.lost}B lost / year`,
+      extra: `Tax revenue to offshore sheltering`
+    };
+  }
+  return null;
+}
+
+async function loadMap() {
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+    geoData = await res.json();
+    renderMap();
+  } catch(e) {
+    document.getElementById('map-svg-container').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.85rem;padding:2rem;text-align:center;">
+        Map requires internet connection to load GeoJSON data.<br>
+        <span style="color:var(--gold);font-family:'IBM Plex Mono',monospace;margin-top:0.5rem;display:block;">All data and charts available below.</span>
+      </div>`;
+  }
+}
+
+function renderMap() {
+  if (!geoData) return;
+  const svg = d3.select('#world-map');
+  const g = svg.select('#countries-group');
+  const container = document.getElementById('map-svg-container');
+
+  g.selectAll('path').remove();
+
+  g.selectAll('path')
+    .data(geoData.features)
+    .join('path')
+    .attr('d', pathGen)
+    .attr('fill', d => getFill(d.properties.name, currentMode))
+    .attr('stroke', '#0a0a0f')
+    .attr('stroke-width', 0.4)
+    .style('cursor', 'default')
+    .on('mouseover', function(event, d) {
+      const name = d.properties.name;
+      const info = getTooltipData(name, currentMode);
+      if (!info) return;
+      ttName.textContent = name;
+      ttVal.textContent = info.val;
+      ttExtra.textContent = info.extra;
+      tooltip.style.display = 'block';
+      d3.select(this).attr('stroke', '#fff').attr('stroke-width', 1.5);
+    })
+    .on('mousemove', function(event) {
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      tooltip.style.left = (x + 12) + 'px';
+      tooltip.style.top = (y - 40) + 'px';
+    })
+    .on('mouseout', function() {
+      tooltip.style.display = 'none';
+      d3.select(this).attr('stroke', '#0a0a0f').attr('stroke-width', 0.4);
+    });
+
+  // Annotations for tiny islands
+  const annotations = [
+    { key: 'Cayman Islands', label: 'CAYMAN', coords: [-81.2, 19.3] },
+    { key: 'Jersey', label: 'JERSEY', coords: [-2.1, 49.2] },
+    { key: 'British Virgin Islands', label: 'BVI', coords: [-64.5, 18.4] },
+  ];
+
+  const ag = svg.select('#annotations-group');
+  ag.selectAll('*').remove();
+
+  if (currentMode === 'havens' || currentMode === 'both') {
+    annotations.forEach(a => {
+      const h = HAVENS[a.key];
+      if (!h) return;
+      const [px, py] = projection(a.coords);
+      ag.append('circle').attr('cx', px).attr('cy', py).attr('r', 5)
+        .attr('fill', '#e8c547').attr('stroke', '#0a0a0f').attr('stroke-width', 1);
+      ag.append('line').attr('x1', px).attr('y1', py)
+        .attr('x2', px + 30).attr('y2', py - 25)
+        .attr('stroke', '#e8c547').attr('stroke-width', 0.8).attr('opacity', 0.6);
+      ag.append('text').attr('x', px + 33).attr('y', py - 27)
+        .attr('fill', '#e8c547').attr('font-family', 'IBM Plex Mono, monospace')
+        .attr('font-size', '7px').attr('font-weight', '600')
+        .text(`${a.label} $${h.wealth}T`);
+    });
+  }
+}
+
+function setMapMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+  renderMap();
+}
+
+// ── BAR CHART ──────────────────────────────────────────────────────────────
+let chartMode = 'wealth';
+
+function renderBars() {
+  const container = document.getElementById('bars-container');
+  container.innerHTML = '';
+
+  let data, maxVal, unit, colorClass;
+
+  if (chartMode === 'wealth') {
+    data = Object.entries(HAVENS)
+      .map(([name, d]) => ({ name, val: d.wealth, sub: `${d.gdpPct.toLocaleString()}% of own GDP` }))
+      .sort((a, b) => b.val - a.val);
+    maxVal = 3.0;
+    unit = 'T';
+    colorClass = 'gold';
+  } else {
+    const gdpData = {
+      "Cayman Islands":     50000,
+      "British Virgin Islands": 100000,
+      "Jersey":             5000,
+      "Luxembourg":         1200,
+      "Singapore":          155,
+      "Switzerland":        350,
+      "Ireland":            60,
+      "Hong Kong":          240,
+      "Bahamas":            900,
+      "Netherlands":        55,
+    };
+    data = Object.entries(gdpData)
+      .map(([name, val]) => ({ name, val, sub: `$${HAVENS[name].wealth}T offshore wealth` }))
+      .sort((a, b) => b.val - a.val);
+    maxVal = 100000;
+    unit = '%';
+    colorClass = 'gold';
+  }
+
+  data.forEach(item => {
+    const pct = (item.val / maxVal) * 100;
+    const label = chartMode === 'wealth'
+      ? `$${item.val}T`
+      : `${item.val >= 1000 ? item.val.toLocaleString() + '%' : item.val + '%'}`;
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label">${item.name}<small>${item.sub}</small></div>
+      <div class="bar-track">
+        <div class="bar-fill ${colorClass}" style="width:0" data-pct="${pct}">${label}</div>
+      </div>`;
+    container.appendChild(row);
+  });
+
+  // Animate in
+  requestAnimationFrame(() => {
+    container.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  });
+}
+
+function setChartMode(mode) {
+  chartMode = mode;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderBars();
+}
+
+// ── COST CARDS ─────────────────────────────────────────────────────────────
+const COST_DETAILS = {
+  "United States": {
+    buys: ["Universal Pre-K for every child ($70B)", "Free community college for all ($90B)", "$10B remaining — with change to spare"]
+  },
+  "Germany": {
+    buys: ["Full funding for 300 new hospitals", "Double the national climate fund", "Universal childcare expansion"]
+  },
+  "France": {
+    buys: ["Eliminate hospital waiting lists", "Free public transit nationwide", "Teacher salary overhaul"]
+  },
+  "United Kingdom": {
+    buys: ["NHS backlog cleared in 2 years", "Build 200,000 social homes/yr", "Free school meals for all children"]
+  },
+  "Brazil": {
+    buys: ["Universal basic sanitation", "Bolsa Família doubled for 5 years", "500 new public hospitals"]
+  },
+  "India": {
+    buys: ["100,000 new rural health clinics", "PM housing scheme fully funded", "Double primary school funding"]
+  },
+  "Japan": {
+    buys: ["Elderly care gap closed", "Infrastructure renewal accelerated", "University fees eliminated"]
+  },
+  "Canada": {
+    buys: ["National dental care implemented", "Indigenous housing crisis addressed", "Pharmacare fully funded"]
+  },
+  "Australia": {
+    buys: ["Full NDIS funding secured", "Social housing backlog cleared", "TAFE and vocational training free"]
+  },
+};
+
+function renderCostCards() {
+  const container = document.getElementById('cost-cards');
+  const victims = Object.entries(VICTIMS).sort((a, b) => b[1].lost - a[1].lost);
+  const maxLost = victims[0][1].lost;
+
+  victims.forEach(([name, d]) => {
+    const details = COST_DETAILS[name] || { buys: [] };
+    const card = document.createElement('div');
+    card.className = 'cost-card';
+    card.innerHTML = `
+      <div class="cost-country">${name}</div>
+      <div class="cost-amount">$${d.lost}B/yr</div>
+      <div class="cost-desc">Lost to offshore tax sheltering annually — enough to meaningfully move the needle on public services.</div>
+      ${details.buys.length ? `
+      <div class="cost-could-buy">
+        <div class="could-buy-label">Instead could fund:</div>
+        ${details.buys.map(b => `<div class="buy-item">${b}</div>`).join('')}
+      </div>` : ''}`;
+    container.appendChild(card);
+  });
+}
+
+// ── INTERSECTION OBSERVER (animate bars on scroll) ─────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }
+  });
+}, { threshold: 0.1 });
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadMap();
+  renderBars();
+  renderCostCards();
+  const barsEl = document.getElementById('bars-container');
+  if (barsEl) observer.observe(barsEl);
+});
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://www.taxobservatory.eu/publication/global-tax-evasion-report-2024/" style="color:#4A9EBF;text-decoration:none">EU Tax Observatory — Global Tax Evasion Report 2024</a> — <span style="color:rgba(255,255,255,0.6)">Estimates effective tax rates on billionaire wealth across countries, finding billionaires pay 0–0.5% of their wealth annually in taxes; covers 2023–2024 data.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://wid.world/" style="color:#4A9EBF;text-decoration:none">World Inequality Database (WID.world)</a> — <span style="color:rgba(255,255,255,0.6)">Tracks top wealth shares and pre-tax income concentration by country using tax records, surveys, and national accounts; data through 2023.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.propublica.org/article/the-secret-irs-files-trove-of-never-before-seen-records-reveal-how-the-wealthiest-avoid-income-tax" style="color:#4A9EBF;text-decoration:none">ProPublica — The Secret IRS Files</a> — <span style="color:rgba(255,255,255,0.6)">Analysis of leaked IRS data showing the true income tax burden on the 25 wealthiest Americans relative to wealth growth, 2014–2018.</span></li>
+<li style="margin-bottom:.75rem"><a href="https://www.forbes.com/billionaires/" style="color:#4A9EBF;text-decoration:none">Forbes Real-Time Billionaires</a> — <span style="color:rgba(255,255,255,0.6)">Annual and real-time estimates of individual billionaire net worth used as the primary source for global billionaire wealth totals.</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Billionaire wealth estimates (Forbes, Bloomberg) are derived from publicly known asset holdings — listed equity stakes, real estate, and disclosed ownership — and exclude hard-to-value private assets, derivatives, and trust structures, likely understating true net worth.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Effective tax rate comparisons across countries conflate structurally different systems: some levy annual wealth taxes (Norway, Spain), others tax only realization events, and some have no capital gains tax at all, making a single cross-national rate figure a simplification.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">A large share of billionaire wealth consists of unrealized capital gains that face no tax until sold; including or excluding these dramatically changes calculated effective rates, and different studies use different conventions.</li>
+  </ul>
+</div>
+</body>
+</html>

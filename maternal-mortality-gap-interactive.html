@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maternal Mortality Gap — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a26;
+    --gold: #e8c547;
+    --gold-dim: rgba(232,197,71,0.3);
+    --text: rgba(255,255,255,0.9);
+    --text-sub: rgba(255,255,255,0.55);
+    --text-muted: rgba(255,255,255,0.35);
+    --red-low: #fce4ec;
+    --red-high: #7f0000;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  .site-header {
+    padding: 80px 48px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .pillar-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pillar-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 2px;
+    background: var(--gold);
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 24px;
+    max-width: 800px;
+  }
+  .hook {
+    font-size: 18px;
+    color: var(--text-sub);
+    max-width: 700px;
+    line-height: 1.7;
+    border-left: 3px solid var(--gold);
+    padding-left: 20px;
+    margin-bottom: 32px;
+  }
+  .hook em { color: var(--gold); font-style: normal; font-weight: 600; }
+  .nav-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .nav-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    background: none;
+  }
+  .nav-pill:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── SECTIONS ────────────────────────────────────────── */
+  .section {
+    padding: 80px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .section-sub {
+    font-size: 15px;
+    color: var(--text-sub);
+    max-width: 640px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+
+  /* ── WORLD MAP ───────────────────────────────────────── */
+  #world-map-svg {
+    width: 100%;
+    background: var(--bg2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+  .country { transition: opacity 0.15s; }
+  .country:hover { opacity: 0.8; }
+  .country.highlight { stroke: var(--gold); stroke-width: 2.5; }
+
+  .tooltip {
+    position: fixed;
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 1000;
+    min-width: 160px;
+  }
+  .tooltip.visible { opacity: 1; }
+  .tooltip-name {
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .tooltip-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .tooltip-unit {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── LEGEND ──────────────────────────────────────────── */
+  .legend-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .legend-bar {
+    height: 10px;
+    width: 200px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #fce4ec, #ef9a9a, #e57373, #c62828, #7f0000);
+  }
+  .legend-ticks {
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+    margin-top: 4px;
+  }
+  .legend-tick {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  /* ── US BAR CHART ────────────────────────────────────── */
+  #us-chart-wrap {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    gap: 10px;
+    height: 22px;
+  }
+  .bar-name {
+    font-size: 12px;
+    color: var(--text-sub);
+    width: 130px;
+    text-align: right;
+    flex-shrink: 0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .bar-track {
+    flex: 1;
+    height: 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+    position: relative;
+  }
+  .bar-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .bar-row.highlight .bar-name { color: var(--gold); font-weight: 500; }
+  .bar-row.highlight .bar-val { color: var(--gold); }
+
+  /* US race callout */
+  .race-callout {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .race-stat {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .race-text {
+    font-size: 14px;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+  .race-text strong { color: #fff; }
+
+  /* ── TREND CHART ─────────────────────────────────────── */
+  #trend-svg {
+    width: 100%;
+    overflow: visible;
+  }
+  .trend-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .trend-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+  }
+  .trend-dot { cursor: pointer; }
+
+  /* ── KEY STATS ───────────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 48px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+  .stat-card.red .stat-number { color: #ef5350; }
+  .stat-card.gold .stat-number { color: var(--gold); }
+  .stat-card.green .stat-number { color: #66bb6a; }
+
+  /* ── DATA TABLE ──────────────────────────────────────── */
+  .data-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody tr.us-row { background: rgba(232,197,71,0.04); }
+  tbody tr.us-row:hover { background: rgba(232,197,71,0.08); }
+  td {
+    padding: 12px 16px;
+    color: var(--text-sub);
+  }
+  td:first-child { color: var(--text); font-weight: 500; }
+  td.rate-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────── */
+  footer {
+    padding: 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .footer-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .footer-brand strong { color: var(--gold); }
+  .footer-source {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  /* ── CALLOUT BOXES ───────────────────────────────────── */
+  .insight-box {
+    background: rgba(232,197,71,0.06);
+    border: 1px solid rgba(232,197,71,0.2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 24px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+  }
+  .insight-box strong { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-name" id="tt-name"></div>
+  <div class="tooltip-value" id="tt-value"></div>
+  <div class="tooltip-unit">deaths per 100k live births</div>
+</div>
+
+<!-- ── HEADER ─────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="pillar-tag">Atlas of Culture · Health</div>
+  <h1>The Maternal Mortality Gap</h1>
+  <p class="hook">
+    Norway: <em>3 deaths</em> per 100,000 births. The US: <em>23</em>.
+    But inside the US, Mississippi is <em>44</em> — worse than Kazakhstan.
+    The wealthiest nation on earth is its deadliest for childbirth.
+  </p>
+  <nav class="nav-pills">
+    <a class="nav-pill" href="#world">World Map</a>
+    <a class="nav-pill" href="#us">US States</a>
+    <a class="nav-pill" href="#trends">Trends</a>
+    <a class="nav-pill" href="#data">Data Table</a>
+  </nav>
+</header>
+
+<!-- ── KEY STATS ──────────────────────────────────────────── -->
+<section class="section" id="stats">
+  <div class="section-label">By the numbers · 2020</div>
+  <div class="stats-grid">
+    <div class="stat-card red">
+      <div class="stat-number">23</div>
+      <div class="stat-label">US maternal deaths per 100k live births — highest among wealthy nations</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Norway & Finland's rate — 7× lower than the US</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-number">44</div>
+      <div class="stat-label">Mississippi's rate — higher than Kazakhstan (41)</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-number">3×</div>
+      <div class="stat-label">Black women in the US are 3× more likely to die in childbirth than white women</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WORLD MAP ───────────────────────────────────────────── -->
+<section class="section" id="world">
+  <div class="section-label">Slide 01 · World View</div>
+  <h2>Among Wealthy Nations, the US Stands Alone</h2>
+  <p class="section-sub">
+    Maternal mortality (deaths per 100,000 live births) by country, 2020. Hover over any country for its rate.
+    The US clusters with middle-income nations, not its peers.
+  </p>
+  <svg id="world-map-svg" viewBox="0 0 960 460"></svg>
+  <div class="legend-wrap">
+    <span class="legend-label">Lower</span>
+    <div>
+      <div class="legend-bar"></div>
+      <div class="legend-ticks">
+        <span class="legend-tick">0</span>
+        <span class="legend-tick">50</span>
+        <span class="legend-tick">100</span>
+        <span class="legend-tick">200+</span>
+      </div>
+    </div>
+    <span class="legend-label">Higher mortality</span>
+    <span style="margin-left:20px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(232,197,71,0.7);">— Gold outline = US</span>
+  </div>
+  <div class="insight-box">
+    <strong>Key contrast:</strong> Western Europe clusters at 3–9. The US sits at 23 — the same as China, 
+    and worse than most of Eastern Europe. Only a handful of wealthy nations come close.
+  </div>
+</section>
+
+<!-- ── US STATES ───────────────────────────────────────────── -->
+<section class="section" id="us">
+  <div class="section-label">Slide 02 · Inside America</div>
+  <h2>Mississippi to California: A Nation Within a Nation</h2>
+  <p class="section-sub">
+    US state maternal mortality rates, 2018–2021 average. The range within a single country 
+    spans from European-level safety to developing-world risk.
+  </p>
+  <div id="us-chart-wrap"></div>
+  <div class="race-callout">
+    <div class="race-stat">3×</div>
+    <div class="race-text">
+      <strong>The race gap compounds the geography gap.</strong><br>
+      Black women in the US die in childbirth at 3× the rate of white women — 
+      a disparity that persists regardless of income, education, or insurance status. 
+      In states like Georgia and Mississippi, this gap is even wider.
+    </div>
+  </div>
+</section>
+
+<!-- ── TREND CHART ─────────────────────────────────────────── -->
+<section class="section" id="trends">
+  <div class="section-label">Slide 03 · Trend 2000–2020</div>
+  <h2>Going the Wrong Direction</h2>
+  <p class="section-sub">
+    While peers improved, the US maternal mortality rate more than doubled since 2000.
+    This is not a measurement artifact — it reflects a real public health failure.
+  </p>
+  <svg id="trend-svg" viewBox="0 0 900 400"></svg>
+  <div class="insight-box">
+    <strong>Note:</strong> A 2003 US coding change added a pregnancy checkbox to death certificates, 
+    causing an apparent jump. But even controlling for this, the trend is real and worsening.
+    Peer nations — using similar methodologies — continued to improve.
+  </div>
+</section>
+
+<!-- ── DATA TABLE ─────────────────────────────────────────── -->
+<section class="section" id="data">
+  <div class="section-label">Full Data · 2020</div>
+  <h2>Country Comparison</h2>
+  <p class="section-sub">Maternal mortality rates for selected countries, WHO 2020 estimates.</p>
+  <div class="data-table-wrap">
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Rate (per 100k)</th>
+          <th>vs. US</th>
+          <th>Income Group</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-brand">
+    <strong>Atlas of Culture</strong> · Maternal Mortality Gap
+  </div>
+  <div class="footer-source">
+    Sources: WHO Global Health Observatory 2020 · CDC NCHS 2021<br>
+    US state data: CDC WONDER 2018–2021 average
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+
+const WORLD_DATA = {
+  // Very low (0–5)
+  "Norway": 3, "Finland": 3, "Sweden": 4, "Germany": 4,
+  "Austria": 5, "Netherlands": 4, "Switzerland": 5, "Denmark": 4,
+  "Japan": 4, "Australia": 3, "New Zealand": 3, "Spain": 3,
+  "Italy": 5, "Czech Republic": 3, "Poland": 4, "Israel": 3,
+  "Singapore": 3, "Iceland": 4,
+  // Low (5–15)
+  "France": 8, "Belgium": 5, "Ireland": 6, "Portugal": 8,
+  "United Kingdom": 9, "Canada": 11, "Greece": 8,
+  "Slovakia": 5, "Hungary": 15, "South Korea": 11,
+  "New Caledonia": 7,
+  // Medium (15–30)
+  "United States of America": 23, "Russia": 17, "China": 23,
+  "Saudi Arabia": 17, "Turkey": 17, "Romania": 27, "Ukraine": 19,
+  "Thailand": 29, "Argentina": 39, "Chile": 13, "Cuba": 36,
+  "Libya": 72, "Jordan": 16, "Lebanon": 20, "Kazakhstan": 41,
+  "Belarus": 2, "Latvia": 13, "Lithuania": 10, "Estonia": 9,
+  "Croatia": 8, "Slovenia": 7, "Serbia": 12, "Bulgaria": 9,
+  "Albania": 15, "North Macedonia": 7, "Bosnia and Herzegovina": 6,
+  "Moldova": 23, "Georgia": 28,
+  // High (30–100)
+  "Brazil": 72, "Mexico": 59, "Colombia": 75, "Peru": 69,
+  "Bolivia": 166, "Ecuador": 60, "Paraguay": 84, "Venezuela": 93,
+  "Philippines": 78, "Indonesia": 177, "Vietnam": 124,
+  "Myanmar": 250, "Pakistan": 154, "Bangladesh": 123,
+  "Nepal": 186, "Sri Lanka": 29, "Cambodia": 218, "Laos": 185,
+  "Mongolia": 39, "Iran": 32, "Iraq": 79, "Syria": 31,
+  "Egypt": 17, "Morocco": 60, "Algeria": 78, "Tunisia": 24,
+  "South Africa": 127, "Zimbabwe": 357, "Zambia": 224,
+  "Ghana": 263, "Senegal": 261, "Ivory Coast": 480,
+  "Democratic Republic of the Congo": 547,
+  // Very high (100+)
+  "India": 103, "Afghanistan": 620, "Nigeria": 1047,
+  "Kenya": 342, "Ethiopia": 401, "Tanzania": 238,
+  "Uganda": 284, "Mozambique": 289, "Madagascar": 335,
+  "Mali": 562, "Niger": 509, "Chad": 1140, "Somalia": 621,
+  "Sudan": 270, "South Sudan": 1223
+};
+
+// Alternate name mappings for GeoJSON discrepancies
+const NAME_MAP = {
+  "United States": "United States of America",
+  "USA": "United States of America",
+  "UK": "United Kingdom",
+  "Great Britain": "United Kingdom",
+  "Korea, Republic of": "South Korea",
+  "Republic of Korea": "South Korea",
+  "Iran (Islamic Republic of)": "Iran",
+  "Syrian Arab Republic": "Syria",
+  "Viet Nam": "Vietnam",
+  "Lao PDR": "Laos",
+  "Congo, Dem. Rep.": "Democratic Republic of the Congo",
+  "Congo": "Republic of Congo",
+  "Côte d'Ivoire": "Ivory Coast",
+  "Cote d'Ivoire": "Ivory Coast",
+  "Russian Federation": "Russia",
+  "Bolivia (Plurinational State of)": "Bolivia",
+  "Venezuela (Bolivarian Republic of)": "Venezuela",
+};
+
+const US_STATE_DATA = [
+  { state: "Mississippi", rate: 44, abbr: "MS" },
+  { state: "Louisiana", rate: 40, abbr: "LA" },
+  { state: "District of Columbia", rate: 36, abbr: "DC" },
+  { state: "Georgia", rate: 33, abbr: "GA" },
+  { state: "Indiana", rate: 26, abbr: "IN" },
+  { state: "Alabama", rate: 25, abbr: "AL" },
+  { state: "West Virginia", rate: 24, abbr: "WV" },
+  { state: "Arkansas", rate: 23, abbr: "AR" },
+  { state: "Missouri", rate: 23, abbr: "MO" },
+  { state: "Oklahoma", rate: 22, abbr: "OK" },
+  { state: "Texas", rate: 21, abbr: "TX" },
+  { state: "North Carolina", rate: 20, abbr: "NC" },
+  { state: "Kentucky", rate: 19, abbr: "KY" },
+  { state: "Tennessee", rate: 18, abbr: "TN" },
+  { state: "South Carolina", rate: 17, abbr: "SC" },
+  { state: "Nevada", rate: 16, abbr: "NV" },
+  { state: "New Mexico", rate: 15, abbr: "NM" },
+  { state: "Michigan", rate: 14, abbr: "MI" },
+  { state: "Alaska", rate: 14, abbr: "AK" },
+  { state: "Wyoming", rate: 14, abbr: "WY" },
+  { state: "Ohio", rate: 13, abbr: "OH" },
+  { state: "Montana", rate: 13, abbr: "MT" },
+  { state: "Pennsylvania", rate: 13, abbr: "PA" },
+  { state: "Illinois", rate: 13, abbr: "IL" },
+  { state: "Delaware", rate: 13, abbr: "DE" },
+  { state: "Florida", rate: 12, abbr: "FL" },
+  { state: "North Dakota", rate: 12, abbr: "ND" },
+  { state: "South Dakota", rate: 12, abbr: "SD" },
+  { state: "Virginia", rate: 11, abbr: "VA" },
+  { state: "Arizona", rate: 11, abbr: "AZ" },
+  { state: "Kansas", rate: 11, abbr: "KS" },
+  { state: "Idaho", rate: 11, abbr: "ID" },
+  { state: "New York", rate: 10, abbr: "NY" },
+  { state: "Iowa", rate: 10, abbr: "IA" },
+  { state: "Colorado", rate: 9, abbr: "CO" },
+  { state: "New Jersey", rate: 9, abbr: "NJ" },
+  { state: "Nebraska", rate: 9, abbr: "NE" },
+  { state: "Maine", rate: 9, abbr: "ME" },
+  { state: "Minnesota", rate: 8, abbr: "MN" },
+  { state: "Washington", rate: 8, abbr: "WA" },
+  { state: "Utah", rate: 8, abbr: "UT" },
+  { state: "Wisconsin", rate: 7, abbr: "WI" },
+  { state: "Oregon", rate: 7, abbr: "OR" },
+  { state: "Maryland", rate: 7, abbr: "MD" },
+  { state: "Connecticut", rate: 6, abbr: "CT" },
+  { state: "Massachusetts", rate: 6, abbr: "MA" },
+  { state: "Rhode Island", rate: 6, abbr: "RI" },
+  { state: "Vermont", rate: 6, abbr: "VT" },
+  { state: "Hawaii", rate: 5, abbr: "HI" },
+  { state: "New Hampshire", rate: 5, abbr: "NH" },
+  { state: "California", rate: 4, abbr: "CA" },
+];
+
+const TREND_DATA = [
+  { year: 2000, US: 10, Norway: 5, Germany: 9, UK: 12 },
+  { year: 2002, US: 11, Norway: 4, Germany: 8, UK: 11 },
+  { year: 2004, US: 13, Norway: 4, Germany: 7, UK: 10 },
+  { year: 2006, US: 15, Norway: 4, Germany: 7, UK: 9 },
+  { year: 2008, US: 16, Norway: 4, Germany: 7, UK: 9 },
+  { year: 2010, US: 17, Norway: 4, Germany: 7, UK: 9 },
+  { year: 2012, US: 18, Norway: 4, Germany: 6, UK: 9 },
+  { year: 2014, US: 19, Norway: 3, Germany: 6, UK: 9 },
+  { year: 2016, US: 21, Norway: 3, Germany: 6, UK: 9 },
+  { year: 2018, US: 17, Norway: 3, Germany: 4, UK: 9 },
+  { year: 2019, US: 20, Norway: 2, Germany: 3, UK: 8 },
+  { year: 2020, US: 24, Norway: 3, Germany: 4, UK: 9 },
+];
+
+// Table data (selected countries for comparison)
+const TABLE_COUNTRIES = [
+  { name: "Norway", rate: 3, group: "High income" },
+  { name: "Finland", rate: 3, group: "High income" },
+  { name: "Sweden", rate: 4, group: "High income" },
+  { name: "Germany", rate: 4, group: "High income" },
+  { name: "Australia", rate: 3, group: "High income" },
+  { name: "Japan", rate: 4, group: "High income" },
+  { name: "France", rate: 8, group: "High income" },
+  { name: "United Kingdom", rate: 9, group: "High income" },
+  { name: "Canada", rate: 11, group: "High income" },
+  { name: "United States of America", rate: 23, group: "High income", highlight: true },
+  { name: "Russia", rate: 17, group: "Upper-middle income" },
+  { name: "China", rate: 23, group: "Upper-middle income" },
+  { name: "Kazakhstan", rate: 41, group: "Upper-middle income" },
+  { name: "Brazil", rate: 72, group: "Upper-middle income" },
+  { name: "India", rate: 103, group: "Lower-middle income" },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// COLOR SCALE
+// ═══════════════════════════════════════════════════════════════
+function getColor(rate) {
+  if (rate === null || rate === undefined) return "#1a1a26";
+  const capped = Math.min(rate, 200);
+  const t = capped / 200;
+  // Light pink → deep red
+  const colors = [
+    [252, 228, 236], // #fce4ec
+    [240, 154, 154], // #f09a9a
+    [220, 80, 80],   // #dc5050
+    [180, 30, 30],   // #b41e1e
+    [100, 0, 0],     // #640000
+  ];
+  const idx = t * (colors.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, colors.length - 1);
+  const f = idx - lo;
+  const r = Math.round(colors[lo][0] * (1-f) + colors[hi][0] * f);
+  const g = Math.round(colors[lo][1] * (1-f) + colors[hi][1] * f);
+  const b = Math.round(colors[lo][2] * (1-f) + colors[hi][2] * f);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getStateColor(rate) {
+  const max = 44;
+  const t = rate / max;
+  const colors = [
+    [252, 228, 236],
+    [240, 140, 140],
+    [200, 50, 50],
+    [130, 10, 10],
+  ];
+  const idx = t * (colors.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, colors.length - 1);
+  const f = idx - lo;
+  const r = Math.round(colors[lo][0] * (1-f) + colors[hi][0] * f);
+  const g = Math.round(colors[lo][1] * (1-f) + colors[hi][1] * f);
+  const b = Math.round(colors[lo][2] * (1-f) + colors[hi][2] * f);
+  return `rgb(${r},${g},${b})`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+const ttName = document.getElementById('tt-name');
+const ttValue = document.getElementById('tt-value');
+
+function showTooltip(e, name, rate) {
+  ttName.textContent = name;
+  ttValue.textContent = rate !== null ? `${rate} deaths` : "No data";
+  tooltip.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  let x = e.clientX + 16;
+  let y = e.clientY + 16;
+  if (x + 200 > window.innerWidth) x = e.clientX - 210;
+  if (y + 80 > window.innerHeight) y = e.clientY - 80;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+// ═══════════════════════════════════════════════════════════════
+// WORLD MAP
+// ═══════════════════════════════════════════════════════════════
+async function drawWorldMap() {
+  const svg = d3.select("#world-map-svg");
+  const width = 960, height = 460;
+  const projection = d3.geoNaturalEarth1()
+    .scale(153)
+    .translate([width / 2, height / 2]);
+  const path = d3.geoPath().projection(projection);
+
+  svg.append("rect")
+    .attr("width", width).attr("height", height)
+    .attr("fill", "#12121a");
+
+  try {
+    const geojson = await fetch(
+      "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+    ).then(r => r.json());
+
+    svg.selectAll(".country")
+      .data(geojson.features)
+      .join("path")
+      .attr("class", "country")
+      .attr("d", path)
+      .attr("fill", d => {
+        const name = d.properties.name;
+        const mapped = NAME_MAP[name] || name;
+        const rate = WORLD_DATA[mapped];
+        return getColor(rate);
+      })
+      .attr("stroke", d => {
+        const name = d.properties.name;
+        const mapped = NAME_MAP[name] || name;
+        return (mapped === "United States of America") ? "#e8c547" : "rgba(0,0,0,0.3)";
+      })
+      .attr("stroke-width", d => {
+        const name = d.properties.name;
+        const mapped = NAME_MAP[name] || name;
+        return (mapped === "United States of America") ? 2.5 : 0.4;
+      })
+      .on("mousemove", (e, d) => {
+        const name = d.properties.name;
+        const mapped = NAME_MAP[name] || name;
+        const rate = WORLD_DATA[mapped] ?? null;
+        showTooltip(e, name, rate);
+        moveTooltip(e);
+      })
+      .on("mouseout", hideTooltip);
+
+    // US label
+    const usFeature = geojson.features.find(f => {
+      const n = f.properties.name;
+      return n === "United States of America" || n === "United States";
+    });
+    if (usFeature) {
+      const centroid = path.centroid(usFeature);
+      svg.append("text")
+        .attr("x", centroid[0])
+        .attr("y", centroid[1])
+        .attr("text-anchor", "middle")
+        .attr("font-family", "'IBM Plex Mono', monospace")
+        .attr("font-size", "9px")
+        .attr("font-weight", "600")
+        .attr("fill", "#e8c547")
+        .attr("pointer-events", "none")
+        .text("US: 23");
+    }
+  } catch(err) {
+    svg.append("text")
+      .attr("x", width/2).attr("y", height/2)
+      .attr("text-anchor", "middle")
+      .attr("fill", "rgba(255,255,255,0.3)")
+      .attr("font-family", "Inter")
+      .attr("font-size", "14px")
+      .text("Map failed to load — check connection");
+    console.error("World map error:", err);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// US STATE BAR CHART
+// ═══════════════════════════════════════════════════════════════
+function drawUSChart() {
+  const wrap = document.getElementById('us-chart-wrap');
+  const maxRate = Math.max(...US_STATE_DATA.map(d => d.rate));
+  const highlights = ["Mississippi", "Louisiana", "California", "Massachusetts", "Georgia"];
+  const usMed = 23;
+
+  let html = '';
+  US_STATE_DATA.forEach(d => {
+    const pct = (d.rate / maxRate * 100).toFixed(1);
+    const isHighlight = highlights.includes(d.state);
+    const color = getStateColor(d.rate);
+    html += `
+      <div class="bar-row ${isHighlight ? 'highlight' : ''}">
+        <div class="bar-name">${d.state}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+        <div class="bar-val">${d.rate}</div>
+      </div>
+    `;
+  });
+
+  // Add US median reference
+  html = `
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:rgba(255,255,255,0.35); margin-bottom:16px; letter-spacing:0.1em; text-transform:uppercase;">
+      Rate (deaths per 100k births) — sorted highest to lowest
+    </div>
+  ` + html;
+
+  // Add reference lines after bar chart
+  html += `
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="display:flex; gap:24px; flex-wrap:wrap;">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:rgba(255,255,255,0.4);">
+          ◆ Norway / Finland: 3 &nbsp;&nbsp; ◆ US national avg: 23 &nbsp;&nbsp; ◆ Mississippi: 44
+        </span>
+      </div>
+    </div>
+  `;
+
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TREND LINE CHART
+// ═══════════════════════════════════════════════════════════════
+function drawTrendChart() {
+  const svg = d3.select("#trend-svg");
+  const width = 900, height = 400;
+  const margin = { top: 30, right: 140, bottom: 50, left: 60 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const years = TREND_DATA.map(d => d.year);
+  const xScale = d3.scaleLinear().domain([2000, 2020]).range([0, innerW]);
+  const yScale = d3.scaleLinear().domain([0, 28]).range([innerH, 0]);
+
+  // Grid lines
+  g.append("g").attr("class", "grid")
+    .selectAll("line")
+    .data([0, 5, 10, 15, 20, 25])
+    .join("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", d => yScale(d)).attr("y2", d => yScale(d))
+    .attr("stroke", "rgba(255,255,255,0.06)")
+    .attr("stroke-width", 1);
+
+  // Y axis labels
+  [0, 5, 10, 15, 20, 25].forEach(v => {
+    g.append("text")
+      .attr("x", -8).attr("y", yScale(v))
+      .attr("text-anchor", "end").attr("dominant-baseline", "middle")
+      .attr("font-family", "'IBM Plex Mono', monospace").attr("font-size", "11px")
+      .attr("fill", "rgba(255,255,255,0.35)")
+      .text(v);
+  });
+
+  // X axis labels
+  [2000, 2005, 2010, 2015, 2020].forEach(yr => {
+    g.append("text")
+      .attr("x", xScale(yr)).attr("y", innerH + 20)
+      .attr("text-anchor", "middle")
+      .attr("font-family", "'IBM Plex Mono', monospace").attr("font-size", "11px")
+      .attr("fill", "rgba(255,255,255,0.35)")
+      .text(yr);
+  });
+
+  // Lines config
+  const lines = [
+    { key: "US",     color: "#e8c547", label: "United States", width: 3 },
+    { key: "UK",     color: "#ef9a9a", label: "United Kingdom", width: 2 },
+    { key: "Germany",color: "#90caf9", label: "Germany",        width: 2 },
+    { key: "Norway", color: "#a5d6a7", label: "Norway",         width: 2 },
+  ];
+
+  const lineGen = d3.line()
+    .x(d => xScale(d.year))
+    .y(d => yScale(d.value))
+    .curve(d3.curveMonotoneX);
+
+  lines.forEach(({ key, color, label, width }) => {
+    const lineData = TREND_DATA.map(d => ({ year: d.year, value: d[key] }));
+
+    g.append("path")
+      .datum(lineData)
+      .attr("fill", "none")
+      .attr("stroke", color)
+      .attr("stroke-width", width)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("d", lineGen);
+
+    // End label
+    const last = lineData[lineData.length - 1];
+    g.append("text")
+      .attr("x", xScale(last.year) + 10)
+      .attr("y", yScale(last.value))
+      .attr("dominant-baseline", "middle")
+      .attr("font-family", "'IBM Plex Mono', monospace")
+      .attr("font-size", "11px")
+      .attr("fill", color)
+      .text(`${label}: ${last.value}`);
+  });
+
+  // X axis line
+  g.append("line")
+    .attr("x1", 0).attr("x2", innerW)
+    .attr("y1", innerH).attr("y2", innerH)
+    .attr("stroke", "rgba(255,255,255,0.15)")
+    .attr("stroke-width", 1);
+
+  // 2003 annotation (coding change)
+  g.append("line")
+    .attr("x1", xScale(2003)).attr("x2", xScale(2003))
+    .attr("y1", 0).attr("y2", innerH)
+    .attr("stroke", "rgba(255,255,255,0.12)")
+    .attr("stroke-dasharray", "4,4");
+  g.append("text")
+    .attr("x", xScale(2003)).attr("y", 15)
+    .attr("text-anchor", "middle")
+    .attr("font-family", "'IBM Plex Mono', monospace")
+    .attr("font-size", "9px")
+    .attr("fill", "rgba(255,255,255,0.3)")
+    .text("coding change");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA TABLE
+// ═══════════════════════════════════════════════════════════════
+function drawTable() {
+  const tbody = document.getElementById('table-body');
+  const usRate = 23;
+  let html = '';
+  TABLE_COUNTRIES.forEach(d => {
+    const vs = d.rate === usRate ? "—" : d.rate < usRate ? `${usRate - d.rate} lower` : `${d.rate - usRate} higher`;
+    const rateColor = d.rate <= 5 ? '#a5d6a7' : d.rate <= 15 ? '#fff9c4' : d.rate <= 25 ? '#ffcc80' : '#ef9a9a';
+    const isUS = d.highlight;
+    html += `
+      <tr class="${isUS ? 'us-row' : ''}">
+        <td>${isUS ? '★ ' : ''}${d.name}</td>
+        <td class="rate-cell" style="color:${rateColor}">${d.rate}</td>
+        <td style="color:${d.rate < usRate ? '#a5d6a7' : d.rate === usRate ? 'rgba(255,255,255,0.3)' : '#ef9a9a'}; font-family:'IBM Plex Mono',monospace; font-size:12px;">${vs}</td>
+        <td style="color:rgba(255,255,255,0.4)">${d.group}</td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+drawWorldMap();
+drawUSChart();
+drawTrendChart();
+drawTable();
+</script>
+
+<div class="sources-section" style="max-width:900px;margin:3rem auto 2rem;padding:2rem;background:rgba(255,255,255,0.04);border-radius:12px;font-family:inherit">
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Data Sources</h2>
+  <ul style="list-style:none;padding:0;margin:0 0 2rem">
+    <li style="margin-bottom:.75rem"><a href="https://www.who.int/data/gho/data/themes/maternal-and-reproductive-health" style="color:#4A9EBF;text-decoration:none">WHO Global Health Observatory</a> — <span style="color:rgba(255,255,255,0.6)">Maternal Mortality Estimates by Country, 2020</span></li>
+<li style="margin-bottom:.75rem"><a href="https://wonder.cdc.gov" style="color:#4A9EBF;text-decoration:none">CDC WONDER</a> — <span style="color:rgba(255,255,255,0.6)">US State Maternal Mortality, 2018–2021 average</span></li>
+<li style="margin-bottom:.75rem"><a href="#" style="color:#4A9EBF;text-decoration:none">CDC NCHS</a> — <span style="color:rgba(255,255,255,0.6)">Maternal Mortality Trends in the United States, 2000–2020</span></li>
+  </ul>
+  <h2 style="color:#E8C547;font-size:1.1rem;margin:0 0 1rem;letter-spacing:.05em;text-transform:uppercase">Caveats &amp; Methodology</h2>
+  <ul class="caveats-list" style="padding-left:1.5rem;margin:0">
+    <li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">Maternal mortality definitions vary slightly by country — some include deaths within 42 days of delivery, others up to 1 year.</li>
+<li style="margin-bottom:.75rem;color:rgba(255,255,255,0.7)">US figures have historically been affected by improved death certificate coding, which may inflate apparent trend increases.</li>
+  </ul>
+</div>
+</body>
+</html>

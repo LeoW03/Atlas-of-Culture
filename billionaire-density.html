@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1080px;height:1080px;overflow:hidden;background:#07070c;font-family:'Inter',sans-serif;position:relative;}
+  body::before{content:'';position:absolute;inset:0;z-index:200;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;}
+
+  .canvas{position:absolute;inset:0;padding:52px 68px 46px;display:flex;flex-direction:column;}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,197,71,.6);margin-bottom:14px;flex-shrink:0;}
+  .headline{font-family:'Playfair Display',serif;font-weight:900;font-size:50px;line-height:1.06;color:#f5f0e4;margin-bottom:10px;flex-shrink:0;}
+  .headline em{font-style:italic;color:#e8c547;}
+  .subhead{font-family:'Inter',sans-serif;font-weight:400;font-size:14.5px;color:rgba(255,255,255,.55);line-height:1.5;margin-bottom:32px;flex-shrink:0;}
+  .subhead strong{color:rgba(255,255,255,.8);font-weight:500;}
+
+  /* Treemap-style block chart */
+  .chart{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0;}
+  .chart-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.22);flex-shrink:0;}
+
+  .blocks{flex:1;display:flex;flex-direction:column;gap:0;justify-content:space-between;}
+
+  .block-row{display:flex;align-items:center;gap:12px;flex:1;}
+
+  .block-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.03em;width:90px;flex-shrink:0;text-align:right;color:rgba(255,255,255,.38);}
+  .block-row.us .block-label{color:#e8c547;}
+  .block-row.cn .block-label{color:rgba(255,255,255,.55);}
+
+  .block-bar{position:relative;height:0;flex-shrink:0;border-radius:3px;display:flex;align-items:center;justify-content:flex-start;padding-left:14px;overflow:visible;}
+  .block-count{font-family:'Playfair Display',serif;font-weight:900;font-size:28px;letter-spacing:-.02em;line-height:1;color:rgba(7,7,12,0.9);position:relative;z-index:1;}
+  .block-row.us .block-count{font-size:36px;color:rgba(7,7,12,1);}
+  .block-note{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:rgba(7,7,12,0.6);margin-left:8px;position:relative;z-index:1;}
+
+  .footer{flex-shrink:0;border-top:1px solid rgba(255,255,255,.05);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;}
+  .handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:.1em;}
+  .source{font-family:'Inter',sans-serif;font-size:9px;color:rgba(255,255,255,.12);}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="eyebrow">Wealth concentration · Forbes Billionaires List 2024</div>
+  <div class="headline">The US has more billionaires<br/>than <em>China and India combined</em>.</div>
+  <div class="subhead">Number of billionaires by country, 2024.<br/><strong>813 in the United States. 473 in China. 200 in India.</strong></div>
+
+  <div class="chart">
+    <div class="chart-label">Billionaires (Forbes 2024) — bar width proportional to count</div>
+    <div class="blocks" id="blocks"></div>
+  </div>
+
+  <div class="footer">
+    <div class="handle">@atlasofculture</div>
+    <div class="source">Forbes World's Billionaires List 2024 · net worth ≥ $1 billion USD</div>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {country:'USA',        n:813, color:'linear-gradient(90deg,#9a7012,#c89820 40%,#e8c547 80%,#f0d560)', cls:'us', note:'1 per 408,000 people'},
+  {country:'China',      n:473, color:'linear-gradient(90deg,#1e4060,#2a5a80,#3878a0)',                  cls:'cn', note:'1 per 3M people'},
+  {country:'India',      n:200, color:'linear-gradient(90deg,#162835,#1e3d55,#265070)',                  cls:'', note:'1 per 7M people'},
+  {country:'Germany',    n:126, color:'linear-gradient(90deg,#122030,#1a3248,#224060)',                  cls:'', note:''},
+  {country:'Russia',     n:120, color:'linear-gradient(90deg,#122030,#1a3248,#224060)',                  cls:'', note:''},
+  {country:'UK',         n:55,  color:'linear-gradient(90deg,#0e1820,#162535,#1c3045)',                  cls:'', note:''},
+  {country:'France',     n:43,  color:'linear-gradient(90deg,#0e1820,#162535,#1c3045)',                  cls:'', note:''},
+  {country:'Rest of world', n:831, color:'linear-gradient(90deg,#0c1520,#121d2e,#182538)',              cls:'', note:'~80 countries combined'},
+];
+const MAX=813;
+const CONTAINER_W=840; // approx available width after label
+
+const blocks=document.getElementById('blocks');
+DATA.forEach(d=>{
+  const row=document.createElement('div');
+  row.className='block-row'+(d.cls?' '+d.cls:'');
+  const barW=Math.max(60,Math.round((d.n/MAX)*CONTAINER_W));
+  const barH=d.cls==='us'?62:d.n>400?54:d.n>100?44:36;
+
+  row.innerHTML=`
+    <div class="block-label">${d.country}</div>
+    <div class="block-bar" style="width:${barW}px;height:${barH}px;background:${d.color};flex-shrink:0;">
+      <span class="block-count">${d.n}</span>
+      ${d.note?`<span class="block-note">${d.note}</span>`:''}
+    </div>
+  `;
+  blocks.appendChild(row);
+});
+</script>
+</body>
+</html>

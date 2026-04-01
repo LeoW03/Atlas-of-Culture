@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{width:1080px;height:1080px;overflow:hidden;background:#07070c;font-family:'Inter',sans-serif;position:relative;}
+  body::before{content:'';position:absolute;inset:0;z-index:200;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;}
+
+  .canvas{position:absolute;inset:0;display:flex;flex-direction:column;}
+
+  /* Title strip */
+  .title-strip{padding:50px 68px 0;flex-shrink:0;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,197,71,.6);margin-bottom:14px;}
+  .headline{font-family:'Playfair Display',serif;font-weight:900;font-size:50px;line-height:1.06;color:#f5f0e4;margin-bottom:10px;}
+  .headline em{font-style:italic;color:#e8c547;}
+  .subhead{font-family:'Inter',sans-serif;font-weight:400;font-size:14.5px;color:rgba(255,255,255,.55);line-height:1.5;}
+  .subhead strong{color:rgba(255,255,255,.8);font-weight:500;}
+
+  /* Map zone */
+  .map-zone{flex:1;position:relative;overflow:hidden;min-height:0;}
+  #map-svg{position:absolute;inset:0;width:100%;height:100%;}
+
+  /* Footer overlay */
+  .map-footer{position:absolute;bottom:0;left:0;right:0;z-index:10;
+    padding:44px 68px 32px;
+    background:linear-gradient(to bottom,transparent 0%,rgba(7,7,12,.92) 48%,rgba(7,7,12,1) 100%);
+    display:flex;justify-content:space-between;align-items:flex-end;}
+  .legend-group{display:flex;flex-direction:column;gap:5px;}
+  .legend-row{display:flex;align-items:center;gap:10px;}
+  .legend-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);}
+  .legend-bar{width:200px;height:7px;border-radius:2px;}
+  .legend-note{font-family:'Inter',sans-serif;font-size:10px;color:rgba(255,255,255,.22);margin-top:3px;}
+  .footer-right{text-align:right;}
+  .handle{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:.1em;display:block;}
+  .source{font-family:'Inter',sans-serif;font-size:9px;color:rgba(255,255,255,.14);}
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="title-strip">
+    <div class="eyebrow">Political representation · IPU Parline 2024</div>
+    <div class="headline">Rwanda leads the world.<br/>Not <em>Scandinavia</em>.</div>
+    <div class="subhead">Women in national parliament (lower or single house) — <strong>Rwanda: 61%. Sweden: 46%. US: 29%.</strong></div>
+  </div>
+
+  <div class="map-zone">
+    <svg id="map-svg" viewBox="-40 33 984 340" preserveAspectRatio="xMidYMid slice">
+      <rect x="-100" y="-100" width="1200" height="600" fill="#09091c"/>
+      <g id="grat"></g>
+      <g id="countries"></g>
+    </svg>
+    <div class="map-footer">
+      <div class="legend-group">
+        <div class="legend-row">
+          <span class="legend-tag">0%</span>
+          <div class="legend-bar" id="legend-bar"></div>
+          <span class="legend-tag">60%+</span>
+        </div>
+        <div class="legend-note">% women in national parliament · lower/single house</div>
+      </div>
+      <div class="footer-right">
+        <span class="handle">@atlasofculture</span>
+        <span class="source">IPU Parline Database 2024</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  // Africa
+  "Rwanda":61,"South Africa":46,"Namibia":46,"Mozambique":43,"Tanzania":38,
+  "Senegal":44,"Ethiopia":38,"Uganda":35,"Kenya":22,"Nigeria":4,
+  "Ghana":15,"Egypt":28,"Morocco":24,"Algeria":8,"Tunisia":26,
+  "Zimbabwe":35,"Zambia":17,"Cameroon":33,"Mali":30,"Burkina Faso":12,
+  // Europe
+  "Sweden":46,"Finland":46,"Norway":46,"Denmark":44,"Iceland":47,
+  "Belgium":44,"Austria":41,"Spain":47,"Portugal":43,"Netherlands":38,
+  "Germany":35,"Switzerland":41,"France":37,"Ireland":23,"Italy":32,
+  "United Kingdom":35,"Poland":30,"Czech Republic":22,"Hungary":13,
+  "Greece":23,"Romania":18,"Bulgaria":26,"Slovakia":22,"Slovenia":43,
+  "Croatia":30,"Serbia":40,"Bosnia and Herzegovina":24,"Albania":36,
+  // Americas
+  "United States":29,"Canada":30,"Mexico":50,"Argentina":43,"Brazil":18,
+  "Chile":36,"Colombia":32,"Peru":40,"Bolivia":44,"Ecuador":39,
+  "Cuba":55,"Costa Rica":50,"Uruguay":24,"Venezuela":23,"Paraguay":17,
+  // Asia
+  "New Zealand":50,"Australia":38,"Japan":10,"South Korea":19,
+  "Singapore":29,"Philippines":29,"Vietnam":30,"Indonesia":22,
+  "Malaysia":15,"Thailand":18,"China":25,"India":15,"Pakistan":20,
+  "Bangladesh":21,"Sri Lanka":5,"Nepal":34,"Afghanistan":27,
+  "Taiwan":42,"Cambodia":20,"Myanmar":11,
+  // Middle East
+  "Israel":30,"Jordan":20,"Lebanon":6,"Tunisia":26,"Turkey":18,
+  "Saudi Arabia":20,"United Arab Emirates":50,"Kuwait":4,"Iraq":29,
+  // Central Asia
+  "Kazakhstan":28,"Uzbekistan":34,"Kyrgyzstan":19,"Tajikistan":24,
+};
+
+const NAME_MAP={
+  "United States of America":"United States","Türkiye":"Turkey",
+  "Czech Republic":"Czech Republic","S. Korea":"South Korea",
+  "eSwatini":"Eswatini","Dem. Rep. Congo":"Democratic Republic of the Congo",
+  "N. Macedonia":"North Macedonia","Bosnia and Herz.":"Bosnia and Herzegovina",
+  "Dominican Rep.":"Dominican Republic","Somaliland":"Somalia",
+};
+
+// Color: near-black (0%) → muted purple → teal → gold (60%+)
+const STOPS=[
+  [0.00,[20,20,40]],[0.15,[45,35,80]],[0.30,[55,65,110]],
+  [0.50,[45,110,110]],[0.70,[40,148,148]],[0.85,[120,170,80]],
+  [1.00,[232,197,71]]
+];
+function getColor(v){
+  const t=Math.max(0,Math.min(1,v/62));
+  let lo=STOPS[0],hi=STOPS[STOPS.length-1];
+  for(let i=0;i<STOPS.length-1;i++){if(t>=STOPS[i][0]&&t<=STOPS[i+1][0]){lo=STOPS[i];hi=STOPS[i+1];break;}}
+  const s=hi[0]===lo[0]?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${[0,1,2].map(c=>Math.round(lo[1][c]+s*(hi[1][c]-lo[1][c]))).join(',')})`;
+}
+function lookup(n){return DATA[n]??DATA[NAME_MAP[n]]??null;}
+
+// Legend
+const lgS=Array.from({length:20},(_,i)=>getColor(i/19*62));
+document.getElementById('legend-bar').style.background=`linear-gradient(90deg,${lgS.join(',')})`;
+
+const W=944,H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+function r2p(ring){const T=W*0.4,segs=[[]];ring.forEach(([lo,la])=>{const[x,y]=proj(lo,la);const s=segs[segs.length-1];if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);else s.push([x,y]);});return segs.filter(s=>s.length>1).map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z').join(' ');}
+function g2p(g){if(g.type==='Polygon')return g.coordinates.map(r2p).join(' ');if(g.type==='MultiPolygon')return g.coordinates.map(p=>p.map(r2p).join(' ')).join(' ');return'';}
+
+const grat=document.getElementById('grat');
+[-60,-30,0,30,60].forEach(lat=>{const[,y]=proj(0,lat);const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',0);l.setAttribute('y1',y);l.setAttribute('x2',W);l.setAttribute('y2',y);l.setAttribute('stroke','#1a1a40');l.setAttribute('stroke-width','0.5');grat.appendChild(l);});
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+.then(r=>r.json()).then(geo=>{
+  const el=document.getElementById('countries');
+  const sorted=[...geo.features].sort((a,b)=>{
+    const pa=lookup(a.properties.name||'');const pb=lookup(b.properties.name||'');
+    if(pa===null&&pb===null)return 0;if(pa===null)return-1;if(pb===null)return 1;return pa-pb;
+  });
+  sorted.forEach(f=>{
+    const name=f.properties.name||'';const val=lookup(name);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',g2p(f.geometry)||'');
+    path.setAttribute('fill',val!==null?getColor(val):'#111128');
+    path.setAttribute('stroke','#07070c');path.setAttribute('stroke-width','0.4');
+    el.appendChild(path);
+  });
+
+  // Rwanda label
+  const ann=document.createElementNS('http://www.w3.org/2000/svg','g');
+  const[rx,ry]=proj(29.9,-2);
+  const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  bg.setAttribute('x',rx-22);bg.setAttribute('y',ry-13);bg.setAttribute('width',52);bg.setAttribute('height',14);bg.setAttribute('rx',2);bg.setAttribute('fill','rgba(10,8,2,0.88)');ann.appendChild(bg);
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',rx+4);t.setAttribute('y',ry-2);t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-family','IBM Plex Mono,monospace');t.setAttribute('font-size','9');t.setAttribute('font-weight','500');
+  t.setAttribute('fill','#e8c547');t.textContent='Rwanda 61%';ann.appendChild(t);
+  el.appendChild(ann);
+});
+</script>
+</body>
+</html>

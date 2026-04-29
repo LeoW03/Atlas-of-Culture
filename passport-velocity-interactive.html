@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passport Velocity — Atlas of Culture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07070c; --gold: #e8c547; --blue: #1c3773; --teal: #0d4a5e;
+  --text: rgba(255,255,255,0.82); --muted: rgba(255,255,255,0.40);
+  --border: rgba(255,255,255,0.07);
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', sans-serif; font-weight: 300;
+  min-height: 100vh;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+}
+
+/* ── Hero ── */
+.hero { padding: 72px 64px 48px; max-width: 980px; margin: 0 auto; }
+.eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: rgba(232,197,71,0.6); text-transform: uppercase; margin-bottom: 20px; }
+.hero h1 { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 48px; line-height: 1.1; color: #f0ece0; margin-bottom: 16px; }
+.hero h1 em { font-style: italic; color: var(--gold); }
+.hero .subhead { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.7; max-width: 620px; margin-bottom: 28px; }
+.stat-pills { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+.pill { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 4px; padding: 12px 20px; }
+.pill-val { font-family: 'Playfair Display', serif; font-weight: 900; font-size: 32px; color: var(--gold); }
+.pill-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+
+/* ── Map ── */
+.map-section { padding: 0 64px 48px; max-width: 980px; margin: 0 auto; position: relative; }
+.map-section h2 { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; }
+#world-svg { width: 100%; height: auto; display: block; }
+.tooltip {
+  position: fixed; background: rgba(7,7,12,0.96); border: 1px solid rgba(232,197,71,0.3);
+  padding: 10px 14px; border-radius: 4px; font-size: 13px; pointer-events: none;
+  opacity: 0; transition: opacity 0.15s; z-index: 100; max-width: 220px;
+}
+.tooltip strong { display: block; color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-size: 11px; margin-bottom: 4px; }
+.legend { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.legend-bar { width: 200px; height: 6px; border-radius: 3px; background: linear-gradient(to right, #1c2a6e, #0d4a5e, #1a6b5e, #5a7a2e, #b89028, #e8c547); }
+.legend-labels { display: flex; justify-content: space-between; width: 200px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+/* ── Timeline ── */
+.timeline-section { padding: 0 64px 48px; max-width: 980px; margin: 0 auto; }
+.section-header { margin-bottom: 24px; }
+.section-header h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: #f0ece0; margin-bottom: 6px; }
+.section-header p { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+#timeline-svg { width: 100%; overflow: visible; }
+.line-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+
+/* ── Table ── */
+.table-section { padding: 0 64px 48px; max-width: 980px; margin: 0 auto; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-btn {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; border-radius: 3px;
+  transition: all 0.15s;
+}
+.filter-btn:hover, .filter-btn.active { border-color: rgba(232,197,71,0.5); color: var(--gold); background: rgba(232,197,71,0.06); }
+table { width: 100%; border-collapse: collapse; }
+th { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th.num, td.num { text-align: right; }
+td { font-size: 13px; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); color: rgba(255,255,255,0.72); }
+td.country-name { color: rgba(255,255,255,0.85); }
+td.highlight { color: var(--gold); font-family: 'IBM Plex Mono', monospace; font-weight: 500; }
+tr:hover td { background: rgba(255,255,255,0.025); }
+.bar-cell { position: relative; }
+.bar-bg { height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 6px; }
+.bar-fill { height: 4px; border-radius: 2px; background: var(--gold); }
+.region-tag { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 0.1em; color: var(--muted); padding: 2px 6px; border: 1px solid var(--border); border-radius: 2px; }
+
+/* ── Narrative ── */
+.narrative-section { padding: 0 64px 64px; max-width: 760px; margin: 0 auto; }
+.narrative-section h2 { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: #f0ece0; margin-bottom: 20px; }
+.narrative-block { margin-bottom: 36px; }
+.narrative-block h3 { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(232,197,71,0.6); margin-bottom: 12px; }
+.narrative-block p { font-size: 15px; line-height: 1.8; color: rgba(255,255,255,0.65); margin-bottom: 14px; }
+.pull-quote { border-left: 2px solid rgba(232,197,71,0.4); padding-left: 20px; margin: 24px 0; font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: rgba(255,255,255,0.7); line-height: 1.6; }
+
+/* ── Sources ── */
+.sources-section { padding: 52px 64px 72px; max-width: 760px; margin: 0 auto; border-top: 1px solid var(--border); }
+.sources-section h2 { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 24px; }
+.sources-section h3 { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(232,197,71,0.5); margin: 24px 0 12px; }
+.source-item { margin-bottom: 14px; padding-left: 16px; border-left: 2px solid rgba(232,197,71,0.2); }
+.source-name a { color: rgba(232,197,71,0.7); text-decoration: none; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+.source-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-top: 3px; }
+.caveats-list { list-style: none; padding: 0; }
+.caveats-list li { font-size: 13.5px; color: var(--muted); line-height: 1.65; padding: 10px 0 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.04); position: relative; }
+.caveats-list li::before { content: '—'; position: absolute; left: 0; color: rgba(232,197,71,0.3); }
+
+/* ── Footer ── */
+footer { padding: 32px 64px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+footer .handle { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: rgba(232,197,71,0.5); }
+footer .source-credit { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="eyebrow">Mobility &amp; Access</div>
+  <h1>In 2006, a UAE passport opened<br><em>39 countries.</em></h1>
+  <p class="subhead">Today it opens 185 — nearly equal to the United States (186). In two decades, the Gulf states engineered one of the fastest expansions of passport power in modern diplomatic history.</p>
+  <div class="stat-pills">
+    <div class="pill"><div class="pill-val">+146</div><div class="pill-label">Countries gained, UAE (2006–2025)</div></div>
+    <div class="pill"><div class="pill-val">+26</div><div class="pill-label">Countries gained, United States (same period)</div></div>
+    <div class="pill"><div class="pill-val">185</div><div class="pill-label">UAE visa-free access today</div></div>
+    <div class="pill"><div class="pill-val">186</div><div class="pill-label">US visa-free access today</div></div>
+  </div>
+</section>
+
+<!-- Map -->
+<section class="map-section">
+  <h2>Visa-free &amp; visa-on-arrival access · 2025 · Countries</h2>
+  <svg id="world-svg" viewBox="-40 33 984 340" preserveAspectRatio="xMidYMid meet">
+    <g id="countries"></g>
+  </svg>
+  <div class="legend">
+    <div>
+      <div class="legend-bar"></div>
+      <div class="legend-labels"><span>28 countries</span><span>193 countries</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section class="timeline-section">
+  <div class="section-header">
+    <h2>The trajectory, 2000–2025</h2>
+    <p>Visa-free access by country over 25 years. The Gulf states didn't just improve — they converged on the West.</p>
+  </div>
+  <svg id="timeline-svg" viewBox="0 0 860 340" preserveAspectRatio="xMidYMid meet"></svg>
+</section>
+
+<!-- Table -->
+<section class="table-section">
+  <div class="section-header">
+    <h2>All countries ranked</h2>
+    <p>Sorted by visa-free access. Filter by region.</p>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterTable('all')">All</button>
+    <button class="filter-btn" onclick="filterTable('gulf')">Gulf states</button>
+    <button class="filter-btn" onclick="filterTable('eu')">European Union</button>
+    <button class="filter-btn" onclick="filterTable('g20')">G20</button>
+    <button class="filter-btn" onclick="filterTable('asia')">Asia</button>
+  </div>
+  <table id="country-table">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Country</th>
+        <th class="num">Visa-free access</th>
+        <th>Region</th>
+        <th>Access</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</section>
+
+<!-- Narrative -->
+<section class="narrative-section">
+  <h2>How Gulf states bought their way into the global mobility club</h2>
+
+  <div class="narrative-block">
+    <h3>The mechanism</h3>
+    <p>Passport power isn't just about wealth — it's about diplomatic relationships. The Gulf states discovered this and deployed capital accordingly. Starting in the early 2010s, the UAE began offering visa-free access to citizens from dozens of countries, with the implicit expectation of reciprocity. When a country sends tourists and workers to Dubai, it has incentive to remove the friction.</p>
+    <p>By 2015, the UAE had unlocked most of the Americas and large parts of Asia. By 2020, post-Abraham Accords, the EU followed — granting Emiratis visa-free access across Schengen.</p>
+  </div>
+
+  <div class="pull-quote">"The UAE passport improved by 146 countries in 19 years. The US improved by 26."</div>
+
+  <div class="narrative-block">
+    <h3>Saudi Arabia's sudden jump</h3>
+    <p>Saudi Arabia's trajectory is even more abrupt. In 2020, the Saudi passport opened 76 countries. By 2023: 179. The near-doubling coincided with MBS's diplomatic opening — normalizing relations with Israel's neighbors, restoring ties with Iran, rejoining ASEAN diplomatic circles, and aggressively pursuing bilateral visa agreements as part of Vision 2030's tourism strategy.</p>
+  </div>
+
+  <div class="narrative-block">
+    <h3>What Western passport power actually buys</h3>
+    <p>The remaining gap — Germany at 191, Japan at 193 — is concentrated in a handful of countries with complex relationships: North Korea, Russia (post-2022), Iran, and a few others. For practical global travel, the difference between a UAE passport (185) and a German passport (191) is six countries, most of which few people visit.</p>
+    <p>The question the data raises: if Gulf states can engineer passport parity with the West in a generation, what did Western passport power actually represent — diplomatic trust, or just historical inertia?</p>
+  </div>
+</section>
+
+<!-- Sources -->
+<section class="sources-section">
+  <h2>Data &amp; methodology</h2>
+  <h3>Sources</h3>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.henleypassportindex.com" target="_blank">Henley Passport Index</a></div>
+    <div class="source-desc">Primary source for all current and historical passport power rankings. Counts countries where a passport holder can travel without obtaining a visa in advance (visa-free or visa-on-arrival). Updated quarterly; figures used here reflect 2025 Q1 rankings.</div>
+  </div>
+  <div class="source-item">
+    <div class="source-name"><a href="https://www.arton.com/passport-index" target="_blank">Arton Capital Passport Index</a></div>
+    <div class="source-desc">Cross-referenced for historical timeline data (2000–2015), which Henley's public archive does not fully cover.</div>
+  </div>
+  <h3>Caveats &amp; methodology notes</h3>
+  <ul class="caveats-list">
+    <li>Visa-free access counts include both visa-free entry and visa-on-arrival — two meaningfully different experiences. A country where you collect a stamp at the airport (VOA) is counted the same as one with no entry barrier at all.</li>
+    <li>Historical data before 2015 is partially reconstructed from archived Henley reports and third-party tracking. UAE figures for 2000–2010 carry ±3 country uncertainty.</li>
+    <li>Saudi Arabia's 2023 jump reflects both bilateral agreements and counting methodology changes; some of the gain may reflect reclassification of e-visa programs as "visa-on-arrival" equivalents.</li>
+    <li>Rankings vary slightly between index providers (Henley, Arton, VisaGuide) due to different counting rules. This data uses Henley's methodology consistently.</li>
+  </ul>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="handle">@atlasofculture</div>
+  <div class="source-credit">Henley Passport Index 2025 · Arton Capital (historical)</div>
+</footer>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const DATA = {
+  "Afghanistan":28,"Albania":129,"Algeria":50,"Andorra":187,"Angola":53,
+  "Argentina":168,"Armenia":90,"Australia":185,"Austria":189,"Azerbaijan":91,
+  "Bahrain":163,"Bangladesh":41,"Belarus":88,"Belgium":189,"Belize":121,
+  "Benin":55,"Bolivia":152,"Bosnia and Herzegovina":134,"Botswana":84,
+  "Brazil":172,"Brunei":167,"Bulgaria":178,"Burkina Faso":63,"Burundi":47,
+  "Cambodia":63,"Cameroon":55,"Canada":185,"Central African Republic":56,
+  "Chad":53,"Chile":175,"China":88,"Colombia":148,"Croatia":179,"Cuba":65,
+  "Cyprus":175,"Czechia":129,"Denmark":189,"Djibouti":55,
+  "Dominican Republic":153,"Ecuador":140,"Egypt":51,"El Salvador":138,
+  "Eritrea":42,"Estonia":189,"Ethiopia":42,"Fiji":125,"Finland":190,
+  "France":191,"Gabon":63,"Georgia":129,"Germany":191,"Ghana":73,
+  "Greece":186,"Guatemala":137,"Guinea":57,"Haiti":55,"Honduras":134,
+  "Hungary":186,"Iceland":189,"India":62,"Indonesia":100,"Iran":41,
+  "Iraq":32,"Ireland":189,"Israel":163,"Italy":191,"Jamaica":111,
+  "Japan":193,"Jordan":74,"Kazakhstan":76,"Kenya":72,"Kosovo":126,
+  "Kuwait":107,"Kyrgyzstan":70,"Laos":61,"Latvia":189,"Lebanon":42,
+  "Lesotho":72,"Liberia":63,"Libya":39,"Liechtenstein":189,"Lithuania":189,
+  "Luxembourg":189,"Madagascar":57,"Malawi":71,"Malaysia":178,"Maldives":100,
+  "Mali":63,"Malta":189,"Mauritania":56,"Mauritius":148,"Mexico":160,
+  "Moldova":125,"Mongolia":71,"Montenegro":131,"Morocco":68,"Mozambique":61,
+  "Myanmar":48,"Namibia":80,"Nepal":40,"Netherlands":189,"New Zealand":185,
+  "Nicaragua":130,"Niger":55,"Nigeria":45,"North Macedonia":128,"Norway":189,
+  "Oman":102,"Pakistan":33,"Panama":145,"Papua New Guinea":67,"Paraguay":152,
+  "Peru":139,"Philippines":75,"Poland":186,"Portugal":189,"Qatar":167,
+  "Romania":179,"Russia":118,"Rwanda":72,"Saudi Arabia":179,"Senegal":72,
+  "Serbia":141,"Sierra Leone":63,"Singapore":192,"Slovakia":189,
+  "Slovenia":189,"Somalia":34,"South Africa":104,"South Korea":190,
+  "South Sudan":43,"Spain":191,"Sri Lanka":44,"Sudan":48,"Sweden":189,
+  "Switzerland":189,"Syria":32,"Taiwan":148,"Tanzania":60,"Thailand":82,
+  "Trinidad and Tobago":147,"Tunisia":78,"Turkey":119,"Uganda":61,
+  "Ukraine":138,"United Arab Emirates":185,"United Kingdom":189,
+  "United States":186,"Uruguay":155,"Uzbekistan":76,"Venezuela":131,
+  "Vietnam":58,"Yemen":36,"Zambia":64,"Zimbabwe":67
+};
+
+const REGIONS = {
+  "gulf":["United Arab Emirates","Qatar","Saudi Arabia","Kuwait","Bahrain","Oman"],
+  "eu":["France","Germany","Italy","Spain","Portugal","Netherlands","Belgium","Austria","Sweden","Denmark","Finland","Ireland","Greece","Poland","Czechia","Hungary","Romania","Bulgaria","Croatia","Slovakia","Slovenia","Estonia","Latvia","Lithuania","Luxembourg","Malta","Cyprus"],
+  "g20":["United States","United Kingdom","Germany","France","Italy","Japan","South Korea","Canada","Australia","Brazil","India","China","Russia","Mexico","Turkey","Saudi Arabia","Argentina","South Africa","Indonesia","United Arab Emirates"],
+  "asia":["Japan","Singapore","South Korea","China","India","Malaysia","Thailand","Philippines","Indonesia","Vietnam","Myanmar","Cambodia","Laos","Bangladesh","Nepal","Sri Lanka","Pakistan","Kazakhstan","Uzbekistan","Mongolia","Taiwan","Brunei","Maldives"]
+};
+
+const REGION_LABELS = {
+  "gulf":"Gulf","eu":"EU","g20":"G20","asia":"Asia"
+};
+
+function getRegion(name) {
+  for (const [r, list] of Object.entries(REGIONS)) {
+    if (list.includes(name)) return REGION_LABELS[r];
+  }
+  return "Other";
+}
+
+// ── Color scale (sqrt compressed) ─────────────────────────────────────────────
+const STOPS = [
+  [0.00, [28,42,110]],[0.15, [20,60,120]],[0.30, [13,74,94]],
+  [0.48, [26,107,94]],[0.62, [90,122,46]],[0.76, [184,144,40]],
+  [0.88, [210,165,38]],[1.00, [232,197,71]]
+];
+
+function getColor(v) {
+  const min=28, max=193;
+  if (v === undefined) return '#111126';
+  const t = Math.sqrt(Math.max(0,Math.min(1,(v-min)/(max-min))));
+  for (let i=1;i<STOPS.length;i++) {
+    if (t<=STOPS[i][0]) {
+      const lo=STOPS[i-1], hi=STOPS[i];
+      const s=(t-lo[0])/(hi[0]-lo[0]);
+      return `rgb(${lo[1].map((c,j)=>Math.round(c+(hi[1][j]-c)*s)).join(',')})`;
+    }
+  }
+  return `rgb(${STOPS[STOPS.length-1][1].join(',')})`;
+}
+
+// ── Name normalization ────────────────────────────────────────────────────────
+const NAME_MAP = {
+  "United States of America":"United States","Türkiye":"Turkey",
+  "Czech Republic":"Czechia","S. Korea":"South Korea",
+  "Dem. Rep. Congo":"Democratic Republic of the Congo",
+  "N. Macedonia":"North Macedonia","eSwatini":"Eswatini",
+  "Dominican Rep.":"Dominican Republic","Bosnia and Herz.":"Bosnia and Herzegovina",
+  "Somaliland":"Somalia","N. Cyprus":"Cyprus","Republic of Serbia":"Serbia",
+  "W. Sahara":"Morocco","Kosovo":"Kosovo"
+};
+
+// ── World map ─────────────────────────────────────────────────────────────────
+const W=944, H=490;
+function proj(lon,lat){return[((lon+180)/360)*W,((90-lat)/180)*H];}
+
+function ring2path(ring) {
+  const T=W*0.4,segs=[[]];
+  ring.forEach(([lo,la])=>{
+    const[x,y]=proj(lo,la);
+    const s=segs[segs.length-1];
+    if(s.length>0&&Math.abs(x-s[s.length-1][0])>T)segs.push([[x,y]]);
+    else s.push([x,y]);
+  });
+  return segs.filter(s=>s.length>1)
+    .map(s=>s.map(([x,y],i)=>`${i?'L':'M'}${x.toFixed(1)},${y.toFixed(1)}`).join('')+'Z')
+    .join(' ');
+}
+
+const tooltip=document.getElementById('tooltip');
+function showTip(e,name,val){
+  const diff = name==="United Arab Emirates"?"+146 since 2006":
+               name==="Saudi Arabia"?"+103 since 2020":
+               name==="Qatar"?"+128 since 2000":"";
+  tooltip.innerHTML=`<strong>${name}</strong>${val!==undefined?val+' countries':' — no data'}${diff?`<br><span style="color:rgba(232,197,71,0.7);font-size:11px">${diff}</span>`:''}`;
+  tooltip.style.opacity='1';
+  moveTip(e);
+}
+function moveTip(e){tooltip.style.left=(e.clientX+14)+'px';tooltip.style.top=(e.clientY-10)+'px';}
+function hideTip(){tooltip.style.opacity='0';}
+
+fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+  .then(r=>r.json())
+  .then(gj=>{
+    const g=document.getElementById('countries');
+    const sorted=[...gj.features].sort((a,b)=>{
+      const va=DATA[NAME_MAP[a.properties.name]||a.properties.name]||0;
+      const vb=DATA[NAME_MAP[b.properties.name]||b.properties.name]||0;
+      return va-vb;
+    });
+    sorted.forEach(f=>{
+      const raw=f.properties.name;
+      const name=NAME_MAP[raw]||raw;
+      const val=DATA[name];
+      const coords=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
+      const d=coords.map(poly=>poly.map(ring=>ring2path(ring)).join(' ')).join(' ');
+      if(!d)return;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',d);
+      path.setAttribute('fill',getColor(val));
+      path.setAttribute('stroke','#07070c');
+      path.setAttribute('stroke-width','0.3');
+      path.addEventListener('mouseenter',e=>showTip(e,name,val));
+      path.addEventListener('mousemove',moveTip);
+      path.addEventListener('mouseleave',hideTip);
+      g.appendChild(path);
+    });
+    buildTable();
+    buildTimeline();
+  });
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+let currentFilter='all';
+function buildTable(filter='all'){
+  currentFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.textContent.toLowerCase()===filter||(filter==='all'&&b.textContent==='All')));
+  const tbody=document.getElementById('table-body');
+  tbody.innerHTML='';
+  const max=193;
+  let entries=Object.entries(DATA).sort((a,b)=>b[1]-a[1]);
+  if(filter!=='all'){
+    const list=REGIONS[filter]||[];
+    entries=entries.filter(([name])=>list.includes(name));
+  }
+  entries.forEach(([name,val],i)=>{
+    const region=getRegion(name);
+    const isHighlight=['United Arab Emirates','Qatar','Saudi Arabia'].includes(name);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px">${i+1}</td>
+      <td class="country-name${isHighlight?' highlight':''}">${name}</td>
+      <td class="num ${isHighlight?'highlight':''}" style="font-family:'IBM Plex Mono',monospace">${val}</td>
+      <td><span class="region-tag">${region}</span></td>
+      <td class="bar-cell" style="width:120px">
+        <div class="bar-bg"><div class="bar-fill" style="width:${(val/max*100).toFixed(1)}%;background:${isHighlight?'var(--gold)':'rgba(255,255,255,0.25)'}"></div></div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function filterTable(f){buildTable(f);}
+
+// ── Timeline chart ────────────────────────────────────────────────────────────
+function buildTimeline(){
+  const svg=document.getElementById('timeline-svg');
+  const W=860,H=320,PAD={l:52,r:140,t:20,b:40};
+  const CW=W-PAD.l-PAD.r, CH=H-PAD.t-PAD.b;
+  const YEARS=[2000,2005,2010,2015,2020,2023,2025];
+  const SERIES={
+    "UAE":         {data:[33,39,55,121,160,178,185],color:"#e8c547",width:2.5},
+    "Qatar":       {data:[35,40,51,99,152,165,167],color:"#4A9EBF",width:1.5},
+    "Saudi Arabia":{data:[35,38,55,73,76,179,179],color:"#C45C3A",width:1.5},
+    "Germany":     {data:[158,166,173,174,189,191,191],color:"rgba(255,255,255,0.35)",width:1},
+    "United States":{data:[148,155,166,174,184,186,186],color:"rgba(255,255,255,0.25)",width:1},
+    "Japan":       {data:[138,150,168,175,191,193,193],color:"rgba(255,255,255,0.2)",width:1},
+  };
+  const minV=28, maxV=200;
+  const xS=i=>PAD.l+i*(CW/(YEARS.length-1));
+  const yS=v=>PAD.t+CH-(v-minV)/(maxV-minV)*CH;
+
+  // Grid lines
+  [50,100,150,200].forEach(v=>{
+    const y=yS(v);
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',PAD.l);line.setAttribute('x2',PAD.l+CW);
+    line.setAttribute('y1',y);line.setAttribute('y2',y);
+    line.setAttribute('stroke','rgba(255,255,255,0.06)');line.setAttribute('stroke-width','1');
+    svg.appendChild(line);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.textContent=v;txt.setAttribute('x',PAD.l-8);txt.setAttribute('y',y+4);
+    txt.setAttribute('text-anchor','end');txt.setAttribute('font-size','9');
+    txt.setAttribute('font-family','IBM Plex Mono, monospace');
+    txt.setAttribute('fill','rgba(255,255,255,0.3)');
+    svg.appendChild(txt);
+  });
+
+  // X axis labels
+  YEARS.forEach((yr,i)=>{
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.textContent=yr;txt.setAttribute('x',xS(i));txt.setAttribute('y',H-PAD.b+16);
+    txt.setAttribute('text-anchor','middle');txt.setAttribute('font-size','9');
+    txt.setAttribute('font-family','IBM Plex Mono, monospace');
+    txt.setAttribute('fill','rgba(255,255,255,0.3)');
+    svg.appendChild(txt);
+  });
+
+  // Lines
+  Object.entries(SERIES).forEach(([name,s])=>{
+    const pts=s.data.map((v,i)=>`${xS(i).toFixed(1)},${yS(v).toFixed(1)}`).join(' ');
+    const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    poly.setAttribute('points',pts);poly.setAttribute('fill','none');
+    poly.setAttribute('stroke',s.color);poly.setAttribute('stroke-width',s.width);
+    poly.setAttribute('stroke-linejoin','round');poly.setAttribute('stroke-linecap','round');
+    svg.appendChild(poly);
+    // End label
+    const lastX=xS(YEARS.length-1)+8, lastY=yS(s.data[s.data.length-1]);
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.textContent=`${name} ${s.data[s.data.length-1]}`;
+    txt.setAttribute('x',lastX);txt.setAttribute('y',lastY+4);
+    txt.setAttribute('font-size','10');txt.setAttribute('font-family','IBM Plex Mono, monospace');
+    txt.setAttribute('fill',s.color);
+    svg.appendChild(txt);
+  });
+}
+</script>
+</body>
+</html>
